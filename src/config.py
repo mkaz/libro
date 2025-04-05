@@ -6,7 +6,7 @@ from typing import Dict
 from datetime import datetime
 from appdirs import AppDirs
 
-cmds = ["add", "del", "edit", "show", "search"]
+cmds = ["add", "del", "edit", "show", "search", "report"]
 __version__ = "0.1.0"
 
 

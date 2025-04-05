@@ -4,6 +4,7 @@ from pathlib import Path
 
 from config import init_args
 from actions.show import show_books
+from actions.report import report
 
 
 def main():
@@ -27,6 +28,8 @@ def main():
             pass
         elif command == "show":
             show_books(db, args)
+        elif command == "report":
+            report(db, args)
         else:
             print("Not yet implemented")
 
