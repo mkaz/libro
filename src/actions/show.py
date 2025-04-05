@@ -9,6 +9,11 @@ def show_books(db, args={}):
     # Current year is default year if not specified
     year = args.get("year", datetime.now().year)
 
+    # if id is not none, show book detail
+    if args.get("id") is not None:
+        show_book_detail(db, args.get("id"))
+        return
+
     books = get_books(db, year)
     if not books:
         print("No books found for the specified year.")
@@ -53,6 +58,43 @@ def show_books(db, args={}):
             formatted_date = ""
 
         table.add_row(str(book[0]), book[1], book[2], str(book[3]), formatted_date)
+
+    console.print(table)
+
+
+def show_book_detail(db, id):
+    cursor = db.cursor()
+    cursor.execute(
+        """SELECT id, title, author_firstname || ' ' || author_lastname as author, publication_year, pages, rating, genre, date_read, my_review
+        FROM books WHERE id = ?""",
+        (id,),
+    )
+    book = cursor.fetchone()
+
+    if not book:
+        print(f"No book found with ID {id}")
+        return
+
+    console = Console()
+    table = Table(show_header=True, title=f"Book Details")
+    table.add_column("Field", style="cyan")
+    table.add_column("Value", style="green")
+
+    # Map of column names to display names
+    display_names = [
+        "ID",
+        "Title",
+        "Author",
+        "Publication Year",
+        "Pages",
+        "Genre",
+        "Rating",
+        "Date Read",
+        "My Review",
+    ]
+
+    for col, value in zip(range(len(display_names)), book):
+        table.add_row(display_names[col], str(value))
 
     console.print(table)
 

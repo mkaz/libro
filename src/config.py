@@ -27,9 +27,12 @@ def init_args() -> Dict:
     )
     report_parser.add_argument("--year", type=int, help="Year to filter books")
 
-    # Add other command parsers as needed
-    for cmd in [c for c in cmds if c != "report"]:
-        subparsers.add_parser(cmd)
+    # Show command with its specific arguments
+    show_parser = subparsers.add_parser("show", help="Show books")
+    show_parser.add_argument(
+        "--id", type=int, help="Show details for a specific book ID"
+    )
+    show_parser.add_argument("--year", type=int, help="Year to filter books")
 
     args = vars(parser.parse_args())
 
