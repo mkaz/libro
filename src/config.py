@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Dict
-
+from datetime import datetime
 from appdirs import AppDirs
 
 cmds = ["add", "del", "edit", "show", "search"]
@@ -16,6 +16,9 @@ def init_args() -> Dict:
     parser.add_argument("--db", help="SQLite file")
     parser.add_argument("-v", "--version", action="store_true")
     parser.add_argument("-i", "--info", action="store_true")
+    parser.add_argument(
+        "--year", type=int, help="Year to filter books (defaults to current year)"
+    )
     parser.add_argument("command", choices=cmds, nargs="?")
     parser.add_argument("args", nargs=argparse.REMAINDER)
     args = vars(parser.parse_args())
@@ -30,6 +33,9 @@ def init_args() -> Dict:
 
     if args["command"] is None:
         args["command"] = "show"
+
+    if args["year"] is None:
+        args["year"] = datetime.now().year
 
     return args
 

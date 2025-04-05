@@ -20,14 +20,13 @@ def main():
         sys.exit(1)
 
     try:
-        # if dbfile did not exist will be created
         db = sqlite3.connect(dbfile)
 
         command = args["command"]
         if command == "add":
             pass
         elif command == "show":
-            show_books(db)
+            show_books(db, args)
         else:
             print("Not yet implemented")
 
