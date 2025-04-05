@@ -27,7 +27,39 @@ def get_books_by_year(db):
         return None
 
 
-def report(db, args):
+def show_author_report(db):
+    """Display a report of most read authors."""
+    try:
+        cursor = db.cursor()
+        cursor.execute("""
+            SELECT author_firstname || ' ' || author_lastname as author, COUNT(*) as count
+            FROM books
+            WHERE date_read IS NOT NULL
+            GROUP BY author
+            HAVING count >= 3
+            ORDER BY count DESC
+        """)
+        authors = cursor.fetchall()
+
+        if not authors:
+            print("No authors found with more than 3 books read.")
+            return
+
+        console = Console()
+        table = Table(show_header=True, title="Most Read Authors", box=box.SIMPLE)
+        table.add_column("Author", style="cyan")
+        table.add_column("Books Read", style="green")
+
+        for author, count in authors:
+            table.add_row(author, str(count))
+
+        console.print(table)
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+
+
+def show_year_report(db):
     """Display a bar chart of books read per year."""
     books_by_year = get_books_by_year(db)
     if not books_by_year:
@@ -50,3 +82,11 @@ def report(db, args):
         table.add_row(year, str(count), bar)
 
     console.print(table)
+
+
+def report(db, args):
+    """Main report function that routes to specific report types based on args."""
+    if args.get("author") is True:
+        show_author_report(db)
+    else:
+        show_year_report(db)

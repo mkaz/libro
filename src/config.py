@@ -16,11 +16,21 @@ def init_args() -> Dict:
     parser.add_argument("--db", help="SQLite file")
     parser.add_argument("-v", "--version", action="store_true")
     parser.add_argument("-i", "--info", action="store_true")
-    parser.add_argument(
-        "--year", type=int, help="Year to filter books (defaults to current year)"
+
+    # Create subparsers for commands
+    subparsers = parser.add_subparsers(dest="command", help="Commands")
+
+    # Report command with its specific arguments
+    report_parser = subparsers.add_parser("report", help="Show reports")
+    report_parser.add_argument(
+        "--author", action="store_true", help="Show author report"
     )
-    parser.add_argument("command", choices=cmds, nargs="?")
-    parser.add_argument("args", nargs=argparse.REMAINDER)
+    report_parser.add_argument("--year", type=int, help="Year to filter books")
+
+    # Add other command parsers as needed
+    for cmd in [c for c in cmds if c != "report"]:
+        subparsers.add_parser(cmd)
+
     args = vars(parser.parse_args())
 
     if args["version"]:
@@ -34,7 +44,7 @@ def init_args() -> Dict:
     if args["command"] is None:
         args["command"] = "show"
 
-    if args["year"] is None:
+    if args.get("year") is None:
         args["year"] = datetime.now().year
 
     return args
