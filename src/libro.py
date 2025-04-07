@@ -5,6 +5,7 @@ from pathlib import Path
 from config import init_args
 from actions.show import show_books
 from actions.report import report
+from actions.add import add_book
 
 
 def main():
@@ -25,7 +26,8 @@ def main():
 
         command = args["command"]
         if command == "add":
-            pass
+            print("Add new book read")
+            add_book(db, args)
         elif command == "show":
             show_books(db, args)
         elif command == "report":

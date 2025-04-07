@@ -3,7 +3,7 @@ import sqlite3
 from utils import get_valid_input, validate_and_convert_date
 
 
-def add_book(db):
+def add_book(db, args):
     try:
         cursor = db.cursor()
 

@@ -34,6 +34,12 @@ def init_args() -> Dict:
     )
     show_parser.add_argument("--year", type=int, help="Year to filter books")
 
+    # Add command with its specific arguments
+    add_parser = subparsers.add_parser("add", help="Add a book")
+    add_parser.add_argument("--title", type=str, help="Title of the book")
+    add_parser.add_argument("--author", type=str, help="Author of the book")
+    add_parser.add_argument("--year", type=int, help="Year of the book")
+
     args = vars(parser.parse_args())
 
     if args["version"]:
