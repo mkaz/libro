@@ -14,14 +14,14 @@ def add_book(db, args):
         author_lastname = author_normal.split()[-1]
         author_firstname = " ".join(author_normal.split()[:-1])
 
-        rating = get_valid_input("Rating (1-5): ", allow_empty=True)
-        pages = get_valid_input("Number of pages: ", allow_empty=True)
-
         pub_year = get_valid_input(
             "Publication year: ",
             lambda x: validate_and_convert_date(x, "publication_year"),
             allow_empty=True,
         )
+        pages = get_valid_input("Number of pages: ", allow_empty=True)
+
+        genre = get_genre()
 
         date_read = get_valid_input(
             "Date read (YYYY-MM-DD): ",
@@ -29,7 +29,7 @@ def add_book(db, args):
             allow_empty=True,
         )
 
-        genre = get_genre()
+        rating = get_valid_input("Rating (1-5): ", allow_empty=True)
 
         my_review = get_valid_input("Your review:", allow_empty=True, multiline=True)
 
