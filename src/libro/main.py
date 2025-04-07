@@ -2,10 +2,11 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from config import init_args
-from actions.show import show_books
-from actions.report import report
-from actions.add import add_book
+from libro.config import init_args
+from libro.actions.show import show_books
+from libro.actions.report import report
+from libro.actions.add import add_book
+from libro.actions.db import init_db
 
 
 def main():
@@ -18,7 +19,12 @@ def main():
     # check if taskdb exists
     is_new_db = not dbfile.is_file()
     if is_new_db:
-        print("TODO: Need to create new database")
+        response = input(f"Create new database at {dbfile}? [Y/n] ").lower()
+        if response not in ["", "y", "yes"]:
+            print("No database created")
+            sys.exit(1)
+        init_db(dbfile)
+
         sys.exit(1)
 
     try:

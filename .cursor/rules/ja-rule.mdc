@@ -14,3 +14,20 @@ Key Principles:
 Data Handling:
 - Data is stored in a sqlite3 database, only use functions and SQL that are compatibile
 - Dates are stored in YYYY-MM-DD format
+
+# Database Structure:
+
+## books table
+id - primary key
+title - string book title
+author - string book author
+pages - int number of pages in book
+publication_year - int year book was published
+genre - string fiction or nonfiction
+
+## reviews table
+id - primary key
+book_id - foreign key to books table
+date_read - date book was read
+rating - float number between 0 and 5
+review - text review of book
