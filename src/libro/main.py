@@ -10,6 +10,7 @@ from libro.actions.db import init_db
 
 
 def main():
+    print("")  # give me some space
     args = init_args()
 
     dbfile = Path(args["db"])
@@ -28,7 +29,7 @@ def main():
     # Check if database is empty
     if is_new_db:
         print("Database created")
-        sys.exit(1)
+        sys.exit(0)
 
     try:
         db = sqlite3.connect(dbfile)

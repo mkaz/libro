@@ -28,7 +28,7 @@ Pending.
 | title | string | Book title |
 | author | string | Book author |
 | pages | int | Number of pages in book |
-| publication_year | int | Year book was published |
+| pub_year | int | Year book was published |
 | genre | string | Fiction or nonfiction |
 
 ## Reviews table

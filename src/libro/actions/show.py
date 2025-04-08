@@ -73,7 +73,7 @@ def show_books(db, args={}):
 def show_book_detail(db, id):
     cursor = db.cursor()
     cursor.execute(
-        """SELECT b.id, b.title, b.author, b.publication_year, b.pages, b.genre,
+        """SELECT b.id, b.title, b.author, b.pub_year, b.pages, b.genre,
                   r.rating, r.date_read, r.review
         FROM books b
         LEFT JOIN reviews r ON b.id = r.book_id

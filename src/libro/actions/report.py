@@ -1,10 +1,8 @@
 # Bar chart of books read by year
 
-from datetime import datetime
 import sqlite3
 from rich.console import Console
 from rich.table import Table
-from rich.text import Text
 from rich import box
 
 

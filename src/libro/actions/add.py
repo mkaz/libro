@@ -14,7 +14,7 @@ def add_book(db, args):
 
         pub_year = get_valid_input(
             "Publication year: ",
-            lambda x: validate_and_convert_date(x, "publication_year"),
+            lambda x: validate_and_convert_date(x, "pub_year"),
             allow_empty=True,
         )
         pages = get_valid_input("Number of pages: ", allow_empty=True)
@@ -37,7 +37,7 @@ def add_book(db, args):
         cursor.execute(
             """
             INSERT INTO books (
-                title, author, pages, publication_year, genre
+                title, author, pages, pub_year, genre
             ) VALUES (?, ?, ?, ?, ?)
         """,
             (

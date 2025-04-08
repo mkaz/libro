@@ -8,7 +8,7 @@ def init_db(dbfile):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             author TEXT NOT NULL,
-            publication_year INTEGER,
+            pub_year INTEGER,
             pages INTEGER,
             genre TEXT
         )
