@@ -18,6 +18,29 @@ Show books read by author: `libro report --author`
 
 Pending.
 
+# Database Schema
+
+## Books table
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | primary key | Unique identifier |
+| title | string | Book title |
+| author | string | Book author |
+| pages | int | Number of pages in book |
+| publication_year | int | Year book was published |
+| genre | string | Fiction or nonfiction |
+
+## Reviews table
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | primary key | Unique identifier |
+| book_id | foreign key | Book identifier |
+| date_read | date | Date book was read |
+| rating | float | Number between 0 and 5 |
+| review | text | Review of book |
+
 
 ## TODO
 

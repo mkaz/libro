@@ -28,15 +28,17 @@ def show_books(db, args={}):
     table.add_column("Date Read")
 
     # Sort books by genre (fiction first) and then by date
-    sorted_books = sorted(books, key=lambda x: (x[5] != "fiction", x[4] or ""))
+    sorted_books = sorted(
+        books, key=lambda x: (x["genre"] != "fiction", x["date_read"] or "")
+    )
 
     current_genre = None
     for book in sorted_books:
         # Add genre separator if genre changes
-        if book[5] != current_genre:
+        if book["genre"] != current_genre:
             if current_genre is not None:  # Don't add separator before first genre
                 table.add_row("", "", "", "", "", style="dim")
-            current_genre = book[5]
+            current_genre = book["genre"]
             table.add_row(
                 f"[bold]{current_genre.title()}[/bold]",
                 "",
@@ -47,7 +49,7 @@ def show_books(db, args={}):
             )
 
         # Format the date
-        date_str = book[4]  # date_read is the 5th column (index 4)
+        date_str = book["date_read"]
         if date_str:
             try:
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d")
@@ -57,7 +59,13 @@ def show_books(db, args={}):
         else:
             formatted_date = ""
 
-        table.add_row(str(book[0]), book[1], book[2], str(book[3]), formatted_date)
+        table.add_row(
+            str(book["id"]),
+            book["title"],
+            book["author"],
+            str(book["rating"]),
+            formatted_date,
+        )
 
     console.print(table)
 
@@ -65,8 +73,11 @@ def show_books(db, args={}):
 def show_book_detail(db, id):
     cursor = db.cursor()
     cursor.execute(
-        """SELECT id, title, author_firstname || ' ' || author_lastname as author, publication_year, pages, rating, genre, date_read, my_review
-        FROM books WHERE id = ?""",
+        """SELECT b.id, b.title, b.author, b.publication_year, b.pages, b.genre,
+                  r.rating, r.date_read, r.review
+        FROM books b
+        LEFT JOIN reviews r ON b.id = r.book_id
+        WHERE b.id = ?""",
         (id,),
     )
     book = cursor.fetchone()
@@ -104,10 +115,11 @@ def get_books(db, year):
         cursor = db.cursor()
         cursor.execute(
             """
-            SELECT id, title, author_firstname || ' ' || author_lastname, rating, date_read, genre
-            FROM books
-            WHERE strftime('%Y', date_read) = ?
-            ORDER BY date_read ASC
+            SELECT b.id, b.title, b.author, b.genre, r.rating, r.date_read
+            FROM books b
+            LEFT JOIN reviews r ON b.id = r.book_id
+            WHERE strftime('%Y', r.date_read) = ?
+            ORDER BY r.date_read ASC
         """,
             (str(year),),
         )

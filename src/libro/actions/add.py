@@ -10,9 +10,7 @@ def add_book(db, args):
         print("Enter book details:")
         title = get_valid_input("Title: ")
 
-        author_normal = get_valid_input("Author (First Last): ")
-        author_lastname = author_normal.split()[-1]
-        author_firstname = " ".join(author_normal.split()[:-1])
+        author = get_valid_input("Author: ")
 
         pub_year = get_valid_input(
             "Publication year: ",
@@ -33,24 +31,39 @@ def add_book(db, args):
 
         my_review = get_valid_input("Your review:", allow_empty=True, multiline=True)
 
-        # Insert into database
+        # @TODO: Check if book already exists
+
+        # Insert into books table
         cursor.execute(
             """
             INSERT INTO books (
-                title, author_lastname, author_firstname, rating,
-                pages, publication_year, date_read, my_review, genre
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                title, author, pages, publication_year, genre
+            ) VALUES (?, ?, ?, ?, ?)
         """,
             (
                 title,
-                author_lastname,
-                author_firstname,
-                rating,
+                author,  # Using full author name as per schema
                 pages,
                 pub_year,
-                date_read,
-                my_review,
                 genre,
+            ),
+        )
+
+        # Get the book ID of the newly inserted book
+        book_id = cursor.lastrowid
+
+        # Insert into reviews table
+        cursor.execute(
+            """
+            INSERT INTO reviews (
+                book_id, date_read, rating, review
+            ) VALUES (?, ?, ?, ?)
+        """,
+            (
+                book_id,
+                date_read,
+                rating,
+                my_review,
             ),
         )
 

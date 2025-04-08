@@ -14,9 +14,10 @@ def get_books_by_year(db):
         cursor = db.cursor()
         cursor.execute(
             """
-            SELECT strftime('%Y', date_read) as year, COUNT(*) as count
-            FROM books
-            WHERE date_read IS NOT NULL
+            SELECT strftime('%Y', r.date_read) as year, COUNT(*) as count
+            FROM books b
+            JOIN reviews r ON b.id = r.book_id
+            WHERE r.date_read IS NOT NULL
             GROUP BY year
             ORDER BY year
         """
@@ -32,10 +33,11 @@ def show_author_report(db):
     try:
         cursor = db.cursor()
         cursor.execute("""
-            SELECT author_firstname || ' ' || author_lastname as author, COUNT(*) as count
-            FROM books
-            WHERE date_read IS NOT NULL
-            GROUP BY author
+            SELECT b.author, COUNT(*) as count
+            FROM books b
+            JOIN reviews r ON b.id = r.book_id
+            WHERE r.date_read IS NOT NULL
+            GROUP BY b.author
             HAVING count >= 3
             ORDER BY count DESC
         """)

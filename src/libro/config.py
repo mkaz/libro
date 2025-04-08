@@ -6,7 +6,7 @@ from typing import Dict
 from datetime import datetime
 from appdirs import AppDirs
 
-cmds = ["add", "del", "edit", "show", "search", "report"]
+cmds = ["add", "del", "edit", "report", "search", "show"]
 __version__ = "0.1.0"
 
 
@@ -29,10 +29,10 @@ def init_args() -> Dict:
 
     # Show command with its specific arguments
     show_parser = subparsers.add_parser("show", help="Show books")
-    show_parser.add_argument(
-        "--id", type=int, help="Show details for a specific book ID"
-    )
     show_parser.add_argument("--year", type=int, help="Year to filter books")
+    show_parser.add_argument(
+        "id", type=int, nargs="?", help="Show details for a specific book ID"
+    )
 
     # Add command with its specific arguments
     add_parser = subparsers.add_parser("add", help="Add a book")

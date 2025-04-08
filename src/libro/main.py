@@ -25,10 +25,14 @@ def main():
             sys.exit(1)
         init_db(dbfile)
 
+    # Check if database is empty
+    if is_new_db:
+        print("Database created")
         sys.exit(1)
 
     try:
         db = sqlite3.connect(dbfile)
+        db.row_factory = sqlite3.Row
 
         command = args["command"]
         if command == "add":
