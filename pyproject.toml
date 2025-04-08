@@ -37,14 +37,5 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/libro"]
 
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "-ra"
-pythonpath = "tasks"
-testpaths = [
-    "tests",
-]
-
-
 [tool.ruff]
 target-version = "py310"

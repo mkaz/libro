@@ -87,7 +87,7 @@ def show_book_detail(db, id):
         return
 
     console = Console()
-    table = Table(show_header=True, title=f"Book Details")
+    table = Table(show_header=True, title="Book Details")
     table.add_column("Field", style="cyan")
     table.add_column("Value", style="green")
 
