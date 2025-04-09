@@ -16,7 +16,24 @@ Show books read by author: `libro report --author`
 
 ## Setup
 
-Pending.
+On first run, libro will create a `libro.db` database file based on database location. It will prompt for confirmation to proceed also showing the location where the file will be created.
+
+**Database locations:**
+
+The following order is used to determine the database location:
+
+1. Using the `--db` flag on command-line.
+
+2. `libro.db` in current directory
+
+3. Environment variable `LIBRO_DB` to specify custom file/location
+
+4. Finally, the user's platform-specific data directory
+    * Linux: `~/.local/share/libro/libro.db`
+    * macOS: `~/Library/Application Support/libro/libro.db`
+    * Windows: `%APPDATA%\libro\libro.db`
+
+
 
 # Database Schema
 
