@@ -1,11 +1,10 @@
 [project]
-name = "Libro"
-version = "0.1.0"
+name = "libro-book"
+version = "0.1.1"
 description = "A command-line tool to track books read"
-authors = [
-    {name = "Marcus Kazmierczak", email = "marcus@mkaz.com"}
-]
+authors = [ {name = "Marcus Kazmierczak", email = "marcus@mkaz.com"} ]
 license = "MIT"
+license-files = ["LICENSE"]
 readme = "readme.md"
 keywords = ["books", "reading", "library"]
 classifiers = [
@@ -14,18 +13,18 @@ classifiers = [
     "Intended Audience :: End Users/Desktop",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Topic :: Database",
-    "Topic :: Education",
 ]
 requires-python = ">=3.10"
 dependencies = [
     "appdirs>=1.4",
+    "sqlite3>=3.42",
     "rich>=13.3",
-    "prompt-toolkit>=3.0.50",
 ]
+[project.urls]
+Documentation = "https://github.com/mkaz/libro"
+Repository = "https://github.com/mkaz/libro"
+Issues = "https://github.com/mkaz/libro/issues"
 
 [project.scripts]
 libro = "libro.main:main"
@@ -36,6 +35,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/libro"]
+
 
 [tool.ruff]
 target-version = "py310"
