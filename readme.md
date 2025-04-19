@@ -1,6 +1,6 @@
 # Libro
 
-Track your books read on the command-line in a sqlite3 database.
+📚 Libro: A simple command-line tool to track your reading history, with your data stored locally in a SQLite database.
 
 ## Usage
 
@@ -16,7 +16,7 @@ Show books read by author: `libro report --author`
 
 ## Setup
 
-On first run, libro will create a `libro.db` database file based on database location. It will prompt for confirmation to proceed also showing the location where the file will be created.
+On first run, libro will create a `libro.db` database file based on database location. It will prompt for confirmation to proceed which also shows the location where the file will be created.
 
 **Database locations:**
 
@@ -33,6 +33,20 @@ The following order is used to determine the database location:
     * macOS: `~/Library/Application Support/libro/libro.db`
     * Windows: `%APPDATA%\libro\libro.db`
 
+
+For example, if you want to create a new database file in the current directory, you can use the following command:
+
+```
+libro --db ./libro.db
+```
+
+### Import from Goodreads
+
+Libro can import your reading history from a Goodreads export CSV file.
+
+```
+libro import goodreads_library_export.csv
+```
 
 
 # Database Schema
@@ -57,13 +71,4 @@ The following order is used to determine the database location:
 | date_read | date | Date book was read |
 | rating | float | Number between 0 and 5 |
 | review | text | Review of book |
-
-
-## TODO
-
-- [ ] Init database
-- [ ] Import Goodreads CSV
-- [ ] Package for PyPI
-- [ ] Edit Book
-- [ ] Add flag --limit to author
 

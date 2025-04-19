@@ -6,7 +6,6 @@ from typing import Dict
 from datetime import datetime
 from appdirs import AppDirs
 
-cmds = ["add", "del", "edit", "report", "search", "show"]
 __version__ = "0.1.0"
 
 
@@ -39,6 +38,10 @@ def init_args() -> Dict:
     add_parser.add_argument("--title", type=str, help="Title of the book")
     add_parser.add_argument("--author", type=str, help="Author of the book")
     add_parser.add_argument("--year", type=int, help="Year of the book")
+
+    # Add command with its specific arguments
+    import_parser = subparsers.add_parser("import", help="Import books")
+    import_parser.add_argument("file", type=str, help="Goodreads CSV export file")
 
     args = vars(parser.parse_args())
 

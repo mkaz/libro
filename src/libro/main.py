@@ -7,6 +7,7 @@ from libro.actions.show import show_books
 from libro.actions.report import report
 from libro.actions.add import add_book
 from libro.actions.db import init_db
+from libro.actions.importer import import_books
 
 
 def main():
@@ -43,6 +44,8 @@ def main():
             show_books(db, args)
         elif command == "report":
             report(db, args)
+        elif command == "import":
+            import_books(db, args)
         else:
             print("Not yet implemented")
 
