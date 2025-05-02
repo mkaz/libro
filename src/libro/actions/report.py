@@ -6,6 +6,14 @@ from rich.table import Table
 from rich import box
 
 
+def report(db, args):
+    """Main report function that routes to specific report types based on args."""
+    if args.get("author") is True:
+        show_author_report(db, args)
+    else:
+        show_year_report(db)
+
+
 def get_books_by_year(db):
     """Get count of books read per year."""
     try:
@@ -26,23 +34,34 @@ def get_books_by_year(db):
         return None
 
 
-def show_author_report(db):
+def show_author_report(db, args):
     """Display a report of most read authors."""
+
+    limit = args["limit"]
+    # If the --limit argument was not provided, args["limit"] will be None.
+    # In that case, we default to 3.
+    if limit is None:
+        limit = 3
+    where_clause = (
+        "" if args.get("undated") is True else "WHERE r.date_read IS NOT NULL"
+    )
+
     try:
         cursor = db.cursor()
-        cursor.execute("""
+        query = f"""
             SELECT b.author, COUNT(*) as count
             FROM books b
             JOIN reviews r ON b.id = r.book_id
-            WHERE r.date_read IS NOT NULL
+            {where_clause}
             GROUP BY b.author
-            HAVING count >= 3
+            HAVING count >= :limit
             ORDER BY count DESC
-        """)
+        """
+        cursor.execute(query, {"limit": limit})
         authors = cursor.fetchall()
 
         if not authors:
-            print("No authors found with more than 3 books read.")
+            print(f"No authors found with more than {limit} books read.")
             return
 
         console = Console()
@@ -82,11 +101,3 @@ def show_year_report(db):
         table.add_row(year, str(count), bar)
 
     console.print(table)
-
-
-def report(db, args):
-    """Main report function that routes to specific report types based on args."""
-    if args.get("author") is True:
-        show_author_report(db)
-    else:
-        show_year_report(db)

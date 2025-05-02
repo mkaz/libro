@@ -21,28 +21,25 @@ def init_args() -> Dict:
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # Report command with its specific arguments
-    report_parser = subparsers.add_parser("report", help="Show reports")
-    report_parser.add_argument(
-        "--author", action="store_true", help="Show author report"
-    )
-    report_parser.add_argument("--year", type=int, help="Year to filter books")
+    report = subparsers.add_parser("report", help="Show reports")
+    report.add_argument("--author", action="store_true", help="Show author report")
+    report.add_argument("--limit", type=int, help="Minimum books read by author")
+    report.add_argument("--undated", action="store_true", help="Include undated books")
 
     # Show command with its specific arguments
-    show_parser = subparsers.add_parser("show", help="Show books")
-    show_parser.add_argument("--year", type=int, help="Year to filter books")
-    show_parser.add_argument(
-        "id", type=int, nargs="?", help="Show details for a specific book ID"
-    )
+    show = subparsers.add_parser("show", help="Show books")
+    show.add_argument("--year", type=int, help="Year to filter books")
+    show.add_argument("id", type=int, nargs="?", help="Show book ID details")
 
     # Add command with its specific arguments
-    add_parser = subparsers.add_parser("add", help="Add a book")
-    add_parser.add_argument("--title", type=str, help="Title of the book")
-    add_parser.add_argument("--author", type=str, help="Author of the book")
-    add_parser.add_argument("--year", type=int, help="Year of the book")
+    add = subparsers.add_parser("add", help="Add a book")
+    add.add_argument("--title", type=str, help="Title of the book")
+    add.add_argument("--author", type=str, help="Author of the book")
+    add.add_argument("--year", type=int, help="Year of the book")
 
-    # Add command with its specific arguments
-    import_parser = subparsers.add_parser("import", help="Import books")
-    import_parser.add_argument("file", type=str, help="Goodreads CSV export file")
+    # Import command with its specific arguments
+    imp = subparsers.add_parser("import", help="Import books")
+    imp.add_argument("file", type=str, help="Goodreads CSV export file")
 
     args = vars(parser.parse_args())
 
@@ -64,7 +61,7 @@ def init_args() -> Dict:
 
 
 def get_db_loc() -> Path:
-    """Figure out where the libro.db file should be.
+    """Figure out where the libro.db file is.
     See README for spec"""
 
     # check if tasks.db exists in current dir
@@ -72,7 +69,7 @@ def get_db_loc() -> Path:
     if cur_dir.is_file():
         return cur_dir
 
-    # check for env TASKS_DB
+    # check for env LIBRO_DB
     env_var = os.environ.get("LIBRO_DB")
     if env_var is not None:
         return Path(env_var)
