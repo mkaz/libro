@@ -25,12 +25,9 @@ def main():
         if response not in ["", "y", "yes"]:
             print("No database created")
             sys.exit(1)
-        init_db(dbfile)
 
-    # Check if database is empty
-    if is_new_db:
+        init_db(dbfile)
         print("Database created")
-        sys.exit(0)
 
     try:
         db = sqlite3.connect(dbfile)
