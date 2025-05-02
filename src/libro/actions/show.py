@@ -32,6 +32,11 @@ def show_books(db, args={}):
         books, key=lambda x: (x["genre"] != "fiction", x["date_read"] or "")
     )
 
+    ## Count books by genre
+    count = {}
+    for book in books:
+        count[book["genre"]] = count.get(book["genre"], 0) + 1
+
     current_genre = None
     for book in sorted_books:
         # Add genre separator if genre changes
@@ -40,8 +45,8 @@ def show_books(db, args={}):
                 table.add_row("", "", "", "", "", style="dim")
             current_genre = book["genre"]
             table.add_row(
-                f"[bold]{current_genre.title()}[/bold]",
                 "",
+                f"[bold]{current_genre.title()} ({count[current_genre]})[/bold]",
                 "",
                 "",
                 "",
