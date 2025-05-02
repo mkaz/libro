@@ -31,20 +31,21 @@ def main():
 
     try:
         db = sqlite3.connect(dbfile)
+        # Default to using column names instead of index
         db.row_factory = sqlite3.Row
 
-        command = args["command"]
-        if command == "add":
-            print("Add new book read")
-            add_book(db, args)
-        elif command == "show":
-            show_books(db, args)
-        elif command == "report":
-            report(db, args)
-        elif command == "import":
-            import_books(db, args)
-        else:
-            print("Not yet implemented")
+        match args["command"]:
+            case "add":
+                print("Add new book read")
+                add_book(db, args)
+            case "show":
+                show_books(db, args)
+            case "report":
+                report(db, args)
+            case "import":
+                import_books(db, args)
+            case _:
+                print("Not yet implemented")
 
     except sqlite3.Error as e:
         print(f"Database error: {e}")
