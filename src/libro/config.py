@@ -5,8 +5,9 @@ from pathlib import Path
 from typing import Dict
 from datetime import datetime
 from appdirs import AppDirs
+import importlib.metadata
 
-__version__ = "0.1.0"
+__version__ = importlib.metadata.version("libro-book")
 
 
 def init_args() -> Dict:

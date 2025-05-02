@@ -16,6 +16,10 @@ clean:
     find . -type d -name __pycache__ -exec rm -rf {} +
     find . -type f -name "*.pyc" -delete
 
+## uv
+# Uv runs the project out of the local .venv
+# Create venv by running `uv venv`
+
 # Build the project
 install:
     uv sync
@@ -25,4 +29,4 @@ build: install
 
 # Run the CLI application
 run *args:
-    uv run src/libro/main.py {{args}}
+    uv run libro {{args}}
