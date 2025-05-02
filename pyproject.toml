@@ -18,9 +18,9 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "appdirs>=1.4",
-    "sqlite3>=3.42",
     "rich>=13.3",
 ]
+
 [project.urls]
 Documentation = "https://github.com/mkaz/libro"
 Repository = "https://github.com/mkaz/libro"
