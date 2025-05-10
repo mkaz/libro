@@ -32,10 +32,11 @@ def init_args() -> Dict:
     show.add_argument("id", type=int, nargs="?", help="Show book ID details")
 
     # Add command with its specific arguments
-    add = subparsers.add_parser("add", help="Add a book")
-    add.add_argument("--title", type=str, help="Title of the book")
-    add.add_argument("--author", type=str, help="Author of the book")
-    add.add_argument("--year", type=int, help="Year of the book")
+    subparsers.add_parser("add", help="Add a book")
+
+    # Add command with its specific arguments
+    edit = subparsers.add_parser("edit", help="Edit a book")
+    edit.add_argument("id", type=int, nargs="?", help="Book ID to edit (required)")
 
     # Import command with its specific arguments
     imp = subparsers.add_parser("import", help="Import books")

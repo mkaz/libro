@@ -46,6 +46,13 @@ def add_book(db, args):
         print(f"Error: {e}")
 
 
+def edit_book(db, args):
+    # fetch book from db
+    book_id = args["id"]
+    print(f"Editing book {book_id}")
+    # book = db.get_book(args["id"])
+
+
 def get_genre():
     while True:
         genre = input("Genre (fiction/nonfiction): ").strip().lower()
