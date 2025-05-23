@@ -5,6 +5,7 @@ from prompt_toolkit.validation import Validator, ValidationError
 from prompt_toolkit.styles import Style
 from datetime import date
 import re  # for date validation
+from rich.console import Console
 
 from libro.utils import get_valid_input, validate_and_convert_date
 from libro.models import BookReview, Book, Review
@@ -139,22 +140,21 @@ def add_book(db, args):
 
 
 def edit_book(db, args):
-    review_id = args["id"]
-    print(f"Attempting to edit review with ID: {review_id}")
-
+    review_id = int(args["id"])
     book_review = BookReview.get_by_id(db, review_id)
-
     if not book_review:
         print(f"Error: Review with ID {review_id} not found.")
         return
 
     session = PromptSession(style=style)
+    console = Console()
 
     # Collect updated values
     updated_book_data = {}
     updated_review_data = {}
 
     # --- Book Fields ---
+    console.print("BOOK DETAILS:\n---------------\n", style="blue")
     while True:
         try:
             new_title = session.prompt("Title: ", default=book_review.book_title)
@@ -233,6 +233,8 @@ def edit_book(db, args):
             continue
 
     # --- Review Fields ---
+
+    console.print("\nYOUR REVIEW DETAILS:\n-------------------\n", style="blue")
     # Need to handle Optional[date] and empty string input
     current_date_read_str = (
         str(book_review.date_read) if book_review.date_read is not None else ""
@@ -281,7 +283,7 @@ def edit_book(db, args):
             # Create a new session specifically for multiline input to avoid validator inheritance
             multiline_session = PromptSession(style=style)
             new_review_text = multiline_session.prompt(
-                "Your review (multiline, Esc+Enter to finish):\n",
+                "Your review (Esc+Enter to finish):\n",
                 default=current_review_text,
                 multiline=True,
             )
