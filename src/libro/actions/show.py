@@ -82,7 +82,7 @@ def show_book_detail(db, id):
                   r.rating, r.date_read, r.review
         FROM books b
         LEFT JOIN reviews r ON b.id = r.book_id
-        WHERE b.id = ?""",
+        WHERE r.id = ?""",
         (id,),
     )
     book = cursor.fetchone()
@@ -120,9 +120,9 @@ def get_books(db, year):
         cursor = db.cursor()
         cursor.execute(
             """
-            SELECT b.id, b.title, b.author, b.genre, r.rating, r.date_read
-            FROM books b
-            LEFT JOIN reviews r ON b.id = r.book_id
+            SELECT r.id, b.title, b.author, b.genre, r.rating, r.date_read
+            FROM reviews r
+            LEFT JOIN books b ON r.book_id = b.id
             WHERE strftime('%Y', r.date_read) = ?
             ORDER BY r.date_read ASC
         """,
