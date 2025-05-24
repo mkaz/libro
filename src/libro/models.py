@@ -39,7 +39,7 @@ class Book:
 
 @dataclass
 class Review:
-    """Represents a book in the database."""
+    """Represents a review in the database."""
 
     book_id: int
     date_read: Optional[date] = None
@@ -70,7 +70,7 @@ class Review:
 
 @dataclass
 class BookReview:
-    """Represents a combined Book and Review entry."""
+    """Represents a combined Book and Review object."""
 
     # Fields from Review (non-defaults first)
     book_id: int  # Review's book_id, also the book's ID
@@ -111,16 +111,16 @@ class BookReview:
             if row:
                 # Create a BookReview instance from the row data
                 return cls(
-                    book_id=row[4],
-                    book_title=row[5],
-                    book_author=row[6],
-                    review_id=row[0],
-                    date_read=row[1],
-                    rating=row[2],
-                    review_text=row[3],
-                    book_pub_year=row[7],
-                    book_pages=row[8],
-                    book_genre=row[9],
+                    book_id=row["book_id"],
+                    book_title=row["title"],
+                    book_author=row["author"],
+                    review_id=row["id"],
+                    date_read=row["date_read"],
+                    rating=row["rating"],
+                    review_text=row["review"],
+                    book_pub_year=row["pub_year"],
+                    book_pages=row["pages"],
+                    book_genre=row["genre"],
                 )
             return None
         except sqlite3.Error as e:
