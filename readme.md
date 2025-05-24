@@ -14,36 +14,37 @@ Show books read by year: `libro report`
 
 Show books read by author: `libro report --author`
 
+See: `libro --help` for more information.
+
 ### Examples
 
 #### Books Read in Year
 
 ```
-                                              Books Read in 2025
-┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━┓
-┃ id         ┃ Title                                           ┃ Author               ┃ Rating ┃ Date Read    ┃
-┡━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━┩
-│ Fiction    │                                                 │                      │        │              │
-│ 1          │ Cujo                                            │ Stephen King         │ 3      │ Jan 05, 2025 │
-│ 585        │ The Midnight Library                            │ Matt Haig            │ 5      │ Jan 13, 2025 │
-│ 587        │ The Maid                                        │ Nita Prose           │ 4      │ Jan 20, 2025 │
-│ 589        │ Into the Water                                  │ Paula Hawkins        │ 2      │ Feb 02, 2025 │
-│ 591        │ My Grandmother Asked Me to Tell You She's Sorry │ Fredrik Backman      │ 3      │ Feb 15, 2025 │
-│ 584        │ Salem's Lot                                     │ Stephen King         │ 3      │ Mar 12, 2025 │
-│ 595        │ The Thursday Murder Club                        │ Richard Osman        │ 3.5    │ Mar 20, 2025 │
-│ 596        │ Remarkably Bright Creatures                     │ Shelby Van Pelt      │ 5      │ Mar 27, 2025 │
-│ 598        │ Colorless Tsukuru Tazaki                        │ Haruki Murakami      │ 3      │ Apr 09, 2025 │
-│ 599        │ Ten                                             │ Gretchen McNeil      │ 3      │ Apr 16, 2025 │
-│            │                                                 │                      │        │              │
-│ Nonfiction │                                                 │                      │        │              │
-│ 586        │ The Art Thief                                   │ Michael Finkel       │ 4      │ Jan 14, 2025 │
-│ 588        │ All the Pieces Matter                           │ Jonathan Abrams      │ 3      │ Jan 27, 2025 │
-│ 590        │ Supercommunicators                              │ Charles Duhigg       │ 4      │ Feb 04, 2025 │
-│ 592        │ HBR Guide to Generative AI for Managers         │ Elisa Farri          │ 4      │ Feb 16, 2025 │
-│ 593        │ Leonardo da Vinci                               │ Walter Isaacson      │ 3      │ Mar 02, 2025 │
-│ 594        │ The Leap to Leader                              │ Adam Bryant          │ 3      │ Mar 08, 2025 │
-│ 597        │ Team of Rivals                                  │ Doris Kearns Goodwin │ 3      │ Apr 06, 2025 │
-└────────────┴─────────────────────────────────────────────────┴──────────────────────┴────────┴──────────────┘
+❯ libro
+                                 Books Read in 2025
+┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ id         ┃ Title                        ┃ Author               ┃ Rating ┃ Date Read    ┃
+┡━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ Fiction    │                              │                      │        │              │
+│ 1          │ Cujo                         │ Stephen King         │ 3      │ Jan 05, 2025 │
+│ 585        │ The Midnight Library         │ Matt Haig            │ 5      │ Jan 13, 2025 │
+│ 587        │ The Maid                     │ Nita Prose           │ 4      │ Jan 20, 2025 │
+│ 589        │ Into the Water               │ Paula Hawkins        │ 2      │ Feb 02, 2025 │
+│ 584        │ Salem's Lot                  │ Stephen King         │ 3      │ Mar 12, 2025 │
+│ 595        │ The Thursday Murder Club     │ Richard Osman        │ 3      │ Mar 20, 2025 │
+│ 596        │ Remarkably Bright Creatures  │ Shelby Van Pelt      │ 5      │ Mar 27, 2025 │
+│ 598        │ Colorless Tsukuru Tazaki     │ Haruki Murakami      │ 3      │ Apr 09, 2025 │
+│ 599        │ Ten                          │ Gretchen McNeil      │ 3      │ Apr 16, 2025 │
+│            │                              │                      │        │              │
+│ Nonfiction │                              │                      │        │              │
+│ 586        │ The Art Thief                │ Michael Finkel       │ 4      │ Jan 14, 2025 │
+│ 588        │ All the Pieces Matter        │ Jonathan Abrams      │ 3      │ Jan 27, 2025 │
+│ 590        │ Supercommunicators           │ Charles Duhigg       │ 4      │ Feb 04, 2025 │
+│ 593        │ Leonardo da Vinci            │ Walter Isaacson      │ 3      │ Mar 02, 2025 │
+│ 594        │ The Leap to Leader           │ Adam Bryant          │ 3      │ Mar 08, 2025 │
+│ 597        │ Team of Rivals               │ Doris Kearns Goodwin │ 3      │ Apr 06, 2025 │
+└────────────┴──────────────────────────────┴──────────────────────┴────────┴──────────────┘
 ```
 
 
