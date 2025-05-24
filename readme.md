@@ -171,6 +171,10 @@ There is a `genre` field for fiction and nonfiction, but this data is not availa
 | rating | float | Number between 0 and 5 |
 | review | text | Review of book |
 
+# Changelog
+
+See [GitHub Releases](https://github.com/mkaz/libro/releases) for the changelog.
+
 # Packaging
 
 Notes to self, I forget how to do this stuff.
