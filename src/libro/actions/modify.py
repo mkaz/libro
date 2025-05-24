@@ -231,7 +231,6 @@ def _update_database(db, updated_book_data, updated_review_data, book_review):
 
         if filtered_book_data or filtered_review_data:
             db.commit()
-            print("\nSuccessfully updated the database.")
         else:
             print("\nNo changes made.")
 
