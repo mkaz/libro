@@ -7,7 +7,6 @@ from datetime import date
 import re  # for date validation
 from rich.console import Console
 
-from libro.utils import get_valid_input, validate_and_convert_date
 from libro.models import BookReview, Book, Review
 
 # Define the style for prompts
@@ -19,27 +18,55 @@ style = Style.from_dict(
 
 
 def add_book(db, args):
+    session = PromptSession(style=style)
+    console = Console()
+
     try:
-        print("Enter book details:")
-        # Note: This still uses the old get_valid_input, not prompt_toolkit
-        title = get_valid_input("Title: ")
-        author = get_valid_input("Author: ")
+        console.print("ADDING NEW BOOK:\n---------------\n", style="blue")
 
-        pub_year = get_valid_input(
-            "Publication year: ",
-            lambda x: validate_and_convert_date(x, "pub_year"),
-            allow_empty=True,
-        )
-        pages = get_valid_input("Number of pages: ", allow_empty=True)
-        genre = get_genre()
+        # Book details
+        title = _prompt_with_retry(session, "Title: ", validator=NonEmptyValidator())
+        author = _prompt_with_retry(session, "Author: ", validator=NonEmptyValidator())
 
-        date_read = get_valid_input(
-            "Date read (YYYY-MM-DD): ",
-            lambda x: validate_and_convert_date(x, "date_read"),
-            allow_empty=True,
+        # Publication year with validation and conversion
+        pub_year_str = _prompt_with_retry(
+            session, "Publication year: ", validator=IntValidator()
         )
-        rating = get_valid_input("Rating (1-5): ", allow_empty=True)
-        my_review = get_valid_input("Your review:", allow_empty=True, multiline=True)
+        pub_year = _convert_to_int_or_none(pub_year_str)
+
+        # Pages with validation and conversion
+        pages_str = _prompt_with_retry(
+            session, "Number of pages: ", validator=IntValidator()
+        )
+        pages = _convert_to_int_or_none(pages_str)
+
+        # Genre with validation and conversion
+        genre_str = _prompt_with_retry(
+            session, "Genre (fiction/nonfiction): ", validator=GenreValidator()
+        )
+        genre = _convert_genre_to_lowercase(genre_str)
+
+        console.print("\nYOUR REVIEW DETAILS:\n-------------------\n", style="blue")
+
+        # Date read with validation
+        date_read = _prompt_with_retry(
+            session, "Date read (YYYY-MM-DD): ", validator=DateValidator()
+        )
+        if not date_read:  # Handle empty input
+            date_read = None
+
+        # Rating with validation and conversion
+        rating_str = _prompt_with_retry(
+            session, "Rating (1-5): ", validator=RatingValidator()
+        )
+        rating = _convert_to_int_or_none(rating_str)
+
+        # Review text (multiline)
+        my_review = _prompt_with_retry(
+            session, "Your review (Esc+Enter to finish):\n", multiline=True
+        )
+        if not my_review:  # Handle empty input
+            my_review = None
 
         # Create and insert book using the internal model
         book = Book(  # Using _Book for insertion
@@ -55,31 +82,13 @@ def add_book(db, args):
 
         print(f"\nSuccessfully added '{title}' to the database!")
 
+    except KeyboardInterrupt:
+        print("\n\nAdd book cancelled. No changes made.")
+        return
     except sqlite3.Error as e:
         print(f"Database error: {e}")
     except Exception as e:
         print(f"Error: {e}")
-
-
-def _prompt_with_retry(
-    session, prompt_text, default_value="", validator=None, multiline=False
-):
-    """Helper function to handle prompting with error retry logic."""
-    while True:
-        try:
-            if multiline:
-                # Create new session for multiline to avoid validator inheritance
-                multiline_session = PromptSession(style=style)
-                return multiline_session.prompt(
-                    prompt_text, default=default_value, multiline=True
-                )
-            else:
-                return session.prompt(
-                    prompt_text, default=default_value, validator=validator
-                )
-        except Exception as e:
-            print(f"Error: {e}")
-            continue
 
 
 def edit_book(db, args):
@@ -101,11 +110,11 @@ def edit_book(db, args):
 
         # Title and Author (no conversion needed)
         updated_book_data["title"] = _update_field(
-            session, book_review.book_title, "Title: "
+            session, book_review.book_title, "Title: ", validator=NonEmptyValidator()
         )
 
         updated_book_data["author"] = _update_field(
-            session, book_review.book_author, "Author: "
+            session, book_review.book_author, "Author: ", validator=NonEmptyValidator()
         )
 
         # Publication year (integer conversion)
@@ -166,6 +175,27 @@ def edit_book(db, args):
     except KeyboardInterrupt:
         print("\n\nEdit cancelled. No changes made.")
         return
+
+
+def _prompt_with_retry(
+    session, prompt_text, default_value="", validator=None, multiline=False
+):
+    """Helper function to handle prompting with error retry logic."""
+    while True:
+        try:
+            if multiline:
+                # Create new session for multiline to avoid validator inheritance
+                multiline_session = PromptSession(style=style)
+                return multiline_session.prompt(
+                    prompt_text, default=default_value, multiline=True
+                )
+            else:
+                return session.prompt(
+                    prompt_text, default=default_value, validator=validator
+                )
+        except Exception as e:
+            print(f"Error: {e}")
+            continue
 
 
 def _update_field(
@@ -311,9 +341,11 @@ class DateValidator(Validator):
             raise ValidationError(message="Invalid date.", cursor_position=len(text))
 
 
-def get_genre():
-    while True:
-        genre = input("Genre (fiction/nonfiction): ").strip().lower()
-        if genre in ["fiction", "nonfiction"]:
-            return genre
-        print("Please enter either 'fiction' or 'nonfiction'")
+class NonEmptyValidator(Validator):
+    def validate(self, document):
+        text = document.text.strip()
+        if not text:
+            raise ValidationError(
+                message="This field cannot be empty.",
+                cursor_position=len(document.text),
+            )
