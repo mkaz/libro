@@ -34,7 +34,7 @@ install:
 # Build the project
 build: clean lint install
     echo "Building 📦"
-    uv sync
+    py -m build
     echo "."
 
 # Publish the project to PyPI
