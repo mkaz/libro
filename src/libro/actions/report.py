@@ -21,8 +21,8 @@ def get_books_by_year(db):
         cursor.execute(
             """
             SELECT strftime('%Y', r.date_read) as year, COUNT(*) as count
-            FROM books b
-            JOIN reviews r ON b.id = r.book_id
+            FROM reviews r
+            JOIN books b ON r.book_id = b.id
             WHERE r.date_read IS NOT NULL
             GROUP BY year
             ORDER BY year
@@ -50,8 +50,8 @@ def show_author_report(db, args):
         cursor = db.cursor()
         query = f"""
             SELECT b.author, COUNT(*) as count
-            FROM books b
-            JOIN reviews r ON b.id = r.book_id
+            FROM reviews r
+            JOIN books b ON r.book_id = b.id
             {where_clause}
             GROUP BY b.author
             HAVING count >= :limit
