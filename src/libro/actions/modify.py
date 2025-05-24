@@ -25,8 +25,8 @@ def add_book(db, args):
         console.print("ADDING NEW BOOK:\n---------------\n", style="blue")
 
         # Book details
-        title = _prompt_with_retry(session, "Title: ")
-        author = _prompt_with_retry(session, "Author: ")
+        title = _prompt_with_retry(session, "Title: ", validator=NonEmptyValidator())
+        author = _prompt_with_retry(session, "Author: ", validator=NonEmptyValidator())
 
         # Publication year with validation and conversion
         pub_year_str = _prompt_with_retry(
@@ -110,11 +110,11 @@ def edit_book(db, args):
 
         # Title and Author (no conversion needed)
         updated_book_data["title"] = _update_field(
-            session, book_review.book_title, "Title: "
+            session, book_review.book_title, "Title: ", validator=NonEmptyValidator()
         )
 
         updated_book_data["author"] = _update_field(
-            session, book_review.book_author, "Author: "
+            session, book_review.book_author, "Author: ", validator=NonEmptyValidator()
         )
 
         # Publication year (integer conversion)
@@ -339,3 +339,13 @@ class DateValidator(Validator):
             date.fromisoformat(text)
         except ValueError:
             raise ValidationError(message="Invalid date.", cursor_position=len(text))
+
+
+class NonEmptyValidator(Validator):
+    def validate(self, document):
+        text = document.text.strip()
+        if not text:
+            raise ValidationError(
+                message="This field cannot be empty.",
+                cursor_position=len(document.text),
+            )
