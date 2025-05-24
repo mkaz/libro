@@ -32,9 +32,7 @@ def validate_and_convert_date(date_str, field_name):
     return False, None
 
 
-def get_valid_input(
-    prompt, validator=None, allow_empty=False, multiline=False, default=None
-):
+def get_valid_input(prompt, validator=None, allow_empty=False, multiline=False):
     if not multiline:
         while True:
             value = input(prompt).strip()
@@ -50,14 +48,6 @@ def get_valid_input(
     else:
         print(prompt + " (Enter two consecutive blank lines to finish)")
         lines = []
-        if default:
-            print(
-                "--- Current value (edit as needed, or enter two blank lines to keep as is) ---"
-            )
-            print(default)
-            print("--- End of current value ---")
-            # Prefill lines with the default value, so user can edit or add to it
-            lines = default.split("\n")
         last_line_empty = False
         while True:
             line = input()  # Don't strip here to preserve indentation
