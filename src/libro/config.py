@@ -29,6 +29,7 @@ def init_args() -> Dict:
     # Show command with its specific arguments
     show = subparsers.add_parser("show", help="Show books")
     show.add_argument("--year", type=int, help="Year to filter books")
+    show.add_argument("--author", type=str, help="Show books by specific author")
     show.add_argument("id", type=int, nargs="?", help="Show book ID details")
 
     # Add command with its specific arguments

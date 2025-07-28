@@ -5,22 +5,27 @@ from rich.table import Table
 
 
 def show_books(db, args={}):
-    # By year is default
-    # Current year is default year if not specified
-    year = args.get("year", datetime.now().year)
-
     # if id is not none, show book detail
     if args.get("id") is not None:
         show_book_detail(db, args.get("id"))
         return
 
-    books = get_books(db, year)
+    # Check if filtering by author
+    if args.get("author"):
+        books = get_books_by_author(db, args.get("author"))
+        table_title = f"Books by {args.get('author')}"
+    else:
+        # By year is default
+        # Current year is default year if not specified
+        year = args.get("year", datetime.now().year)
+        books = get_books(db, year)
+        table_title = f"Books Read in {year}"
     if not books:
         print("No books found for the specified year.")
         return
 
     console = Console()
-    table = Table(show_header=True, title=f"Books Read in {year}")
+    table = Table(show_header=True, title=table_title)
     table.add_column("id")
     table.add_column("Title")
     table.add_column("Author")
@@ -127,6 +132,29 @@ def get_books(db, year):
             ORDER BY r.date_read ASC
         """,
             (str(year),),
+        )
+        books = cursor.fetchall()
+        return books
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return None
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+
+def get_books_by_author(db, author_name):
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT r.id, b.title, b.author, b.genre, r.rating, r.date_read
+            FROM reviews r
+            LEFT JOIN books b ON r.book_id = b.id
+            WHERE LOWER(b.author) LIKE LOWER(?)
+            ORDER BY r.date_read ASC
+        """,
+            (f"%{author_name}%",),
         )
         books = cursor.fetchall()
         return books

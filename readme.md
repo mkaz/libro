@@ -10,9 +10,11 @@ Show books read by year: `libro show --year 2024`
 
 Show book details by id: `libro show 123`
 
+Show books by author: `libro show --author "Stephen King"`
+
 Show books read by year: `libro report`
 
-Show books read by author: `libro report --author`
+Show books read grouped by author: `libro report --author`
 
 See: `libro --help` for more information.
 
