@@ -126,3 +126,242 @@ class BookReview:
         except sqlite3.Error as e:
             print(f"Database error: {e}")
             return None
+
+
+@dataclass
+class ReadingList:
+    """Represents a reading list in the database."""
+
+    name: str
+    description: Optional[str] = None
+    created_date: Optional[date] = None
+    id: Optional[int] = None
+
+    def insert(self, db: sqlite3.Connection) -> int:
+        """Insert the reading list into the database and return its ID."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            INSERT INTO reading_lists (
+                name, description, created_date
+            ) VALUES (?, ?, ?)
+            """,
+            (
+                self.name,
+                self.description,
+                self.created_date or date.today(),
+            ),
+        )
+        self.id = cursor.lastrowid
+        db.commit()
+        return self.id
+
+    @classmethod
+    def get_all(cls, db: sqlite3.Connection) -> list["ReadingList"]:
+        """Get all reading lists from the database."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT id, name, description, created_date
+            FROM reading_lists
+            ORDER BY created_date DESC
+            """
+        )
+        lists = []
+        for row in cursor.fetchall():
+            lists.append(
+                cls(
+                    id=row["id"],
+                    name=row["name"],
+                    description=row["description"],
+                    created_date=row["created_date"],
+                )
+            )
+        return lists
+
+    @classmethod
+    def get_by_name(cls, db: sqlite3.Connection, name: str) -> Optional["ReadingList"]:
+        """Get a reading list by name."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT id, name, description, created_date
+            FROM reading_lists
+            WHERE name = ?
+            """,
+            (name,),
+        )
+        row = cursor.fetchone()
+        if row:
+            return cls(
+                id=row["id"],
+                name=row["name"],
+                description=row["description"],
+                created_date=row["created_date"],
+            )
+        return None
+
+    @classmethod
+    def get_by_id(cls, db: sqlite3.Connection, list_id: int) -> Optional["ReadingList"]:
+        """Get a reading list by ID."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT id, name, description, created_date
+            FROM reading_lists
+            WHERE id = ?
+            """,
+            (list_id,),
+        )
+        row = cursor.fetchone()
+        if row:
+            return cls(
+                id=row["id"],
+                name=row["name"],
+                description=row["description"],
+                created_date=row["created_date"],
+            )
+        return None
+
+    def update(self, db: sqlite3.Connection) -> None:
+        """Update the reading list in the database."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            UPDATE reading_lists 
+            SET name = ?, description = ?
+            WHERE id = ?
+            """,
+            (self.name, self.description, self.id),
+        )
+        db.commit()
+
+    def delete(self, db: sqlite3.Connection) -> None:
+        """Delete the reading list from the database."""
+        cursor = db.cursor()
+        cursor.execute("DELETE FROM reading_lists WHERE id = ?", (self.id,))
+        db.commit()
+
+
+@dataclass
+class ReadingListBook:
+    """Represents a book in a reading list."""
+
+    list_id: int
+    book_id: int
+    added_date: Optional[date] = None
+    priority: int = 0
+    id: Optional[int] = None
+
+    def insert(self, db: sqlite3.Connection) -> int:
+        """Insert the reading list book into the database and return its ID."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            INSERT INTO reading_list_books (
+                list_id, book_id, added_date, priority
+            ) VALUES (?, ?, ?, ?)
+            """,
+            (
+                self.list_id,
+                self.book_id,
+                self.added_date or date.today(),
+                self.priority,
+            ),
+        )
+        self.id = cursor.lastrowid
+        db.commit()
+        return self.id
+
+    @classmethod
+    def get_books_in_list(
+        cls, db: sqlite3.Connection, list_id: int
+    ) -> list[dict]:
+        """Get all books in a reading list with their read status."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT
+                b.id as book_id,
+                b.title,
+                b.author,
+                b.genre,
+                b.pub_year,
+                b.pages,
+                rlb.added_date,
+                rlb.priority,
+                CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END as is_read,
+                r.date_read,
+                r.rating
+            FROM reading_list_books rlb
+            JOIN books b ON rlb.book_id = b.id
+            LEFT JOIN reviews r ON b.id = r.book_id
+            WHERE rlb.list_id = ?
+            ORDER BY rlb.priority DESC, rlb.added_date ASC
+            """,
+            (list_id,),
+        )
+        return cursor.fetchall()
+
+    @classmethod
+    def remove_book_from_list(
+        cls, db: sqlite3.Connection, list_id: int, book_id: int
+    ) -> None:
+        """Remove a book from a reading list."""
+        cursor = db.cursor()
+        cursor.execute(
+            "DELETE FROM reading_list_books WHERE list_id = ? AND book_id = ?",
+            (list_id, book_id),
+        )
+        db.commit()
+
+    @classmethod
+    def get_list_stats(cls, db: sqlite3.Connection, list_id: int) -> dict:
+        """Get statistics for a reading list."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT
+                COUNT(*) as total_books,
+                COUNT(r.id) as books_read,
+                COUNT(*) - COUNT(r.id) as books_unread
+            FROM reading_list_books rlb
+            JOIN books b ON rlb.book_id = b.id
+            LEFT JOIN reviews r ON b.id = r.book_id
+            WHERE rlb.list_id = ?
+            """,
+            (list_id,),
+        )
+        row = cursor.fetchone()
+        if row:
+            total = row["total_books"]
+            read = row["books_read"]
+            percentage = (read / total * 100) if total > 0 else 0
+            return {
+                "total_books": total,
+                "books_read": read,
+                "books_unread": row["books_unread"],
+                "completion_percentage": percentage,
+            }
+        return {
+            "total_books": 0,
+            "books_read": 0,
+            "books_unread": 0,
+            "completion_percentage": 0,
+        }
+
+    @classmethod
+    def get_lists_for_book(cls, db: sqlite3.Connection, book_id: int) -> list[str]:
+        """Get all reading lists that contain a specific book."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT rl.name
+            FROM reading_list_books rlb
+            JOIN reading_lists rl ON rlb.list_id = rl.id
+            WHERE rlb.book_id = ?
+            ORDER BY rl.name
+            """,
+            (book_id,),
+        )
+        return [row["name"] for row in cursor.fetchall()]

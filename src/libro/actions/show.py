@@ -2,6 +2,7 @@ import sqlite3
 from datetime import datetime
 from rich.console import Console
 from rich.table import Table
+from libro.models import ReadingListBook
 
 
 def show_books(db, args={}):
@@ -118,6 +119,16 @@ def show_book_detail(db, id):
         table.add_row(display_names[col], str(value))
 
     console.print(table)
+
+    # Show reading lists that contain this book
+    book_id = book[0]  # First column is the book ID
+    reading_lists = ReadingListBook.get_lists_for_book(db, book_id)
+    
+    if reading_lists:
+        console.print(f"\n📚 [cyan]Reading Lists:[/cyan] {', '.join(reading_lists)}")
+    else:
+        console.print("\n[dim]This book is not in any reading lists.[/dim]")
+        console.print("[dim]Add it to a list with: libro list add <list_name>[/dim]")
 
 
 def get_books(db, year):
