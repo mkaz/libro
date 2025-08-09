@@ -6,8 +6,9 @@ from libro.config import init_args
 from libro.actions.show import show_books
 from libro.actions.report import report
 from libro.actions.modify import add_book, edit_book
-from libro.actions.db import init_db
+from libro.actions.db import init_db, migrate_db
 from libro.actions.importer import import_books
+from libro.actions.lists import manage_lists
 
 
 def main():
@@ -33,6 +34,9 @@ def main():
         db = sqlite3.connect(dbfile)
         # Default to using column names instead of index
         db.row_factory = sqlite3.Row
+        
+        # Run migration for existing databases
+        migrate_db(db)
 
         match args["command"]:
             case "add":
@@ -45,6 +49,8 @@ def main():
                 report(db, args)
             case "import":
                 import_books(db, args)
+            case "list":
+                manage_lists(db, args)
             case _:
                 print("Not yet implemented")
 

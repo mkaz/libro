@@ -42,7 +42,7 @@ def add_book(db, args):
 
         # Genre with validation and conversion
         genre_str = _prompt_with_retry(
-            session, "Genre (fiction/nonfiction): ", validator=GenreValidator()
+            session, "Genre: ", validator=GenreValidator()
         )
         genre = _convert_genre_to_lowercase(genre_str)
 
@@ -139,7 +139,7 @@ def edit_book(db, args):
         updated_book_data["genre"] = _update_field(
             session,
             book_review.book_genre,
-            "Genre (fiction/nonfiction): ",
+            "Genre: ",
             GenreValidator(),
             _convert_genre_to_lowercase,
         )
@@ -314,14 +314,8 @@ class RatingValidator(Validator):
 
 class GenreValidator(Validator):
     def validate(self, document):
-        text = document.text.lower()
-        if text == "":
-            return
-        if text not in ["fiction", "nonfiction"]:
-            raise ValidationError(
-                message="Genre must be 'fiction' or 'nonfiction'.",
-                cursor_position=len(text),
-            )
+        # Allow any string for genre - no validation needed
+        pass
 
 
 class DateValidator(Validator):
