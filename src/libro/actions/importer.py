@@ -98,14 +98,40 @@ def import_books(db, args):
 def import_csv_to_list(db, args):
     """Import books from CSV file to a specific reading list."""
     console = Console()
-    list_id = args["id"]
+    list_id = args.get("id")
+    list_name = args.get("name")
+    list_description = args.get("description")
     csv_file = args["file"]
     
-    # Check if list exists
-    reading_list = ReadingList.get_by_id(db, list_id)
-    if not reading_list:
-        console.print(f"[red]Reading list with ID {list_id} not found.[/red]")
+    # Validate arguments - either id or name must be provided
+    if not list_id and not list_name:
+        console.print("[red]Either --id or --name must be provided.[/red]")
         return
+    
+    if list_id and list_name:
+        console.print("[red]Cannot specify both --id and --name. Choose one.[/red]")
+        return
+    
+    # Get or create reading list
+    if list_id:
+        # Use existing list
+        reading_list = ReadingList.get_by_id(db, list_id)
+        if not reading_list:
+            console.print(f"[red]Reading list with ID {list_id} not found.[/red]")
+            return
+    else:
+        # Create new list
+        existing_list = ReadingList.get_by_name(db, list_name)
+        if existing_list:
+            console.print(f"[red]A reading list named '{list_name}' already exists.[/red]")
+            return
+        
+        reading_list = ReadingList(name=list_name, description=list_description)
+        list_id = reading_list.insert(db)
+        console.print(f"[green]Created new reading list '[bold]{list_name}[/bold]'[/green]")
+        if list_description:
+            console.print(f"Description: {list_description}")
+        console.print(f"List ID: {list_id}\n")
     
     # Check if CSV file exists
     if not Path(csv_file).is_file():

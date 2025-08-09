@@ -89,8 +89,10 @@ def init_args() -> Dict:
 
     # List import subcommand
     list_import = list_subparsers.add_parser("import", help="Import books from CSV to reading list")
-    list_import.add_argument("id", type=int, help="ID of the reading list to import to")
     list_import.add_argument("file", type=str, help="CSV file to import (Title, Author, Publication Year, Pages, Genre)")
+    list_import.add_argument("--id", type=int, help="ID of existing reading list to import to")
+    list_import.add_argument("--name", type=str, help="Name for new reading list (creates list if provided)")
+    list_import.add_argument("--description", type=str, help="Description for new reading list")
 
     args = vars(parser.parse_args())
 
