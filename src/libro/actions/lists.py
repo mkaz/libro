@@ -44,6 +44,9 @@ def manage_lists(db: sqlite3.Connection, args: dict):
             edit_list(db, args)
         case "delete":
             delete_list(db, args)
+        case "import":
+            from libro.actions.importer import import_csv_to_list
+            import_csv_to_list(db, args)
         case _:
             show_lists(db, args)
 
