@@ -16,6 +16,16 @@ Show books read by year: `libro report`
 
 Show books read grouped by author: `libro report --author`
 
+**Reading Lists:**
+
+Create a reading list: `libro list create "My Reading List" --description "Books to read"`
+
+Show all reading lists: `libro list show`
+
+Show specific list: `libro list show 1`
+
+Import books to a new list: `libro list import books.csv --name "Sci-Fi Classics" --description "Science fiction must-reads"`
+
 See: `libro --help` for more information.
 
 ### Examples
@@ -98,6 +108,111 @@ See: `libro --help` for more information.
   Cory Doctorow         3
 ```
 
+## Reading Lists
+
+Reading lists allow you to organize books into curated collections. You can create lists for different genres, themes, or reading goals.
+
+### Creating and Managing Lists
+
+Create a new reading list:
+```bash
+libro list create "2025 Reading Goals" --description "Books I want to read this year"
+```
+
+View all your reading lists:
+```bash
+❯ libro list show
+
+                                    Reading Lists
+┏━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ ID ┃ Name               ┃ Description                      ┃ Total Books ┃ Read ┃ Unread ┃ Progress             ┃ Created    ┃
+┡━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+│ 1  │ Sci-Fi Classics    │ Science fiction must-reads       │ 50          │ 12   │ 38     │ ██░░░░░░░░ 24.0%     │ 2025-01-15 │
+│ 2  │ Horror Collection  │ Spine-tingling tales             │ 30          │ 8    │ 22     │ ███░░░░░░░ 26.7%     │ 2025-01-16 │
+│ 3  │ Literary Classics  │ Timeless masterpieces            │ 45          │ 15   │ 30     │ ███░░░░░░░ 33.3%     │ 2025-01-17 │
+└────┴────────────────────┴──────────────────────────────────┴─────────────┴──────┴────────┴───────────────────────┴────────────┘
+
+Use 'libro list show <id>' to see books in a specific list
+```
+
+View books in a specific list:
+```bash
+❯ libro list show 1
+
+                           📚 Sci-Fi Classics - Science fiction must-reads
+┏━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━┓
+┃ ID ┃ Status ┃ Title                                    ┃ Author                 ┃ Genre           ┃ Rating ┃ Date Read  ┃
+┡━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━┩
+│ 42 │ 📖     │ Foundation                               │ Isaac Asimov           │ science fiction │ —      │ —          │
+│ 43 │ 📖     │ Dune                                     │ Frank Herbert          │ science fiction │ —      │ —          │
+│ 44 │ ✅     │ The Left Hand of Darkness                │ Ursula K. Le Guin      │ science fiction │ 5      │ 2024-12-15 │
+│ 45 │ ✅     │ Neuromancer                              │ William Gibson         │ science fiction │ 4      │ 2024-11-20 │
+└────┴────────┴──────────────────────────────────────────┴────────────────────────┴─────────────────┴────────┴────────────┘
+
+📊 Progress: 12 read, 38 unread (24.0% complete)
+```
+
+### Adding Books to Lists
+
+Add a new book to an existing list:
+```bash
+libro list add 1
+```
+
+This will prompt you to enter book details interactively.
+
+### Importing Books to Lists
+
+Import books from a CSV file and create a new list at the same time:
+```bash
+libro list import books.csv --name "Mystery Novels" --description "Page-turners and whodunits"
+```
+
+Import books to an existing list:
+```bash
+libro list import more-books.csv --id 1
+```
+
+**CSV Format**: The CSV file should have the following columns in order:
+- Title
+- Author  
+- Publication Year (optional)
+- Pages (optional)
+- Genre (optional)
+
+Example CSV:
+```csv
+Title,Author,Publication Year,Pages,Genre
+The Martian,Andy Weir,2011,369,science fiction
+Klara and the Sun,Kazuo Ishiguro,2021,303,literary fiction
+```
+
+### List Management
+
+Edit a list's name or description:
+```bash
+libro list edit 1 --name "Updated Name" --description "New description"
+```
+
+Remove a book from a list:
+```bash
+libro list remove 1 42
+```
+
+Delete an entire list:
+```bash
+libro list delete 1
+```
+
+View statistics for all lists:
+```bash
+libro list stats
+```
+
+View statistics for a specific list:
+```bash
+libro list stats 1
+```
 
 ## Install
 
@@ -149,7 +264,7 @@ Libro can import your reading history from a Goodreads export CSV file.
 libro import goodreads_library_export.csv
 ```
 
-There is a `genre` field for fiction and nonfiction, but this data is not available in the Goodreads export. I still need to build the edit book functionality to change the genre.
+There is a `genre` field that accepts any string value, but this data is not available in the Goodreads export. You can edit books to add or change the genre after import.
 
 # Database Schema
 
@@ -162,7 +277,7 @@ There is a `genre` field for fiction and nonfiction, but this data is not availa
 | author | string | Book author |
 | pages | int | Number of pages in book |
 | pub_year | int | Year book was published |
-| genre | string | Fiction or nonfiction |
+| genre | string | Genre (any string value) |
 
 ## Reviews table
 
@@ -173,6 +288,25 @@ There is a `genre` field for fiction and nonfiction, but this data is not availa
 | date_read | date | Date book was read |
 | rating | float | Number between 0 and 5 |
 | review | text | Review of book |
+
+## Reading Lists table
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | primary key | Unique identifier |
+| name | string | Reading list name (unique) |
+| description | string | Optional description |
+| created_date | date | Date the list was created |
+
+## Reading List Books table
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | primary key | Unique identifier |
+| list_id | foreign key | Reading list identifier |
+| book_id | foreign key | Book identifier |
+| added_date | date | Date book was added to list |
+| priority | int | Priority/order in list (default: 0) |
 
 # Changelog
 
