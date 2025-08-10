@@ -33,10 +33,8 @@ def show_books(db, args={}):
     table.add_column("Rating")
     table.add_column("Date Read")
 
-    # Sort books by genre (fiction first) and then by date
-    sorted_books = sorted(
-        books, key=lambda x: (x["genre"] != "fiction", x["date_read"] or "")
-    )
+    # Books are already sorted by genre (fiction first) and then by date in SQL query
+    sorted_books = books
 
     ## Count books by genre
     count = {}
@@ -140,7 +138,7 @@ def get_books(db, year):
             FROM reviews r
             LEFT JOIN books b ON r.book_id = b.id
             WHERE strftime('%Y', r.date_read) = ?
-            ORDER BY r.date_read ASC
+            ORDER BY CASE WHEN b.genre = 'fiction' THEN 0 ELSE 1 END, b.genre, r.date_read ASC
         """,
             (str(year),),
         )
@@ -163,7 +161,7 @@ def get_books_by_author(db, author_name):
             FROM reviews r
             LEFT JOIN books b ON r.book_id = b.id
             WHERE LOWER(b.author) LIKE LOWER(?)
-            ORDER BY r.date_read ASC
+            ORDER BY CASE WHEN b.genre = 'fiction' THEN 0 ELSE 1 END, b.genre, r.date_read ASC
         """,
             (f"%{author_name}%",),
         )
