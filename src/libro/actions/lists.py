@@ -103,7 +103,6 @@ def show_all_lists(db: sqlite3.Connection, console: Console):
     table.add_column("Read", justify="center", style="green")
     table.add_column("Unread", justify="center", style="red")
     table.add_column("Progress", justify="center")
-    table.add_column("Created", style="dim")
     
     for reading_list in lists:
         stats = ReadingListBook.get_list_stats(db, reading_list.id)
@@ -125,7 +124,6 @@ def show_all_lists(db: sqlite3.Connection, console: Console):
             str(stats['books_read']),
             str(stats['books_unread']),
             progress_display,
-            str(reading_list.created_date) if reading_list.created_date else "",
         )
     
     console.print(table)
