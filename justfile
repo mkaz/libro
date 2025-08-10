@@ -34,13 +34,13 @@ install:
 # Build the project
 build: clean lint install
     echo "Building 📦"
-    py -m build
+    uv run -m build
     echo "."
 
 # Publish the project to PyPI
 publish: build
     echo "Publishing to PyPI 🚀"
-    py -m twine upload dist/*
+    uv run -m twine upload dist/*
     echo "."
 
 # Run the CLI application
