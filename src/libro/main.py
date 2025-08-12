@@ -1,11 +1,12 @@
 import sqlite3
 import sys
+import os
 from pathlib import Path
 
 from libro.config import init_args
-from libro.actions.show import show_books
+from libro.actions.show import show_books, show_book_detail, show_books_only
 from libro.actions.report import report
-from libro.actions.modify import add_book, edit_book
+from libro.actions.modify import add_book, edit_book, add_book_only, add_review_only, edit_book_by_book_id
 from libro.actions.db import init_db, migrate_db
 from libro.actions.importer import import_books
 from libro.actions.lists import manage_lists
@@ -42,7 +43,7 @@ def main():
             case "add":
                 add_book(db, args)
             case "edit":
-                edit_book(db, args)
+                edit_book(db, args)  # Works with review IDs from default listing
             case "show":
                 show_books(db, args)
             case "report":
@@ -51,6 +52,39 @@ def main():
                 import_books(db, args)
             case "list":
                 manage_lists(db, args)
+            case "book":
+                book_action = args.get("book_action")
+                if book_action is None:
+                    # Show help for book command
+                    os.system("libro book --help")
+                else:
+                    match book_action:
+                        case "add":
+                            add_book_only(db, args)
+                        case "edit":
+                            edit_book_by_book_id(db, args)  # Edit book by book ID
+                        case "show":
+                            show_books_only(db, args)
+                        case _:
+                            print("Book action not recognized")
+            case "review":
+                review_action = args.get("review_action")
+                if review_action is None:
+                    # Show help for review command
+                    os.system("libro review --help")
+                else:
+                    match review_action:
+                        case "add":
+                            add_review_only(db, args)
+                        case "edit":
+                            edit_book(db, args)  # Will update this for review editing
+                        case "show":
+                            if args.get("id"):
+                                show_book_detail(db, args["id"])  # Same as default show
+                            else:
+                                print("Please specify a review ID: libro review show <review_id>")
+                        case _:
+                            print("Review action not recognized")
             case _:
                 print("Not yet implemented")
 
