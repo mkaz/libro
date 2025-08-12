@@ -32,12 +32,45 @@ def init_args() -> Dict:
     show.add_argument("--author", type=str, help="Show books by specific author")
     show.add_argument("id", type=int, nargs="?", help="Show book ID details")
 
-    # Add command with its specific arguments
-    subparsers.add_parser("add", help="Add a book")
+    # Add command with its specific arguments (backward compatibility - creates book + review)
+    subparsers.add_parser("add", help="Add a book with review")
 
-    # Add command with its specific arguments
-    edit = subparsers.add_parser("edit", help="Edit a book")
-    edit.add_argument("id", type=int, nargs="?", help="Book ID to edit (required)")
+    # Edit command with its specific arguments  
+    edit = subparsers.add_parser("edit", help="Edit a book & review (use ID from default listing)")
+    edit.add_argument("id", type=int, nargs="?", help="Review ID to edit (from default listing)")
+
+    # Book management subcommands
+    book_parser = subparsers.add_parser("book", help="Manage books")
+    book_subparsers = book_parser.add_subparsers(dest="book_action", help="Book actions")
+    
+    # Book add subcommand
+    book_subparsers.add_parser("add", help="Add a book (without review)")
+    
+    # Book edit subcommand
+    book_edit_parser = book_subparsers.add_parser("edit", help="Edit book details")
+    book_edit_parser.add_argument("id", type=int, help="Book ID to edit")
+    
+    # Book show subcommand
+    book_show_parser = book_subparsers.add_parser("show", help="Show books")
+    book_show_parser.add_argument("id", type=int, nargs="?", help="Show specific book ID")
+    book_show_parser.add_argument("--author", type=str, help="Show books by specific author")
+    book_show_parser.add_argument("--year", type=int, help="Year to filter books")
+
+    # Review management subcommands
+    review_parser = subparsers.add_parser("review", help="Manage reviews")
+    review_subparsers = review_parser.add_subparsers(dest="review_action", help="Review actions")
+    
+    # Review add subcommand
+    review_add_parser = review_subparsers.add_parser("add", help="Add a review to existing book")
+    review_add_parser.add_argument("book_id", type=int, help="Book ID to add review to")
+    
+    # Review edit subcommand
+    review_edit_parser = review_subparsers.add_parser("edit", help="Edit review details")
+    review_edit_parser.add_argument("id", type=int, help="Review ID to edit")
+    
+    # Review show subcommand
+    review_show_parser = review_subparsers.add_parser("show", help="Show reviews")
+    review_show_parser.add_argument("id", type=int, nargs="?", help="Show specific review ID")
 
     # Import command with its specific arguments
     imp = subparsers.add_parser("import", help="Import books")
