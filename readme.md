@@ -2,17 +2,55 @@
 
 📚 Libro: A simple command-line tool to track your reading history, with your data stored locally in a SQLite database.
 
+## Core Concepts
+
+Libro separates **books** and **reviews** to give you flexibility in how you track your reading:
+
+- **Books**: Store information about the book itself (title, author, pages, genre, publication year)
+- **Reviews**: Track your personal reading experience (date read, rating, review text)
+
+This separation allows you to:
+- Add books to your database without having read them yet
+- Add multiple reviews for the same book (re-reads)
+- Maintain a clean library of books separate from your reading history
+
 ## Usage
 
-Add new book: `libro add`
+### Quick Start Commands
 
-Show books read by year: `libro show --year 2024`
+Add new book with review: `libro add`
 
-Show book details by id: `libro show 123`
+Show books read this year: `libro show` (or `libro show --year 2024`)
+
+Show book & review details: `libro show 123`
 
 Show books by author: `libro show --author "Stephen King"`
 
-Show books read by year: `libro report`
+Edit book & review: `libro edit 123`
+
+### Book Management
+
+Add book only (no review): `libro book add`
+
+Show all books: `libro book show`
+
+Show book by author: `libro book show --author "Stephen King"`
+
+Show specific book: `libro book show 42`
+
+Edit book details: `libro book edit 42`
+
+### Review Management
+
+Add review to existing book: `libro review add 42`
+
+Show specific review: `libro review show 123`
+
+Edit review: `libro review edit 123`
+
+### Reports
+
+Show reading reports: `libro report`
 
 Show books read grouped by author: `libro report --author`
 
@@ -32,11 +70,13 @@ See: `libro --help` for more information.
 
 #### Books Read in Year
 
+The default view shows your reading history with Review IDs for easy editing:
+
 ```
 ❯ libro
                                  Books Read in 2025
 ┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━┓
-┃ id         ┃ Title                        ┃ Author               ┃ Rating ┃ Date Read    ┃
+┃ ID         ┃ Title                        ┃ Author               ┃ Rating ┃ Date Read    ┃
 ┡━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━┩
 │ Fiction    │                              │                      │        │              │
 │ 1          │ Cujo                         │ Stephen King         │ 3      │ Jan 05, 2025 │
