@@ -14,19 +14,40 @@ This separation allows you to:
 - Add multiple reviews for the same book (re-reads)
 - Maintain a clean library of books separate from your reading history
 
+## Command Structure
+
+Libro's commands are organized around this book/review separation:
+
+**Default Views (Table Format):**
+- `libro` (default) - Reading history table
+- `libro report` - Reading history table  
+- `libro report --author` - Author statistics table
+
+**Chart Views:**
+- `libro report --chart` - Yearly reading chart
+
+**Detail Views:**
+- `libro report 123` - Book/review details
+
+**Other Commands:**
+- `libro add` - Add book + review
+- `libro book` - Book management (add, edit, show)
+- `libro review` - Review management (add, edit, show)
+- `libro list` - Reading list management
+
 ## Usage
 
 ### Quick Start Commands
 
-Add new book with review: `libro add`
+**View your reading history:**
+- Current year: `libro` or `libro report`
+- Specific year: `libro report --year 2024`
+- By author: `libro report --author "Stephen King"`
+- Yearly chart: `libro report --chart`
 
-Show books read this year: `libro show` (or `libro show --year 2024`)
-
-Show book & review details: `libro show 123`
-
-Show books by author: `libro show --author "Stephen King"`
-
-Edit book & review: `libro edit 123`
+**Add books and reviews:**
+- Add book + review: `libro add`
+- Book details: `libro report 123`
 
 ### Book Management
 
@@ -38,7 +59,7 @@ Show book by author: `libro book show --author "Stephen King"`
 
 Show specific book: `libro book show 42`
 
-Edit book details: `libro book edit 42`
+Edit book details only: `libro book edit 42`
 
 ### Review Management
 
@@ -46,11 +67,11 @@ Add review to existing book: `libro review add 42`
 
 Show specific review: `libro review show 123`
 
-Edit review: `libro review edit 123`
+Edit review details only: `libro review edit 123`
 
 ### Reports
 
-Show reading reports: `libro report`
+Show reading charts by year: `libro report --chart`
 
 Show books read grouped by author: `libro report --author`
 
@@ -70,7 +91,7 @@ See: `libro --help` for more information.
 
 #### Books Read in Year
 
-The default view shows your reading history with Review IDs for easy editing:
+The default view shows your reading history. The ID column shows Review IDs, which you can use with `libro review edit <id>` and `libro report <id>`:
 
 ```
 ❯ libro
@@ -100,10 +121,10 @@ The default view shows your reading history with Review IDs for easy editing:
 ```
 
 
-#### Books by Year
+#### Books by Year Chart
 
 ```
-❯ libro report
+❯ libro report --chart
 
                          Books Read by Year
 

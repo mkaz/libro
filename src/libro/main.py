@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 from libro.config import init_args
-from libro.actions.show import show_books, show_book_detail, show_books_only
+from libro.actions.show import show_book_detail, show_books_only
 from libro.actions.report import report
 from libro.actions.modify import add_book_review, add_book, add_review, edit_book, edit_review
 from libro.actions.db import init_db, migrate_db
@@ -42,8 +42,6 @@ def main():
         match args["command"]:
             case "add":
                 add_book_review(db, args)
-            case "show":
-                show_books(db, args)
             case "report":
                 report(db, args)
             case "import":
