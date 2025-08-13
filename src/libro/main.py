@@ -6,7 +6,7 @@ from pathlib import Path
 from libro.config import init_args
 from libro.actions.show import show_books, show_book_detail, show_books_only
 from libro.actions.report import report
-from libro.actions.modify import add_book, edit_book, add_book_only, add_review_only, edit_book_by_book_id
+from libro.actions.modify import add_book_review, add_book, add_review, edit_book, edit_review
 from libro.actions.db import init_db, migrate_db
 from libro.actions.importer import import_books
 from libro.actions.lists import manage_lists
@@ -41,9 +41,7 @@ def main():
 
         match args["command"]:
             case "add":
-                add_book(db, args)
-            case "edit":
-                edit_book(db, args)  # Works with review IDs from default listing
+                add_book_review(db, args)
             case "show":
                 show_books(db, args)
             case "report":
@@ -60,9 +58,9 @@ def main():
                 else:
                     match book_action:
                         case "add":
-                            add_book_only(db, args)
+                            add_book(db, args)
                         case "edit":
-                            edit_book_by_book_id(db, args)  # Edit book by book ID
+                            edit_book(db, args)
                         case "show":
                             show_books_only(db, args)
                         case _:
@@ -75,9 +73,9 @@ def main():
                 else:
                     match review_action:
                         case "add":
-                            add_review_only(db, args)
+                            add_review(db, args)
                         case "edit":
-                            edit_book(db, args)  # Will update this for review editing
+                            edit_review(db, args)
                         case "show":
                             if args.get("id"):
                                 show_book_detail(db, args["id"])  # Same as default show

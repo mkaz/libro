@@ -35,9 +35,6 @@ def init_args() -> Dict:
     # Add command with its specific arguments (backward compatibility - creates book + review)
     subparsers.add_parser("add", help="Add a book with review")
 
-    # Edit command with its specific arguments  
-    edit = subparsers.add_parser("edit", help="Edit a book & review (use ID from default listing)")
-    edit.add_argument("id", type=int, nargs="?", help="Review ID to edit (from default listing)")
 
     # Book management subcommands
     book_parser = subparsers.add_parser("book", help="Manage books")
