@@ -4,14 +4,28 @@ import sqlite3
 from rich.console import Console
 from rich.table import Table
 from rich import box
+from libro.actions.show import show_books, show_book_detail
 
 
 def report(db, args):
     """Main report function that routes to specific report types based on args."""
+    # if id is not none, show book detail (same as old show command)
+    if args.get("id") is not None:
+        show_book_detail(db, args.get("id"))
+        return
+    
+    # Check for author flag - show author report (table format)
     if args.get("author") is True:
         show_author_report(db, args)
-    else:
+        return
+    
+    # Check for chart flag - show year chart view
+    if args.get("chart") is True:
         show_year_report(db)
+        return
+    
+    # Default behavior: show table view (same as old show_books)
+    show_books(db, args)
 
 
 def get_books_by_year(db):

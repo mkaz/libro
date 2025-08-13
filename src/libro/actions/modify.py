@@ -110,7 +110,7 @@ style = Style.from_dict(
 )
 
 
-def add_book(db, args):
+def add_book_review(db, args):
     session = PromptSession(style=style)
     console = Console()
 
@@ -186,7 +186,7 @@ def add_book(db, args):
         print(f"Error: {e}")
 
 
-def add_book_only(db, args):
+def add_book(db, args):
     """Add a book without a review."""
     session = PromptSession(style=style)
     console = Console()
@@ -236,7 +236,7 @@ def add_book_only(db, args):
         print(f"Error: {e}")
 
 
-def add_review_only(db, args):
+def add_review(db, args):
     """Add a review to an existing book."""
     book_id = args["book_id"]
     session = PromptSession(style=style)
@@ -294,124 +294,7 @@ def add_review_only(db, args):
         print(f"Error: {e}")
 
 
-def edit_book_by_book_id(db, args):
-    """Edit a book using book ID - finds the most recent review."""
-    book_id = int(args["id"])
-    
-    # Check if book exists
-    cursor = db.cursor()
-    cursor.execute("SELECT title, author FROM books WHERE id = ?", (book_id,))
-    book_info = cursor.fetchone()
-    
-    if not book_info:
-        print(f"Error: Book with ID {book_id} not found.")
-        return
-        
-    # Find the most recent review for this book
-    cursor.execute("""
-        SELECT r.id FROM reviews r 
-        WHERE r.book_id = ? 
-        ORDER BY r.date_read DESC, r.id DESC 
-        LIMIT 1
-    """, (book_id,))
-    review_row = cursor.fetchone()
-    
-    if not review_row:
-        print(f"Error: No reviews found for book '{book_info['title']}' (Book ID: {book_id})")
-        print("Use 'libro review add {book_id}' to add a review first.")
-        return
-        
-    # Use the existing edit function with the review ID
-    args["id"] = review_row["id"]
-    edit_book(db, args)
 
-
-def edit_book(db, args):
-    """Edit a book/review using review ID (backward compatibility)."""
-    review_id = int(args["id"])
-    book_review = BookReview.get_by_id(db, review_id)
-    if not book_review:
-        print(f"Error: Review with ID {review_id} not found.")
-        return
-
-    session = PromptSession(style=style)
-    console = Console()
-
-    try:
-        updated_book_data = {}
-        updated_review_data = {}
-
-        # --- Book Fields ---
-        console.print("BOOK DETAILS:\n---------------\n", style="blue")
-
-        # Title and Author (no conversion needed)
-        updated_book_data["title"] = _update_field(
-            session, book_review.book_title, "Title: ", validator=NonEmptyValidator()
-        )
-
-        updated_book_data["author"] = _update_field(
-            session, book_review.book_author, "Author: ", validator=NonEmptyValidator(), completer=AuthorCompleter(db)
-        )
-
-        # Publication year (integer conversion)
-        updated_book_data["pub_year"] = _update_field(
-            session,
-            book_review.book_pub_year,
-            "Publication year: ",
-            IntValidator(),
-            _convert_to_int_or_none,
-        )
-
-        # Pages (integer conversion)
-        updated_book_data["pages"] = _update_field(
-            session,
-            book_review.book_pages,
-            "Number of pages: ",
-            IntValidator(),
-            _convert_to_int_or_none,
-        )
-
-        # Genre (lowercase conversion)
-        updated_book_data["genre"] = _update_field(
-            session,
-            book_review.book_genre,
-            "Genre: ",
-            GenreValidator(),
-            _convert_genre_to_lowercase,
-            completer=GenreCompleter(db)
-        )
-
-        # --- Review Fields ---
-        console.print("\nYOUR REVIEW DETAILS:\n-------------------\n", style="blue")
-
-        # Date read (string conversion, stored as string)
-        updated_review_data["date_read"] = _update_field(
-            session, book_review.date_read, "Date read (YYYY-MM-DD): ", DateValidator()
-        )
-
-        # Rating (integer conversion)
-        updated_review_data["rating"] = _update_field(
-            session,
-            book_review.rating,
-            "Rating (1-5): ",
-            RatingValidator(),
-            _convert_to_int_or_none,
-        )
-
-        # Review text (multiline)
-        updated_review_data["review"] = _update_field(
-            session,
-            book_review.review_text,
-            "Your review (Esc+Enter to finish):\n",
-            multiline=True,
-        )
-
-        # Update database
-        _update_database(db, updated_book_data, updated_review_data, book_review)
-
-    except KeyboardInterrupt:
-        print("\n\nEdit cancelled. No changes made.")
-        return
 
 
 def _prompt_with_retry(
@@ -457,8 +340,76 @@ def _update_field(
     return new_value if new_value != current_value else None
 
 
-def _update_database(db, updated_book_data, updated_review_data, book_review):
-    """Handle the database update operations."""
+
+
+def edit_book(db, args):
+    """Edit only the book data."""
+    book_id = int(args["id"])
+    
+    # Check if book exists and get current data
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM books WHERE id = ?", (book_id,))
+    book_row = cursor.fetchone()
+    
+    if not book_row:
+        print(f"Error: Book with ID {book_id} not found.")
+        return
+
+    session = PromptSession(style=style)
+    console = Console()
+
+    try:
+        console.print(f"EDITING BOOK ID {book_id}:\n------------------------\n", style="blue")
+
+        updated_book_data = {}
+
+        # Title and Author (no conversion needed)
+        updated_book_data["title"] = _update_field(
+            session, book_row["title"], "Title: ", validator=NonEmptyValidator()
+        )
+
+        updated_book_data["author"] = _update_field(
+            session, book_row["author"], "Author: ", validator=NonEmptyValidator(), completer=AuthorCompleter(db)
+        )
+
+        # Publication year (integer conversion)
+        updated_book_data["pub_year"] = _update_field(
+            session,
+            book_row["pub_year"],
+            "Publication year: ",
+            IntValidator(),
+            _convert_to_int_or_none,
+        )
+
+        # Pages (integer conversion)
+        updated_book_data["pages"] = _update_field(
+            session,
+            book_row["pages"],
+            "Number of pages: ",
+            IntValidator(),
+            _convert_to_int_or_none,
+        )
+
+        # Genre (lowercase conversion)
+        updated_book_data["genre"] = _update_field(
+            session,
+            book_row["genre"],
+            "Genre: ",
+            GenreValidator(),
+            _convert_genre_to_lowercase,
+            completer=GenreCompleter(db)
+        )
+
+        # Update database (only book data)
+        _update_book_database(db, updated_book_data, book_id)
+
+    except KeyboardInterrupt:
+        print("\n\nEdit cancelled. No changes made.")
+        return
+
+
+def _update_book_database(db, updated_book_data, book_id):
+    """Handle the database update operations for book-only edits."""
     try:
         cursor = db.cursor()
 
@@ -466,25 +417,96 @@ def _update_database(db, updated_book_data, updated_review_data, book_review):
         filtered_book_data = {
             k: v for k, v in updated_book_data.items() if v is not None
         }
-        filtered_review_data = {
-            k: v for k, v in updated_review_data.items() if v is not None
-        }
 
         if filtered_book_data:
-            # Construct UPDATE query for books table
+            # Construct UPDATE query for books table only
             book_update_query = (
                 "UPDATE books SET "
                 + ", ".join([f"{key} = ?" for key in filtered_book_data.keys()])
                 + " WHERE id = ?"
             )
-            book_update_values = list(filtered_book_data.values()) + [
-                book_review.book_id
-            ]
+            book_update_values = list(filtered_book_data.values()) + [book_id]
             cursor.execute(book_update_query, book_update_values)
-            print(f"Updated book with ID {book_review.book_id}.")
+            print(f"Updated book with ID {book_id}.")
+            db.commit()
+        else:
+            print("\nNo changes made.")
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        db.rollback()
+    except Exception as e:
+        print(f"Error during update: {e}")
+        db.rollback()
+
+
+def edit_review(db, args):
+    """Edit only the review data, display book data for context."""
+    review_id = int(args["id"])
+    book_review = BookReview.get_by_id(db, review_id)
+    if not book_review:
+        print(f"Error: Review with ID {review_id} not found.")
+        return
+
+    session = PromptSession(style=style)
+    console = Console()
+
+    try:
+        # Display book information for context (read-only)
+        console.print(f"BOOK ID {book_review.book_id}:\n-------------------------\n", style="dim")
+        console.print(f"Title: {book_review.book_title}", style="dim")
+        console.print(f"Author: {book_review.book_author}", style="dim")
+        console.print(f"Publication Year: {book_review.book_pub_year or 'N/A'}", style="dim")
+        console.print(f"Pages: {book_review.book_pages or 'N/A'}", style="dim")
+        console.print(f"Genre: {book_review.book_genre or 'N/A'}", style="dim")
+
+        # Edit only review fields
+        console.print("\nEDIT REVIEW:\n-------------------------\n", style="blue")
+
+        updated_review_data = {}
+
+        # Date read (string conversion, stored as string)
+        updated_review_data["date_read"] = _update_field(
+            session, book_review.date_read, "Date read (YYYY-MM-DD): ", DateValidator()
+        )
+
+        # Rating (integer conversion)
+        updated_review_data["rating"] = _update_field(
+            session,
+            book_review.rating,
+            "Rating (1-5): ",
+            RatingValidator(),
+            _convert_to_int_or_none,
+        )
+
+        # Review text (multiline)
+        updated_review_data["review"] = _update_field(
+            session,
+            book_review.review_text,
+            "Your review (Esc+Enter to finish):\n",
+            multiline=True,
+        )
+
+        # Update database (only review data)
+        _update_review_database(db, updated_review_data, book_review)
+
+    except KeyboardInterrupt:
+        print("\n\nEdit cancelled. No changes made.")
+        return
+
+
+def _update_review_database(db, updated_review_data, book_review):
+    """Handle the database update operations for review-only edits."""
+    try:
+        cursor = db.cursor()
+
+        # Filter out None values (unchanged fields)
+        filtered_review_data = {
+            k: v for k, v in updated_review_data.items() if v is not None
+        }
 
         if filtered_review_data:
-            # Construct UPDATE query for reviews table
+            # Construct UPDATE query for reviews table only
             review_update_query = (
                 "UPDATE reviews SET "
                 + ", ".join([f"{key} = ?" for key in filtered_review_data.keys()])
@@ -495,8 +517,6 @@ def _update_database(db, updated_book_data, updated_review_data, book_review):
             ]
             cursor.execute(review_update_query, review_update_values)
             print(f"Updated review with ID {book_review.review_id}.")
-
-        if filtered_book_data or filtered_review_data:
             db.commit()
         else:
             print("\nNo changes made.")

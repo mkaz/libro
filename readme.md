@@ -14,19 +14,27 @@ This separation allows you to:
 - Add multiple reviews for the same book (re-reads)
 - Maintain a clean library of books separate from your reading history
 
+## Command Structure
+
+Libro's commands are organized around this book/review separation:
+
+**Reports:**
+- `libro` (default) - Reading history table
+- `libro report` - Reading history table  
+- `libro report --author` - Book counts by author
+- `libro report --chart` - Yearly reading chart
+- `libro report 123` - Book/review details for review id
+
+**Actions:**
+- `libro add` - Add book + review
+- `libro book` - Book management (add, edit, show)
+- `libro review` - Review management (add, edit, show)
+- `libro list` - Reading list management
+
 ## Usage
 
-### Quick Start Commands
+**Add books and review:**: `libro add`
 
-Add new book with review: `libro add`
-
-Show books read this year: `libro show` (or `libro show --year 2024`)
-
-Show book & review details: `libro show 123`
-
-Show books by author: `libro show --author "Stephen King"`
-
-Edit book & review: `libro edit 123`
 
 ### Book Management
 
@@ -38,7 +46,7 @@ Show book by author: `libro book show --author "Stephen King"`
 
 Show specific book: `libro book show 42`
 
-Edit book details: `libro book edit 42`
+Edit book details only: `libro book edit 42`
 
 ### Review Management
 
@@ -46,15 +54,9 @@ Add review to existing book: `libro review add 42`
 
 Show specific review: `libro review show 123`
 
-Edit review: `libro review edit 123`
+Edit review details only: `libro review edit 123`
 
-### Reports
-
-Show reading reports: `libro report`
-
-Show books read grouped by author: `libro report --author`
-
-**Reading Lists:**
+### Reading Lists
 
 Create a reading list: `libro list create "My Reading List" --description "Books to read"`
 
@@ -70,7 +72,7 @@ See: `libro --help` for more information.
 
 #### Books Read in Year
 
-The default view shows your reading history with Review IDs for easy editing:
+The default view shows your reading history, grouped by genre:
 
 ```
 ❯ libro
@@ -100,10 +102,10 @@ The default view shows your reading history with Review IDs for easy editing:
 ```
 
 
-#### Books by Year
+#### Books by Year Chart
 
 ```
-❯ libro report
+❯ libro report --chart
 
                          Books Read by Year
 
@@ -164,13 +166,13 @@ View all your reading lists:
 ❯ libro list show
 
                                     Reading Lists
-┏━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
-┃ ID ┃ Name               ┃ Description                      ┃ Total Books ┃ Read ┃ Unread ┃ Progress             ┃ Created    ┃
-┡━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
-│ 1  │ Sci-Fi Classics    │ Science fiction must-reads       │ 50          │ 12   │ 38     │ ██░░░░░░░░ 24.0%     │ 2025-01-15 │
-│ 2  │ Horror Collection  │ Spine-tingling tales             │ 30          │ 8    │ 22     │ ███░░░░░░░ 26.7%     │ 2025-01-16 │
-│ 3  │ Literary Classics  │ Timeless masterpieces            │ 45          │ 15   │ 30     │ ███░░░░░░░ 33.3%     │ 2025-01-17 │
-└────┴────────────────────┴──────────────────────────────────┴─────────────┴──────┴────────┴───────────────────────┴────────────┘
+┏━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ ID ┃ Name               ┃ Description                      ┃ Total Books ┃ Read ┃ Unread ┃ Progress         ┃
+┡━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ 1  │ Sci-Fi Classics    │ Science fiction must-reads       │ 50          │ 12   │ 38     │ ██░░░░░░░░ 24.0% │
+│ 2  │ Horror Collection  │ Spine-tingling tales             │ 30          │ 8    │ 22     │ ███░░░░░░░ 26.7% │
+│ 3  │ Literary Classics  │ Timeless masterpieces            │ 45          │ 15   │ 30     │ ███░░░░░░░ 33.3% │
+└────┴────────────────────┴──────────────────────────────────┴─────────────┴──────┴────────┴──────────────────┘
 
 Use 'libro list show <id>' to see books in a specific list
 ```
@@ -352,25 +354,3 @@ There is a `genre` field that accepts any string value, but this data is not ava
 
 See [GitHub Releases](https://github.com/mkaz/libro/releases) for the changelog.
 
-# Packaging
-
-Notes to self, I forget how to do this stuff.
-
-Libro is packaged as `libro-book` on PyPI.
-
-Packaging is done with `hatchling`, [see Guide](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
-
-```
-# install tools
-py -m pip install --upgrade build twine
-```
-
-```
-# build
-py -m build
-```
-
-```
-# upload
-py -m twine upload dist/*
-```

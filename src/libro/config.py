@@ -22,22 +22,17 @@ def init_args() -> Dict:
 
     # Report command with its specific arguments
     report = subparsers.add_parser("report", help="Show reports")
+    report.add_argument("--chart", action="store_true", help="Show chart view of books by year")
     report.add_argument("--author", action="store_true", help="Show author report")
     report.add_argument("--limit", type=int, help="Minimum books read by author")
     report.add_argument("--undated", action="store_true", help="Include undated books")
+    report.add_argument("--year", type=int, help="Year to filter books")
+    report.add_argument("id", type=int, nargs="?", help="Show book ID details")
 
-    # Show command with its specific arguments
-    show = subparsers.add_parser("show", help="Show books")
-    show.add_argument("--year", type=int, help="Year to filter books")
-    show.add_argument("--author", type=str, help="Show books by specific author")
-    show.add_argument("id", type=int, nargs="?", help="Show book ID details")
 
     # Add command with its specific arguments (backward compatibility - creates book + review)
     subparsers.add_parser("add", help="Add a book with review")
 
-    # Edit command with its specific arguments  
-    edit = subparsers.add_parser("edit", help="Edit a book & review (use ID from default listing)")
-    edit.add_argument("id", type=int, nargs="?", help="Review ID to edit (from default listing)")
 
     # Book management subcommands
     book_parser = subparsers.add_parser("book", help="Manage books")
@@ -138,7 +133,7 @@ def init_args() -> Dict:
         args["db"] = get_db_loc()
 
     if args["command"] is None:
-        args["command"] = "show"
+        args["command"] = "report"
 
     if args.get("year") is None:
         args["year"] = datetime.now().year
