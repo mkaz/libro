@@ -40,13 +40,22 @@ Libro's commands are organized around this book/review separation:
 
 Add book only (no review): `libro book add`
 
-Show all books: `libro book show`
-
-Show book by author: `libro book show --author "Stephen King"`
+Show recent books: `libro book show` (shows latest 20 books by default)
 
 Show specific book: `libro book show 42`
 
 Edit book details only: `libro book edit 42`
+
+**Search and filter books:**
+
+Show books by author: `libro book show --author "Stephen King"`
+
+Show books by title: `libro book show --title "Foundation"`
+
+Show books published in specific year: `libro book show --year 2024`
+
+All search options support partial matching, so `--author "King"` will find "Stephen King", "Tabitha King", etc.
+
 
 ### Review Management
 
