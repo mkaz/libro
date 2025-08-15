@@ -194,15 +194,10 @@ def import_csv_to_list(db, args):
                         console.print(f"[yellow]Row {row_num}: Invalid pages '{pages_str}' for '{title}'[/yellow]")
                 
                 # Check if book already exists by matching title and author
-                cursor = db.cursor()
-                cursor.execute(
-                    "SELECT id FROM books WHERE LOWER(title) = LOWER(?) AND LOWER(author) = LOWER(?)",
-                    (title, author)
-                )
-                existing_book = cursor.fetchone()
+                existing_book = Book.find_by_title_author(db, title, author)
                 
                 if existing_book:
-                    book_id = existing_book["id"]
+                    book_id = existing_book.id
                     console.print(f"[dim]Row {row_num}: Book '{title}' by {author} already exists (ID: {book_id})[/dim]")
                     existing_count += 1
                 else:
@@ -219,6 +214,7 @@ def import_csv_to_list(db, args):
                     imported_count += 1
                 
                 # Add book to the reading list (check if already in list first)
+                cursor = db.cursor()
                 cursor.execute(
                     "SELECT id FROM reading_list_books WHERE list_id = ? AND book_id = ?",
                     (list_id, book_id)

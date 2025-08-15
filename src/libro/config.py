@@ -91,6 +91,7 @@ def init_args() -> Dict:
     # List add subcommand
     list_add = list_subparsers.add_parser("add", help="Add a book to a reading list")
     list_add.add_argument("id", type=int, help="ID of the reading list")
+    list_add.add_argument("book_ids", type=int, nargs="*", help="Book IDs to add to the list (optional)")
 
     # List remove subcommand
     list_remove = list_subparsers.add_parser(

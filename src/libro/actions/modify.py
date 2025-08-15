@@ -244,9 +244,7 @@ def add_review(db, args):
 
     try:
         # First, verify the book exists and show its details
-        cursor = db.cursor()
-        cursor.execute("SELECT title, author FROM books WHERE id = ?", (book_id,))
-        book = cursor.fetchone()
+        book = Book.get_by_id(db, book_id)
         
         if not book:
             print(f"Error: Book with ID {book_id} not found.")
@@ -254,8 +252,8 @@ def add_review(db, args):
 
         console.print("ADDING REVIEW FOR:\n------------------", style="blue")
         console.print(f"Book ID: {book_id}")
-        console.print(f"Title: {book['title']}")
-        console.print(f"Author: {book['author']}\n")
+        console.print(f"Title: {book.title}")
+        console.print(f"Author: {book.author}\n")
 
         # Date read with validation
         date_read = _prompt_with_retry(
@@ -347,11 +345,9 @@ def edit_book(db, args):
     book_id = int(args["id"])
     
     # Check if book exists and get current data
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM books WHERE id = ?", (book_id,))
-    book_row = cursor.fetchone()
+    book = Book.get_by_id(db, book_id)
     
-    if not book_row:
+    if not book:
         print(f"Error: Book with ID {book_id} not found.")
         return
 
@@ -365,17 +361,17 @@ def edit_book(db, args):
 
         # Title and Author (no conversion needed)
         updated_book_data["title"] = _update_field(
-            session, book_row["title"], "Title: ", validator=NonEmptyValidator()
+            session, book.title, "Title: ", validator=NonEmptyValidator()
         )
 
         updated_book_data["author"] = _update_field(
-            session, book_row["author"], "Author: ", validator=NonEmptyValidator(), completer=AuthorCompleter(db)
+            session, book.author, "Author: ", validator=NonEmptyValidator(), completer=AuthorCompleter(db)
         )
 
         # Publication year (integer conversion)
         updated_book_data["pub_year"] = _update_field(
             session,
-            book_row["pub_year"],
+            book.pub_year,
             "Publication year: ",
             IntValidator(),
             _convert_to_int_or_none,
@@ -384,7 +380,7 @@ def edit_book(db, args):
         # Pages (integer conversion)
         updated_book_data["pages"] = _update_field(
             session,
-            book_row["pages"],
+            book.pages,
             "Number of pages: ",
             IntValidator(),
             _convert_to_int_or_none,
@@ -393,7 +389,7 @@ def edit_book(db, args):
         # Genre (lowercase conversion)
         updated_book_data["genre"] = _update_field(
             session,
-            book_row["genre"],
+            book.genre,
             "Genre: ",
             GenreValidator(),
             _convert_genre_to_lowercase,

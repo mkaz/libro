@@ -197,8 +197,8 @@ def show_specific_list(db: sqlite3.Connection, list_id: int, console: Console):
 def add_book_to_list(db: sqlite3.Connection, args: dict):
     """Add a book to a reading list."""
     console = Console()
-    session = PromptSession(style=style)
     list_id = args["id"]
+    book_ids = args.get("book_ids", [])
     
     # Check if list exists
     reading_list = ReadingList.get_by_id(db, list_id)
@@ -206,6 +206,56 @@ def add_book_to_list(db: sqlite3.Connection, args: dict):
         console.print(f"[red]Reading list with ID {list_id} not found.[/red]")
         return
     
+    # If book IDs were provided, add existing books
+    if book_ids:
+        _add_existing_books_to_list(db, reading_list, book_ids, console)
+    else:
+        # Original behavior: prompt for new book details
+        _add_new_book_to_list(db, reading_list, console)
+
+
+def _add_existing_books_to_list(db: sqlite3.Connection, reading_list: ReadingList, book_ids: list[int], console: Console):
+    """Add existing books by their IDs to a reading list."""
+    added_count = 0
+    errors = []
+    
+    for book_id in book_ids:
+        try:
+            # Check if book exists
+            book = Book.get_by_id(db, book_id)
+            if not book:
+                errors.append(f"Book ID {book_id} not found")
+                continue
+            
+            # Check if book is already in the list
+            existing_books = ReadingListBook.get_books_in_list(db, reading_list.id)
+            if any(b["book_id"] == book_id for b in existing_books):
+                errors.append(f"Book '{book.title}' (ID {book_id}) is already in the list")
+                continue
+            
+            # Add book to the list
+            reading_list_book = ReadingListBook(list_id=reading_list.id, book_id=book_id)
+            reading_list_book.insert(db)
+            
+            console.print(f"[green]✅ Added '{book.title}' by {book.author} to '{reading_list.name}'[/green]")
+            added_count += 1
+            
+        except Exception as e:
+            errors.append(f"Error adding book ID {book_id}: {str(e)}")
+    
+    # Summary
+    if added_count > 0:
+        console.print(f"\n[green]Successfully added {added_count} book(s) to '{reading_list.name}'[/green]")
+    
+    if errors:
+        console.print("\n[yellow]Issues encountered:[/yellow]")
+        for error in errors:
+            console.print(f"[red]• {error}[/red]")
+
+
+def _add_new_book_to_list(db: sqlite3.Connection, reading_list: ReadingList, console: Console):
+    """Add a new book to a reading list using interactive prompts."""
+    session = PromptSession(style=style)
     console.print(f"[blue]Adding book to '{reading_list.name}' reading list[/blue]\n")
     
     try:
