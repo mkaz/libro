@@ -245,6 +245,11 @@ Edit a list's name or description:
 libro list edit 1 --name "Updated Name" --description "New description"
 ```
 
+Add a book to a list:
+```bash
+libro list add 1 42
+```
+
 Remove a book from a list:
 ```bash
 libro list remove 1 42
