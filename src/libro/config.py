@@ -50,6 +50,7 @@ def init_args() -> Dict:
     book_show_parser.add_argument("id", type=int, nargs="?", help="Show specific book ID")
     book_show_parser.add_argument("--author", type=str, help="Show books by specific author")
     book_show_parser.add_argument("--year", type=int, help="Year to filter books")
+    book_show_parser.add_argument("--title", type=str, help="Show books by title (partial match)")
 
     # Review management subcommands
     review_parser = subparsers.add_parser("review", help="Manage reviews")
@@ -136,6 +137,8 @@ def init_args() -> Dict:
     if args["command"] is None:
         args["command"] = "report"
 
+    # Track whether year was explicitly provided
+    args["year_explicit"] = args.get("year") is not None
     if args.get("year") is None:
         args["year"] = datetime.now().year
 

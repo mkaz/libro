@@ -140,13 +140,23 @@ def show_books_only(db, args={}):
         show_book_only_detail(db, args.get("id"))
         return
 
-    # Check if filtering by author
+    # Check if filtering by author, title, or year
     author = args.get("author")
+    title = args.get("title")
+    year = args.get("year")
+    year_explicit = args.get("year_explicit", False)
+    
     if author:
         books = get_books_only(db, author_name=author)
         table_title = f"Books by {author}"
+    elif title:
+        books = get_books_only(db, title=title)
+        table_title = f"Books with title containing '{title}'"
+    elif year_explicit:
+        books = get_books_only(db, year=year)
+        table_title = f"Books Published in {year}"
     else:
-        # Show most recent books
+        # Show most recent books (when no year was explicitly provided)
         books = get_books_only(db)
         table_title = "Recent Books (Latest 20)"
         
@@ -249,8 +259,8 @@ def show_book_only_detail(db, book_id):
         console.print(f"[dim]Add a review with: libro review add {book_id}[/dim]")
 
 
-def get_books_only(db, author_name=None):
-    """Get books without review info, optionally filtered by author"""
+def get_books_only(db, author_name=None, year=None, title=None):
+    """Get books without review info, optionally filtered by author, publication year, or title"""
     try:
         cursor = db.cursor()
         if author_name:
@@ -262,6 +272,26 @@ def get_books_only(db, author_name=None):
                 ORDER BY LOWER(title)
             """,
                 (f"%{author_name}%",),
+            )
+        elif year:
+            cursor.execute(
+                """
+                SELECT id, title, author, pub_year, pages, genre
+                FROM books 
+                WHERE pub_year = ?
+                ORDER BY LOWER(title)
+            """,
+                (year,),
+            )
+        elif title:
+            cursor.execute(
+                """
+                SELECT id, title, author, pub_year, pages, genre
+                FROM books 
+                WHERE LOWER(title) LIKE LOWER(?)
+                ORDER BY LOWER(title)
+            """,
+                (f"%{title}%",),
             )
         else:
             cursor.execute(
