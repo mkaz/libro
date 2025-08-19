@@ -165,6 +165,6 @@ def get_db_loc() -> Path:
     # No config file, default to data dir
     data_dir = Path(dirs.user_data_dir)
     if not data_dir.is_dir():
-        data_dir.mkdir()
+        data_dir.mkdir(parents=True)
 
     return Path(dirs.user_data_dir, "libro.db")
