@@ -48,41 +48,62 @@ def main():
             case "list":
                 manage_lists(db, args)
             case "book":
-                book_action = args.get("book_action")
-                if book_action is None:
-                    # Default to show action if no subcommand specified
+                action_or_id = args.get("action_or_id")
+                if action_or_id is None:
+                    # No argument - show recent books
                     show_books_only(db, args)
-                else:
-                    match book_action:
-                        case "add":
-                            add_book(db, args)
-                        case "edit":
-                            edit_book(db, args)
-                        case "show":
-                            show_books_only(db, args)
-                        case _:
-                            print("Book action not recognized")
-            case "review":
-                review_action = args.get("review_action")
-                if review_action is None:
-                    # Default to show action if no subcommand specified
-                    if args.get("id"):
-                        show_book_detail(db, args["id"])
+                elif action_or_id == "add":
+                    # Add a new book
+                    add_book(db, args)
+                elif action_or_id == "edit":
+                    # Edit a book - need edit_id
+                    edit_id = args.get("edit_id")
+                    if edit_id is None:
+                        print("Please specify a book ID to edit: libro book edit <book_id>")
                     else:
-                        show_recent_reviews(db)
+                        # Update args to use the edit_id as the main id
+                        args["id"] = edit_id
+                        edit_book(db, args)
                 else:
-                    match review_action:
-                        case "add":
-                            add_review(db, args)
-                        case "edit":
-                            edit_review(db, args)
-                        case "show":
-                            if args.get("id"):
-                                show_book_detail(db, args["id"])  # Same as default show
-                            else:
-                                print("Please specify a review ID: libro review show <review_id>")
-                        case _:
-                            print("Review action not recognized")
+                    # Try to parse as book ID
+                    try:
+                        book_id = int(action_or_id)
+                        args["id"] = book_id
+                        show_books_only(db, args)
+                    except ValueError:
+                        print(f"Unknown book action or invalid ID: {action_or_id}")
+                        print("Valid actions: add, edit, or a book ID number")
+            case "review":
+                action_or_id = args.get("action_or_id")
+                if action_or_id is None:
+                    # No argument - show recent reviews
+                    show_recent_reviews(db)
+                elif action_or_id == "add":
+                    # Add a review - need target_id (book_id)
+                    target_id = args.get("target_id")
+                    if target_id is None:
+                        print("Please specify a book ID to add review to: libro review add <book_id>")
+                    else:
+                        # Update args to use the target_id as book_id
+                        args["book_id"] = target_id
+                        add_review(db, args)
+                elif action_or_id == "edit":
+                    # Edit a review - need target_id (review_id)
+                    target_id = args.get("target_id")
+                    if target_id is None:
+                        print("Please specify a review ID to edit: libro review edit <review_id>")
+                    else:
+                        # Update args to use the target_id as the main id
+                        args["id"] = target_id
+                        edit_review(db, args)
+                else:
+                    # Try to parse as review ID
+                    try:
+                        review_id = int(action_or_id)
+                        show_book_detail(db, review_id)
+                    except ValueError:
+                        print(f"Unknown review action or invalid ID: {action_or_id}")
+                        print("Valid actions: add, edit, or a review ID number")
             case _:
                 print("Not yet implemented")
 
