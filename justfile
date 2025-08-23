@@ -5,15 +5,20 @@ set quiet
 default:
     @just --list
 
-# Run pre-commit checks
+# Run checks
 lint:
-    echo "Linting 🔬"
-    ruff check src/libro/
+    echo "Running ruff to lint..."
+    uv run python -m ruff check src/libro/
     echo "."
+
+# Run mypy typecheck
+type-check:
+    echo "Running mypy to type check..."
+    uv run python -m mypy --package libro
 
 # Clean Python artifacts
 clean:
-    echo "Scrub a dub dub 🧼"
+    echo "Cleaning..."
     rm -rf build/
     rm -rf dist/
     rm -rf *.egg-info
@@ -27,13 +32,13 @@ clean:
 
 # Install dependencies
 install:
-    echo "Installing dependencies 📦"
+    echo "Installing dependencies"
     uv sync
     echo "."
 
 # Build the project
 build: clean lint install
-    echo "Building 📦"
+    echo "Building"
     uv run -m build
     echo "."
 
