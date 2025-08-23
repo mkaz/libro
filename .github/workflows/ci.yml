@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, trunk, develop ]
+  pull_request:
+    branches: [ main, trunk, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        uv sync --dev
+        uv run pip list
+
+    - name: Run linting
+      run: |
+        echo "Running ruff linting..."
+        uv run python -m ruff check src/libro/
+        echo "Running ruff format check..."
+        uv run python -m ruff format --check src/libro/
+
+    - name: Run type checking
+      run: |
+        echo "Running mypy type checking..."
+        uv run python -m mypy --package libro
+
+    - name: Run tests
+      run: |
+        echo "Running pytest..."
+        uv run python -m pytest tests/ -v --tb=short
+
+    - name: Test CLI basics
+      run: |
+        echo "Testing basic CLI functionality..."
+        # Test version command
+        uv run libro --version
+        # Test help command
+        uv run libro --help
+        
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+        
+    - name: Set up Python
+      run: uv python install 3.11
+      
+    - name: Install dependencies
+      run: uv sync --dev
+      
+    - name: Build package
+      run: |
+        echo "Building package..."
+        uv run python -m build
+        
+    - name: Check build artifacts
+      run: |
+        ls -la dist/
+        # Verify wheel and sdist were created
+        test -f dist/*.whl
+        test -f dist/*.tar.gz

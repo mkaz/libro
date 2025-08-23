@@ -14,11 +14,11 @@ from libro.models import BookReview, Book, Review
 
 class AuthorCompleter(Completer):
     """Provides tab completion for author names based on frequency of books."""
-    
+
     def __init__(self, db):
         self.db = db
         self._authors = None
-    
+
     def _get_authors_by_frequency(self):
         """Get authors ordered by number of books (most to least)"""
         if self._authors is None:
@@ -31,36 +31,41 @@ class AuthorCompleter(Completer):
             """)
             self._authors = [row[0] for row in cursor.fetchall()]
         return self._authors
-    
+
     def get_completions(self, document, complete_event):
         current_text = document.text
         current_lower = current_text.lower()
-        
+
         for author in self._get_authors_by_frequency():
-            if author.lower().startswith(current_lower) and len(current_text) < len(author):
+            if author.lower().startswith(current_lower) and len(current_text) < len(
+                author
+            ):
                 # Calculate how much more text is needed
-                remaining = author[len(current_text):]
-                
+                remaining = author[len(current_text) :]
+
                 # Create completion with gray styling for the incomplete part
-                display = FormattedText([
-                    ('', current_text),  # What user has typed (normal color)
-                    ('class:completion.incomplete', remaining)  # Incomplete part (gray)
-                ])
-                
+                display = FormattedText(
+                    [
+                        ("", current_text),  # What user has typed (normal color)
+                        (
+                            "class:completion.incomplete",
+                            remaining,
+                        ),  # Incomplete part (gray)
+                    ]
+                )
+
                 yield Completion(
-                    text=author,
-                    start_position=-len(current_text),
-                    display=display
+                    text=author, start_position=-len(current_text), display=display
                 )
 
 
 class GenreCompleter(Completer):
     """Provides tab completion for genre names based on existing genres in the database."""
-    
+
     def __init__(self, db):
         self.db = db
         self._genres = None
-    
+
     def _get_existing_genres(self):
         """Get all unique genres from the database, ordered alphabetically"""
         if self._genres is None:
@@ -73,27 +78,33 @@ class GenreCompleter(Completer):
             """)
             self._genres = [row[0] for row in cursor.fetchall()]
         return self._genres
-    
+
     def get_completions(self, document, complete_event):
         current_text = document.text
         current_lower = current_text.lower()
-        
+
         for genre in self._get_existing_genres():
-            if genre.lower().startswith(current_lower) and len(current_text) < len(genre):
+            if genre.lower().startswith(current_lower) and len(current_text) < len(
+                genre
+            ):
                 # Calculate how much more text is needed
-                remaining = genre[len(current_text):]
-                
+                remaining = genre[len(current_text) :]
+
                 # Create completion with gray styling for the incomplete part
-                display = FormattedText([
-                    ('', current_text),  # What user has typed (normal color)
-                    ('class:completion.incomplete', remaining)  # Incomplete part (gray)
-                ])
-                
-                yield Completion(
-                    text=genre,
-                    start_position=-len(current_text),
-                    display=display
+                display = FormattedText(
+                    [
+                        ("", current_text),  # What user has typed (normal color)
+                        (
+                            "class:completion.incomplete",
+                            remaining,
+                        ),  # Incomplete part (gray)
+                    ]
                 )
+
+                yield Completion(
+                    text=genre, start_position=-len(current_text), display=display
+                )
+
 
 # Define the style for prompts
 style = Style.from_dict(
@@ -111,7 +122,7 @@ style = Style.from_dict(
 
 
 def add_book_review(db, args):
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:
@@ -120,7 +131,10 @@ def add_book_review(db, args):
         # Book details
         title = _prompt_with_retry(session, "Title: ", validator=NonEmptyValidator())
         author = _prompt_with_retry(
-            session, "Author: ", validator=NonEmptyValidator(), completer=AuthorCompleter(db)
+            session,
+            "Author: ",
+            validator=NonEmptyValidator(),
+            completer=AuthorCompleter(db),
         )
 
         # Publication year with validation and conversion
@@ -188,16 +202,21 @@ def add_book_review(db, args):
 
 def add_book(db, args):
     """Add a book without a review."""
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:
-        console.print("ADDING NEW BOOK (no review):\n---------------------------\n", style="blue")
+        console.print(
+            "ADDING NEW BOOK (no review):\n---------------------------\n", style="blue"
+        )
 
         # Book details
         title = _prompt_with_retry(session, "Title: ", validator=NonEmptyValidator())
         author = _prompt_with_retry(
-            session, "Author: ", validator=NonEmptyValidator(), completer=AuthorCompleter(db)
+            session,
+            "Author: ",
+            validator=NonEmptyValidator(),
+            completer=AuthorCompleter(db),
         )
 
         # Publication year with validation and conversion
@@ -224,8 +243,13 @@ def add_book(db, args):
         )
         book_id = book.insert(db)
 
-        console.print(f"\n✅ Successfully added book '{title}' (Book ID: {book_id})", style="green")
-        console.print("💡 Use 'libro review add {book_id}' to add a review later.", style="dim")
+        console.print(
+            f"\n✅ Successfully added book '{title}' (Book ID: {book_id})",
+            style="green",
+        )
+        console.print(
+            "💡 Use 'libro review add {book_id}' to add a review later.", style="dim"
+        )
 
     except KeyboardInterrupt:
         print("\n\nAdd book cancelled. No changes made.")
@@ -239,13 +263,13 @@ def add_book(db, args):
 def add_review(db, args):
     """Add a review to an existing book."""
     book_id = args["book_id"]
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:
         # First, verify the book exists and show its details
         book = Book.get_by_id(db, book_id)
-        
+
         if not book:
             print(f"Error: Book with ID {book_id} not found.")
             return
@@ -281,7 +305,10 @@ def add_review(db, args):
         )
         review_id = review.insert(db)
 
-        console.print(f"\n✅ Successfully added review for '{book['title']}' (Review ID: {review_id})", style="green")
+        console.print(
+            f"\n✅ Successfully added review for '{book.title}' (Review ID: {review_id})",
+            style="green",
+        )
 
     except KeyboardInterrupt:
         print("\n\nAdd review cancelled. No changes made.")
@@ -292,24 +319,29 @@ def add_review(db, args):
         print(f"Error: {e}")
 
 
-
-
-
 def _prompt_with_retry(
-    session, prompt_text, default_value="", validator=None, multiline=False, completer=None
+    session,
+    prompt_text,
+    default_value="",
+    validator=None,
+    multiline=False,
+    completer=None,
 ):
     """Helper function to handle prompting with error retry logic."""
     while True:
         try:
             if multiline:
                 # Create new session for multiline to avoid validator inheritance
-                multiline_session = PromptSession(style=style)
+                multiline_session: PromptSession[str] = PromptSession(style=style)
                 return multiline_session.prompt(
                     prompt_text, default=default_value, multiline=True
                 )
             else:
                 return session.prompt(
-                    prompt_text, default=default_value, validator=validator, completer=completer
+                    prompt_text,
+                    default=default_value,
+                    validator=validator,
+                    completer=completer,
                 )
         except Exception as e:
             print(f"Error: {e}")
@@ -317,7 +349,13 @@ def _prompt_with_retry(
 
 
 def _update_field(
-    session, current_value, prompt_text, validator=None, converter=None, multiline=False, completer=None
+    session,
+    current_value,
+    prompt_text,
+    validator=None,
+    converter=None,
+    multiline=False,
+    completer=None,
 ):
     """Generic helper to update a field and return the new value if changed."""
     # Convert current value to string for display
@@ -338,24 +376,24 @@ def _update_field(
     return new_value if new_value != current_value else None
 
 
-
-
 def edit_book(db, args):
     """Edit only the book data."""
     book_id = int(args["id"])
-    
+
     # Check if book exists and get current data
     book = Book.get_by_id(db, book_id)
-    
+
     if not book:
         print(f"Error: Book with ID {book_id} not found.")
         return
 
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:
-        console.print(f"EDITING BOOK ID {book_id}:\n------------------------\n", style="blue")
+        console.print(
+            f"EDITING BOOK ID {book_id}:\n------------------------\n", style="blue"
+        )
 
         updated_book_data = {}
 
@@ -365,7 +403,11 @@ def edit_book(db, args):
         )
 
         updated_book_data["author"] = _update_field(
-            session, book.author, "Author: ", validator=NonEmptyValidator(), completer=AuthorCompleter(db)
+            session,
+            book.author,
+            "Author: ",
+            validator=NonEmptyValidator(),
+            completer=AuthorCompleter(db),
         )
 
         # Publication year (integer conversion)
@@ -393,7 +435,7 @@ def edit_book(db, args):
             "Genre: ",
             GenreValidator(),
             _convert_genre_to_lowercase,
-            completer=GenreCompleter(db)
+            completer=GenreCompleter(db),
         )
 
         # Update database (only book data)
@@ -444,15 +486,19 @@ def edit_review(db, args):
         print(f"Error: Review with ID {review_id} not found.")
         return
 
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:
         # Display book information for context (read-only)
-        console.print(f"BOOK ID {book_review.book_id}:\n-------------------------\n", style="dim")
+        console.print(
+            f"BOOK ID {book_review.book_id}:\n-------------------------\n", style="dim"
+        )
         console.print(f"Title: {book_review.book_title}", style="dim")
         console.print(f"Author: {book_review.book_author}", style="dim")
-        console.print(f"Publication Year: {book_review.book_pub_year or 'N/A'}", style="dim")
+        console.print(
+            f"Publication Year: {book_review.book_pub_year or 'N/A'}", style="dim"
+        )
         console.print(f"Pages: {book_review.book_pages or 'N/A'}", style="dim")
         console.print(f"Genre: {book_review.book_genre or 'N/A'}", style="dim")
 

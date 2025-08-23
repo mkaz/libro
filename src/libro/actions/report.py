@@ -13,7 +13,7 @@ def report(db, args):
     if args.get("id") is not None:
         show_book_detail(db, args.get("id"))
         return
-    
+
     # Check for author flag - show author statistics if True, or books by author if string
     author_arg = args.get("author")
     if author_arg is not None:
@@ -24,12 +24,12 @@ def report(db, args):
             # --author with value: show books by specific author
             show_books(db, args)
         return
-    
+
     # Check for chart flag - show year chart view
     if args.get("chart") is True:
         show_year_report(db)
         return
-    
+
     # Default behavior: show table view (same as old show_books)
     show_books(db, args)
 

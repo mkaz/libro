@@ -22,33 +22,61 @@ def init_args() -> Dict:
 
     # Report command with its specific arguments
     report = subparsers.add_parser("report", help="Show reports")
-    report.add_argument("--chart", action="store_true", help="Show chart view of books by year")
-    report.add_argument("--author", nargs="?", const=True, help="Show author statistics if no name provided, or books by specific author")
+    report.add_argument(
+        "--chart", action="store_true", help="Show chart view of books by year"
+    )
+    report.add_argument(
+        "--author",
+        nargs="?",
+        const=True,
+        help="Show author statistics if no name provided, or books by specific author",
+    )
     report.add_argument("--limit", type=int, help="Minimum books read by author")
     report.add_argument("--undated", action="store_true", help="Include undated books")
     report.add_argument("--year", type=int, help="Year to filter books")
     report.add_argument("id", type=int, nargs="?", help="Show book ID details")
 
-
     # Add command with its specific arguments (backward compatibility - creates book + review)
     subparsers.add_parser("add", help="Add a book with review")
 
-
     # Book management command
     book_parser = subparsers.add_parser("book", help="Manage books")
-    book_parser.add_argument("action_or_id", nargs="?", help="Book ID to show, 'add' to add book, or 'edit' to edit book")
-    book_parser.add_argument("edit_id", type=int, nargs="?", help="Book ID to edit (when action is 'edit')")
+    book_parser.add_argument(
+        "action_or_id",
+        nargs="?",
+        help="Book ID to show, 'add' to add book, or 'edit' to edit book",
+    )
+    book_parser.add_argument(
+        "edit_id", type=int, nargs="?", help="Book ID to edit (when action is 'edit')"
+    )
     book_parser.add_argument("--author", type=str, help="Show books by specific author")
     book_parser.add_argument("--year", type=int, help="Year to filter books")
-    book_parser.add_argument("--title", type=str, help="Show books by title (partial match)")
+    book_parser.add_argument(
+        "--title", type=str, help="Show books by title (partial match)"
+    )
 
     # Review management command
     review_parser = subparsers.add_parser("review", help="Manage reviews")
-    review_parser.add_argument("action_or_id", nargs="?", help="Review ID to show, 'add' to add review, or 'edit' to edit review")
-    review_parser.add_argument("target_id", type=int, nargs="?", help="Book ID to add review to (when action is 'add') or Review ID to edit (when action is 'edit')")
-    review_parser.add_argument("--author", type=str, help="Show reviews by specific author (from book details)")
-    review_parser.add_argument("--year", type=int, help="Year reviews were made (date_read)")
-    review_parser.add_argument("--title", type=str, help="Show reviews by book title (partial match)")
+    review_parser.add_argument(
+        "action_or_id",
+        nargs="?",
+        help="Review ID to show, 'add' to add review, or 'edit' to edit review",
+    )
+    review_parser.add_argument(
+        "target_id",
+        type=int,
+        nargs="?",
+        help="Book ID to add review to (when action is 'add') or Review ID to edit (when action is 'edit')",
+    )
+    review_parser.add_argument(
+        "--author", type=str, help="Show reviews by specific author (from book details)"
+    )
+    review_parser.add_argument(
+        "--year", type=int, help="Year reviews were made (date_read)"
+    )
+    review_parser.add_argument(
+        "--title", type=str, help="Show reviews by book title (partial match)"
+    )
 
     # Import command with its specific arguments
     imp = subparsers.add_parser("import", help="Import books")
@@ -56,7 +84,9 @@ def init_args() -> Dict:
 
     # List command with subcommands for reading list management
     list_parser = subparsers.add_parser("list", help="Manage reading lists")
-    list_subparsers = list_parser.add_subparsers(dest="list_action", help="List actions")
+    list_subparsers = list_parser.add_subparsers(
+        dest="list_action", help="List actions"
+    )
 
     # List create subcommand
     list_create = list_subparsers.add_parser("create", help="Create a new reading list")
@@ -74,7 +104,9 @@ def init_args() -> Dict:
     # List add subcommand
     list_add = list_subparsers.add_parser("add", help="Add a book to a reading list")
     list_add.add_argument("id", type=int, help="ID of the reading list")
-    list_add.add_argument("book_ids", type=int, nargs="*", help="Book IDs to add to the list (optional)")
+    list_add.add_argument(
+        "book_ids", type=int, nargs="*", help="Book IDs to add to the list (optional)"
+    )
 
     # List remove subcommand
     list_remove = list_subparsers.add_parser(
@@ -84,7 +116,9 @@ def init_args() -> Dict:
     list_remove.add_argument("book_id", type=int, help="ID of the book to remove")
 
     # List stats subcommand
-    list_stats = list_subparsers.add_parser("stats", help="Show reading list statistics")
+    list_stats = list_subparsers.add_parser(
+        "stats", help="Show reading list statistics"
+    )
     list_stats.add_argument(
         "id", type=int, nargs="?", help="ID of specific list for stats (optional)"
     )
@@ -93,18 +127,32 @@ def init_args() -> Dict:
     list_edit = list_subparsers.add_parser("edit", help="Edit a reading list")
     list_edit.add_argument("id", type=int, help="ID of the reading list to edit")
     list_edit.add_argument("--name", type=str, help="New name for the reading list")
-    list_edit.add_argument("--description", type=str, help="New description for the reading list")
+    list_edit.add_argument(
+        "--description", type=str, help="New description for the reading list"
+    )
 
     # List delete subcommand
     list_delete = list_subparsers.add_parser("delete", help="Delete a reading list")
     list_delete.add_argument("id", type=int, help="ID of the reading list to delete")
 
     # List import subcommand
-    list_import = list_subparsers.add_parser("import", help="Import books from CSV to reading list")
-    list_import.add_argument("file", type=str, help="CSV file to import (Title, Author, Publication Year, Pages, Genre)")
-    list_import.add_argument("--id", type=int, help="ID of existing reading list to import to")
-    list_import.add_argument("--name", type=str, help="Name for new reading list (creates list if provided)")
-    list_import.add_argument("--description", type=str, help="Description for new reading list")
+    list_import = list_subparsers.add_parser(
+        "import", help="Import books from CSV to reading list"
+    )
+    list_import.add_argument(
+        "file",
+        type=str,
+        help="CSV file to import (Title, Author, Publication Year, Pages, Genre)",
+    )
+    list_import.add_argument(
+        "--id", type=int, help="ID of existing reading list to import to"
+    )
+    list_import.add_argument(
+        "--name", type=str, help="Name for new reading list (creates list if provided)"
+    )
+    list_import.add_argument(
+        "--description", type=str, help="Description for new reading list"
+    )
 
     args = vars(parser.parse_args())
 

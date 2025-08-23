@@ -34,6 +34,8 @@ class Book:
         )
         self.id = cursor.lastrowid
         db.commit()
+        if self.id is None:
+            raise RuntimeError("Failed to insert book: no ID returned")
         return self.id
 
     @classmethod
@@ -42,39 +44,41 @@ class Book:
         cursor = db.cursor()
         cursor.execute("SELECT * FROM books WHERE id = ?", (book_id,))
         row = cursor.fetchone()
-        
+
         if not row:
             return None
-            
+
         return cls(
             id=row["id"],
             title=row["title"],
             author=row["author"],
             pub_year=row["pub_year"],
             pages=row["pages"],
-            genre=row["genre"]
+            genre=row["genre"],
         )
 
     @classmethod
-    def find_by_title_author(cls, db: sqlite3.Connection, title: str, author: str) -> Optional["Book"]:
+    def find_by_title_author(
+        cls, db: sqlite3.Connection, title: str, author: str
+    ) -> Optional["Book"]:
         """Find a book by title and author (case-insensitive)."""
         cursor = db.cursor()
         cursor.execute(
             "SELECT * FROM books WHERE LOWER(title) = LOWER(?) AND LOWER(author) = LOWER(?)",
-            (title, author)
+            (title, author),
         )
         row = cursor.fetchone()
-        
+
         if not row:
             return None
-            
+
         return cls(
             id=row["id"],
             title=row["title"],
             author=row["author"],
             pub_year=row["pub_year"],
             pages=row["pages"],
-            genre=row["genre"]
+            genre=row["genre"],
         )
 
 
@@ -106,6 +110,8 @@ class Review:
         )
         self.id = cursor.lastrowid
         db.commit()
+        if self.id is None:
+            raise RuntimeError("Failed to insert review: no ID returned")
         return self.id
 
 
@@ -195,6 +201,8 @@ class ReadingList:
         )
         self.id = cursor.lastrowid
         db.commit()
+        if self.id is None:
+            raise RuntimeError("Failed to insert reading list: no ID returned")
         return self.id
 
     @classmethod
@@ -312,12 +320,12 @@ class ReadingListBook:
         )
         self.id = cursor.lastrowid
         db.commit()
+        if self.id is None:
+            raise RuntimeError("Failed to insert reading list book: no ID returned")
         return self.id
 
     @classmethod
-    def get_books_in_list(
-        cls, db: sqlite3.Connection, list_id: int
-    ) -> list[dict]:
+    def get_books_in_list(cls, db: sqlite3.Connection, list_id: int) -> list[dict]:
         """Get all books in a reading list with their read status."""
         cursor = db.cursor()
         cursor.execute(
