@@ -14,9 +14,15 @@ def report(db, args):
         show_book_detail(db, args.get("id"))
         return
     
-    # Check for author flag - show author report (table format)
-    if args.get("author") is True:
-        show_author_report(db, args)
+    # Check for author flag - show author statistics if True, or books by author if string
+    author_arg = args.get("author")
+    if author_arg is not None:
+        if author_arg is True:
+            # --author flag without value: show author statistics
+            show_author_report(db, args)
+        else:
+            # --author with value: show books by specific author
+            show_books(db, args)
         return
     
     # Check for chart flag - show year chart view

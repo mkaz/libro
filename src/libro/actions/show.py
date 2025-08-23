@@ -346,3 +346,60 @@ def get_reviews(db, year=None, author_name=None):
     except Exception as e:
         print(f"Error: {e}")
         return None
+
+
+def show_recent_reviews(db):
+    """Show recent reviews (latest 20)"""
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
+            FROM reviews r
+            JOIN books b ON r.book_id = b.id
+            ORDER BY r.id DESC
+            LIMIT 20
+            """
+        )
+        reviews = cursor.fetchall()
+        
+        if not reviews:
+            print("No reviews found.")
+            return
+
+        console = Console()
+        table = Table(show_header=True, title="Recent Reviews (Latest 20)")
+        table.add_column("Review ID")
+        table.add_column("Title")
+        table.add_column("Author")
+        table.add_column("Genre")
+        table.add_column("Rating")
+        table.add_column("Date Read")
+
+        for review in reviews:
+            # Format the date
+            date_str = review["date_read"]
+            if date_str:
+                try:
+                    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                    formatted_date = date_obj.strftime("%b %d, %Y")
+                except ValueError:
+                    formatted_date = date_str
+            else:
+                formatted_date = "Not set"
+
+            table.add_row(
+                str(review["review_id"]),
+                review["title"],
+                review["author"],
+                review["genre"] or "Not set",
+                str(review["rating"]) if review["rating"] else "Not rated",
+                formatted_date,
+            )
+
+        console.print(table)
+        
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+    except Exception as e:
+        print(f"Error: {e}")

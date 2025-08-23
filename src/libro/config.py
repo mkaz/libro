@@ -23,7 +23,7 @@ def init_args() -> Dict:
     # Report command with its specific arguments
     report = subparsers.add_parser("report", help="Show reports")
     report.add_argument("--chart", action="store_true", help="Show chart view of books by year")
-    report.add_argument("--author", action="store_true", help="Show author report")
+    report.add_argument("--author", nargs="?", const=True, help="Show author statistics if no name provided, or books by specific author")
     report.add_argument("--limit", type=int, help="Minimum books read by author")
     report.add_argument("--undated", action="store_true", help="Include undated books")
     report.add_argument("--year", type=int, help="Year to filter books")
@@ -54,6 +54,7 @@ def init_args() -> Dict:
 
     # Review management subcommands
     review_parser = subparsers.add_parser("review", help="Manage reviews")
+    review_parser.add_argument("id", type=int, nargs="?", help="Review ID to show (when no subcommand specified)")
     review_subparsers = review_parser.add_subparsers(dest="review_action", help="Review actions")
     
     # Review add subcommand

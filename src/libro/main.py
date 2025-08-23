@@ -1,10 +1,9 @@
 import sqlite3
 import sys
-import os
 from pathlib import Path
 
 from libro.config import init_args
-from libro.actions.show import show_book_detail, show_books_only
+from libro.actions.show import show_book_detail, show_books_only, show_recent_reviews
 from libro.actions.report import report
 from libro.actions.modify import add_book_review, add_book, add_review, edit_book, edit_review
 from libro.actions.db import init_db, migrate_db
@@ -51,8 +50,8 @@ def main():
             case "book":
                 book_action = args.get("book_action")
                 if book_action is None:
-                    # Show help for book command
-                    os.system("libro book --help")
+                    # Default to show action if no subcommand specified
+                    show_books_only(db, args)
                 else:
                     match book_action:
                         case "add":
@@ -66,8 +65,11 @@ def main():
             case "review":
                 review_action = args.get("review_action")
                 if review_action is None:
-                    # Show help for review command
-                    os.system("libro review --help")
+                    # Default to show action if no subcommand specified
+                    if args.get("id"):
+                        show_book_detail(db, args["id"])
+                    else:
+                        show_recent_reviews(db)
                 else:
                     match review_action:
                         case "add":
