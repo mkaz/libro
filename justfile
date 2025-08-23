@@ -23,6 +23,11 @@ type-check:
     echo "Running mypy to type check..."
     uv run python -m mypy --package libro
 
+# Run tests
+test:
+    echo "Running tests..."
+    uv run python -m pytest tests/ -v
+
 # Clean Python artifacts
 clean:
     echo "Cleaning..."
