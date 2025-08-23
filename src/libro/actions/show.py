@@ -348,19 +348,64 @@ def get_reviews(db, year=None, author_name=None):
         return None
 
 
-def show_recent_reviews(db):
-    """Show recent reviews (latest 20)"""
+def show_recent_reviews(db, args={}):
+    """Show recent reviews (latest 20) or filtered reviews"""
     try:
         cursor = db.cursor()
-        cursor.execute(
-            """
-            SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
-            FROM reviews r
-            JOIN books b ON r.book_id = b.id
-            ORDER BY r.id DESC
-            LIMIT 20
-            """
-        )
+        
+        # Check for filtering options
+        author = args.get("author")
+        title = args.get("title") 
+        year = args.get("year")
+        
+        if author:
+            cursor.execute(
+                """
+                SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
+                FROM reviews r
+                JOIN books b ON r.book_id = b.id
+                WHERE LOWER(b.author) LIKE LOWER(?)
+                ORDER BY r.date_read DESC
+                """,
+                (f"%{author}%",),
+            )
+            table_title = f"Reviews by {author}"
+        elif title:
+            cursor.execute(
+                """
+                SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
+                FROM reviews r
+                JOIN books b ON r.book_id = b.id
+                WHERE LOWER(b.title) LIKE LOWER(?)
+                ORDER BY r.date_read DESC
+                """,
+                (f"%{title}%",),
+            )
+            table_title = f"Reviews for books with title containing '{title}'"
+        elif year:
+            cursor.execute(
+                """
+                SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
+                FROM reviews r
+                JOIN books b ON r.book_id = b.id
+                WHERE strftime('%Y', r.date_read) = ?
+                ORDER BY r.date_read DESC
+                """,
+                (str(year),),
+            )
+            table_title = f"Reviews from {year}"
+        else:
+            cursor.execute(
+                """
+                SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
+                FROM reviews r
+                JOIN books b ON r.book_id = b.id
+                ORDER BY r.id DESC
+                LIMIT 20
+                """
+            )
+            table_title = "Recent Reviews (Latest 20)"
+            
         reviews = cursor.fetchall()
         
         if not reviews:
@@ -368,7 +413,7 @@ def show_recent_reviews(db):
             return
 
         console = Console()
-        table = Table(show_header=True, title="Recent Reviews (Latest 20)")
+        table = Table(show_header=True, title=table_title)
         table.add_column("Review ID")
         table.add_column("Title")
         table.add_column("Author")

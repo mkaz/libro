@@ -46,6 +46,9 @@ def init_args() -> Dict:
     review_parser = subparsers.add_parser("review", help="Manage reviews")
     review_parser.add_argument("action_or_id", nargs="?", help="Review ID to show, 'add' to add review, or 'edit' to edit review")
     review_parser.add_argument("target_id", type=int, nargs="?", help="Book ID to add review to (when action is 'add') or Review ID to edit (when action is 'edit')")
+    review_parser.add_argument("--author", type=str, help="Show reviews by specific author (from book details)")
+    review_parser.add_argument("--year", type=int, help="Year reviews were made (date_read)")
+    review_parser.add_argument("--title", type=str, help="Show reviews by book title (partial match)")
 
     # Import command with its specific arguments
     imp = subparsers.add_parser("import", help="Import books")

@@ -76,8 +76,8 @@ def main():
             case "review":
                 action_or_id = args.get("action_or_id")
                 if action_or_id is None:
-                    # No argument - show recent reviews
-                    show_recent_reviews(db)
+                    # No argument - show recent reviews (or filtered reviews)
+                    show_recent_reviews(db, args)
                 elif action_or_id == "add":
                     # Add a review - need target_id (book_id)
                     target_id = args.get("target_id")
