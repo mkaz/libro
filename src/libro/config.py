@@ -23,7 +23,7 @@ def init_args() -> Dict:
     # Report command with its specific arguments
     report = subparsers.add_parser("report", help="Show reports")
     report.add_argument("--chart", action="store_true", help="Show chart view of books by year")
-    report.add_argument("--author", action="store_true", help="Show author report")
+    report.add_argument("--author", nargs="?", const=True, help="Show author statistics if no name provided, or books by specific author")
     report.add_argument("--limit", type=int, help="Minimum books read by author")
     report.add_argument("--undated", action="store_true", help="Include undated books")
     report.add_argument("--year", type=int, help="Year to filter books")
@@ -34,39 +34,21 @@ def init_args() -> Dict:
     subparsers.add_parser("add", help="Add a book with review")
 
 
-    # Book management subcommands
+    # Book management command
     book_parser = subparsers.add_parser("book", help="Manage books")
-    book_subparsers = book_parser.add_subparsers(dest="book_action", help="Book actions")
-    
-    # Book add subcommand
-    book_subparsers.add_parser("add", help="Add a book (without review)")
-    
-    # Book edit subcommand
-    book_edit_parser = book_subparsers.add_parser("edit", help="Edit book details")
-    book_edit_parser.add_argument("id", type=int, help="Book ID to edit")
-    
-    # Book show subcommand
-    book_show_parser = book_subparsers.add_parser("show", help="Show books")
-    book_show_parser.add_argument("id", type=int, nargs="?", help="Show specific book ID")
-    book_show_parser.add_argument("--author", type=str, help="Show books by specific author")
-    book_show_parser.add_argument("--year", type=int, help="Year to filter books")
-    book_show_parser.add_argument("--title", type=str, help="Show books by title (partial match)")
+    book_parser.add_argument("action_or_id", nargs="?", help="Book ID to show, 'add' to add book, or 'edit' to edit book")
+    book_parser.add_argument("edit_id", type=int, nargs="?", help="Book ID to edit (when action is 'edit')")
+    book_parser.add_argument("--author", type=str, help="Show books by specific author")
+    book_parser.add_argument("--year", type=int, help="Year to filter books")
+    book_parser.add_argument("--title", type=str, help="Show books by title (partial match)")
 
-    # Review management subcommands
+    # Review management command
     review_parser = subparsers.add_parser("review", help="Manage reviews")
-    review_subparsers = review_parser.add_subparsers(dest="review_action", help="Review actions")
-    
-    # Review add subcommand
-    review_add_parser = review_subparsers.add_parser("add", help="Add a review to existing book")
-    review_add_parser.add_argument("book_id", type=int, help="Book ID to add review to")
-    
-    # Review edit subcommand
-    review_edit_parser = review_subparsers.add_parser("edit", help="Edit review details")
-    review_edit_parser.add_argument("id", type=int, help="Review ID to edit")
-    
-    # Review show subcommand
-    review_show_parser = review_subparsers.add_parser("show", help="Show reviews")
-    review_show_parser.add_argument("id", type=int, nargs="?", help="Show specific review ID")
+    review_parser.add_argument("action_or_id", nargs="?", help="Review ID to show, 'add' to add review, or 'edit' to edit review")
+    review_parser.add_argument("target_id", type=int, nargs="?", help="Book ID to add review to (when action is 'add') or Review ID to edit (when action is 'edit')")
+    review_parser.add_argument("--author", type=str, help="Show reviews by specific author (from book details)")
+    review_parser.add_argument("--year", type=int, help="Year reviews were made (date_read)")
+    review_parser.add_argument("--title", type=str, help="Show reviews by book title (partial match)")
 
     # Import command with its specific arguments
     imp = subparsers.add_parser("import", help="Import books")

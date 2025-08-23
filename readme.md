@@ -21,14 +21,15 @@ Libro's commands are organized around this book/review separation:
 **Reports:**
 - `libro` (default) - Reading history table
 - `libro report` - Reading history table  
-- `libro report --author` - Book counts by author
+- `libro report --author` - Author statistics (most read authors)
+- `libro report --author "Name"` - Books/reviews by specific author  
 - `libro report --chart` - Yearly reading chart
 - `libro report 123` - Book/review details for review id
 
 **Actions:**
 - `libro add` - Add book + review
-- `libro book` - Book management (add, edit, show)
-- `libro review` - Review management (add, edit, show)
+- `libro book` - Book management (show, add, edit)
+- `libro review` - Review management (show, add, edit)
 - `libro list` - Reading list management
 
 ## Usage
@@ -40,30 +41,42 @@ Libro's commands are organized around this book/review separation:
 
 Add book only (no review): `libro book add`
 
-Show recent books: `libro book show` (shows latest 20 books by default)
+Show recent books: `libro book` (shows latest 20 books by default)
 
-Show specific book: `libro book show 42`
+Show specific book: `libro book 42`
 
 Edit book details only: `libro book edit 42`
 
 **Search and filter books:**
 
-Show books by author: `libro book show --author "Stephen King"`
+Show books by author: `libro book --author "Stephen King"`
 
-Show books by title: `libro book show --title "Foundation"`
+Show books by title: `libro book --title "Foundation"`
 
-Show books published in specific year: `libro book show --year 2024`
+Show books published in specific year: `libro book --year 2024`
 
 All search options support partial matching, so `--author "King"` will find "Stephen King", "Tabitha King", etc.
 
 
 ### Review Management
 
+Show recent reviews: `libro review` (shows latest 20 reviews by default)
+
+Show specific review: `libro review 123`
+
 Add review to existing book: `libro review add 42`
 
-Show specific review: `libro review show 123`
-
 Edit review details only: `libro review edit 123`
+
+**Search and filter reviews:**
+
+Show reviews by author: `libro review --author "Stephen King"` (searches book authors)
+
+Show reviews by book title: `libro review --title "Foundation"` (searches book titles)
+
+Show reviews from specific year: `libro review --year 2024` (searches by date_read)
+
+All search options support partial matching, and year filtering uses the date the review was made, not the book's publication year.
 
 ### Reading Lists
 
@@ -135,8 +148,9 @@ The default view shows your reading history, grouped by genre:
   2025   17      ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
 ```
 
-#### Author Report
+#### Author Report and Filtering
 
+Show author statistics (most read authors):
 ```
 ❯ libro report --author
 
@@ -157,6 +171,19 @@ The default view shows your reading history, grouped by genre:
   Natalie D. Richards   3
   Lucy Foley            3
   Cory Doctorow         3
+```
+
+Show books/reviews by specific author:
+```
+❯ libro report --author "Stephen King"
+
+                                Books by Stephen King
+┏━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ ID ┃ Title                        ┃ Author        ┃ Rating ┃ Date Read    ┃
+┡━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ 1  │ Cujo                         │ Stephen King  │ 3      │ Jan 05, 2025 │
+│ 584│ Salem's Lot                  │ Stephen King  │ 3      │ Mar 12, 2025 │
+└────┴──────────────────────────────┴───────────────┴────────┴──────────────┘
 ```
 
 ## Reading Lists
