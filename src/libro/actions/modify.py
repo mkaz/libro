@@ -111,7 +111,7 @@ style = Style.from_dict(
 
 
 def add_book_review(db, args):
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:
@@ -188,7 +188,7 @@ def add_book_review(db, args):
 
 def add_book(db, args):
     """Add a book without a review."""
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:
@@ -239,7 +239,7 @@ def add_book(db, args):
 def add_review(db, args):
     """Add a review to an existing book."""
     book_id = args["book_id"]
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:
@@ -281,7 +281,7 @@ def add_review(db, args):
         )
         review_id = review.insert(db)
 
-        console.print(f"\n✅ Successfully added review for '{book['title']}' (Review ID: {review_id})", style="green")
+        console.print(f"\n✅ Successfully added review for '{book.title}' (Review ID: {review_id})", style="green")
 
     except KeyboardInterrupt:
         print("\n\nAdd review cancelled. No changes made.")
@@ -303,7 +303,7 @@ def _prompt_with_retry(
         try:
             if multiline:
                 # Create new session for multiline to avoid validator inheritance
-                multiline_session = PromptSession(style=style)
+                multiline_session: PromptSession[str] = PromptSession(style=style)
                 return multiline_session.prompt(
                     prompt_text, default=default_value, multiline=True
                 )
@@ -351,7 +351,7 @@ def edit_book(db, args):
         print(f"Error: Book with ID {book_id} not found.")
         return
 
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:
@@ -444,7 +444,7 @@ def edit_review(db, args):
         print(f"Error: Review with ID {review_id} not found.")
         return
 
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     console = Console()
 
     try:

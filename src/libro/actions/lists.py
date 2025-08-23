@@ -105,6 +105,8 @@ def show_all_lists(db: sqlite3.Connection, console: Console):
     table.add_column("Progress", justify="center")
     
     for reading_list in lists:
+        if reading_list.id is None:
+            continue  # Skip lists without IDs
         stats = ReadingListBook.get_list_stats(db, reading_list.id)
         
         # Create progress bar representation
@@ -137,6 +139,10 @@ def show_specific_list(db: sqlite3.Connection, list_id: int, console: Console):
         console.print(f"[red]Reading list with ID {list_id} not found.[/red]")
         return
     
+    if reading_list.id is None:
+        console.print(f"[red]Reading list '{reading_list.name}' has no ID.[/red]")
+        return
+        
     books = ReadingListBook.get_books_in_list(db, reading_list.id)
     
     if not books:
@@ -206,6 +212,10 @@ def add_book_to_list(db: sqlite3.Connection, args: dict):
         console.print(f"[red]Reading list with ID {list_id} not found.[/red]")
         return
     
+    if reading_list.id is None:
+        console.print(f"[red]Reading list '{reading_list.name}' has no ID.[/red]")
+        return
+    
     # If book IDs were provided, add existing books
     if book_ids:
         _add_existing_books_to_list(db, reading_list, book_ids, console)
@@ -216,6 +226,7 @@ def add_book_to_list(db: sqlite3.Connection, args: dict):
 
 def _add_existing_books_to_list(db: sqlite3.Connection, reading_list: ReadingList, book_ids: list[int], console: Console):
     """Add existing books by their IDs to a reading list."""
+    assert reading_list.id is not None, "Reading list must have an ID"
     added_count = 0
     errors = []
     
@@ -255,7 +266,8 @@ def _add_existing_books_to_list(db: sqlite3.Connection, reading_list: ReadingLis
 
 def _add_new_book_to_list(db: sqlite3.Connection, reading_list: ReadingList, console: Console):
     """Add a new book to a reading list using interactive prompts."""
-    session = PromptSession(style=style)
+    assert reading_list.id is not None, "Reading list must have an ID"
+    session: PromptSession[str] = PromptSession(style=style)
     console.print(f"[blue]Adding book to '{reading_list.name}' reading list[/blue]\n")
     
     try:
@@ -306,6 +318,10 @@ def remove_book_from_list(db: sqlite3.Connection, args: dict):
         console.print(f"[red]Reading list with ID {list_id} not found.[/red]")
         return
     
+    if reading_list.id is None:
+        console.print(f"[red]Reading list '{reading_list.name}' has no ID.[/red]")
+        return
+    
     # Check if book exists in the list
     books = ReadingListBook.get_books_in_list(db, reading_list.id)
     book_in_list = next((b for b in books if b["book_id"] == book_id), None)
@@ -342,6 +358,10 @@ def show_specific_list_stats(db: sqlite3.Connection, list_id: int, console: Cons
     reading_list = ReadingList.get_by_id(db, list_id)
     if not reading_list:
         console.print(f"[red]Reading list with ID {list_id} not found.[/red]")
+        return
+    
+    if reading_list.id is None:
+        console.print(f"[red]Reading list '{reading_list.name}' has no ID.[/red]")
         return
     
     stats = ReadingListBook.get_list_stats(db, reading_list.id)
@@ -387,6 +407,8 @@ def show_all_list_stats(db: sqlite3.Connection, console: Console):
     total_read = 0
     
     for reading_list in lists:
+        if reading_list.id is None:
+            continue  # Skip lists without IDs
         stats = ReadingListBook.get_list_stats(db, reading_list.id)
         total_books += stats['total_books']
         total_read += stats['books_read']
@@ -400,7 +422,7 @@ def show_all_list_stats(db: sqlite3.Connection, console: Console):
 def edit_list(db: sqlite3.Connection, args: dict):
     """Edit a reading list's name and/or description."""
     console = Console()
-    session = PromptSession(style=style)
+    session: PromptSession[str] = PromptSession(style=style)
     list_id = args["id"]
     new_name = args.get("name")
     new_description = args.get("description")
@@ -460,6 +482,10 @@ def delete_list(db: sqlite3.Connection, args: dict):
     reading_list = ReadingList.get_by_id(db, list_id)
     if not reading_list:
         console.print(f"[red]Reading list with ID {list_id} not found.[/red]")
+        return
+    
+    if reading_list.id is None:
+        console.print(f"[red]Reading list '{reading_list.name}' has no ID.[/red]")
         return
     
     # Get list stats to show user what they're deleting

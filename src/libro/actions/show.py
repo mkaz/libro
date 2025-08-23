@@ -37,7 +37,7 @@ def show_books(db, args={}):
     sorted_books = books
 
     ## Count books by genre
-    count = {}
+    count: dict[str, int] = {}
     for book in books:
         count[book["genre"]] = count.get(book["genre"], 0) + 1
 

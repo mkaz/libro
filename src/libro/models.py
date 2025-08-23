@@ -34,6 +34,8 @@ class Book:
         )
         self.id = cursor.lastrowid
         db.commit()
+        if self.id is None:
+            raise RuntimeError("Failed to insert book: no ID returned")
         return self.id
 
     @classmethod
@@ -106,6 +108,8 @@ class Review:
         )
         self.id = cursor.lastrowid
         db.commit()
+        if self.id is None:
+            raise RuntimeError("Failed to insert review: no ID returned")
         return self.id
 
 
@@ -195,6 +199,8 @@ class ReadingList:
         )
         self.id = cursor.lastrowid
         db.commit()
+        if self.id is None:
+            raise RuntimeError("Failed to insert reading list: no ID returned")
         return self.id
 
     @classmethod
@@ -312,6 +318,8 @@ class ReadingListBook:
         )
         self.id = cursor.lastrowid
         db.commit()
+        if self.id is None:
+            raise RuntimeError("Failed to insert reading list book: no ID returned")
         return self.id
 
     @classmethod

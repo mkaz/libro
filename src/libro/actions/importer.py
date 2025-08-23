@@ -1,7 +1,7 @@
 from pathlib import Path
 import csv
 import re
-from datetime import datetime
+from datetime import datetime, date
 from libro.models import Book, Review, ReadingList, ReadingListBook
 from rich.console import Console
 
@@ -69,9 +69,9 @@ def import_books(db, args):
             shelf1 = row["Bookshelves"]
             shelf2 = row["Bookshelves with positions"]
             shelf3 = row["Exclusive Shelf"]
-            shelf = ",".join([s.strip() for s in [shelf1, shelf2, shelf3] if s])
-            shelf = shelf.split(",")
-            shelf = set(shelf)
+            shelf_str = ",".join([s.strip() for s in [shelf1, shelf2, shelf3] if s])
+            shelf_list = shelf_str.split(",")
+            shelf = set(shelf_list)
 
             if "read" in shelf:
                 count += 1
@@ -80,17 +80,20 @@ def import_books(db, args):
                 book = Book(
                     title=title,
                     author=author,
-                    pub_year=pub_year,
-                    pages=pages,
+                    pub_year=int(pub_year) if pub_year else None,
+                    pages=int(pages) if pages else None,
                     genre="fiction",  # Default to fiction, could be improved
                 )
                 book_id = book.insert(db)
 
                 # Create and insert review
-                review = Review(
-                    book_id=book_id, date_read=date_read, rating=rating, review=review
+                review_obj = Review(
+                    book_id=book_id, 
+                    date_read=date.fromisoformat(date_read) if date_read else None,
+                    rating=int(rating) if rating else None, 
+                    review=review
                 )
-                review.insert(db)
+                review_obj.insert(db)
 
     print(f"Imported {count} books")
 
@@ -198,6 +201,8 @@ def import_csv_to_list(db, args):
                 
                 if existing_book:
                     book_id = existing_book.id
+                    if book_id is None:
+                        raise RuntimeError(f"Existing book '{title}' has no ID")
                     console.print(f"[dim]Row {row_num}: Book '{title}' by {author} already exists (ID: {book_id})[/dim]")
                     existing_count += 1
                 else:
