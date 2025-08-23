@@ -28,6 +28,10 @@ test:
     echo "Running tests..."
     uv run python -m pytest tests/ -v
 
+# Run all CI checks locally
+ci: lint type-check test
+    echo "All CI checks passed!"
+
 # Clean Python artifacts
 clean:
     echo "Cleaning..."
@@ -58,7 +62,7 @@ build: clean lint dev-install
 
 # Publish the project to PyPI
 publish: build
-    echo "Publishing to PyPI 🚀"
+    echo "Publishing to PyPI"
     uv run -m twine upload dist/*
     echo "."
 

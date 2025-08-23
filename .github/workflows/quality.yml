@@ -1,0 +1,65 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, trunk, develop ]
+  pull_request:
+    branches: [ main, trunk, develop ]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python 3.11
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Check code formatting
+      run: |
+        echo "Checking code formatting with ruff..."
+        uv run python -m ruff format --check src/libro/
+        if [ $? -ne 0 ]; then
+          echo "Code formatting issues found. Run 'just lint-fix' to fix them."
+          exit 1
+        fi
+        echo "Code formatting is correct"
+
+    - name: Check linting
+      run: |
+        echo "Running linting checks with ruff..."
+        uv run python -m ruff check src/libro/
+        if [ $? -ne 0 ]; then
+          echo "Linting issues found. Run 'just lint' to see details."
+          exit 1
+        fi
+        echo "No linting issues found"
+
+    - name: Check type annotations
+      run: |
+        echo "Running type checking with mypy..."
+        uv run python -m mypy --package libro
+        if [ $? -ne 0 ]; then
+          echo "Type checking failed. Run 'just type-check' locally to debug."
+          exit 1
+        fi
+        echo "Type checking passed"
+
+    - name: Run fast tests
+      run: |
+        echo "Running quick test suite..."
+        uv run python -m pytest tests/ -x -q
+        if [ $? -ne 0 ]; then
+          echo "Tests failed. Run 'just test' locally to debug."
+          exit 1
+        fi
+        echo "All tests passed"
