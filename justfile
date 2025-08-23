@@ -5,10 +5,17 @@ set quiet
 default:
     @just --list
 
-# Run checks
+# Run lint and format checks
 lint:
-    echo "Running ruff to lint..."
+    echo "Running ruff to check..."
     uv run python -m ruff check src/libro/
+    uv run python -m ruff format --check src/libro/
+    echo "."
+
+# Fix lint and format checks
+lint-fix:
+    echo "Fixing lint issues..."
+    uv run python -m ruff format src/libro/
     echo "."
 
 # Run mypy typecheck
@@ -26,18 +33,20 @@ clean:
     find . -type f -name "*.pyc" -delete
     echo "."
 
-## uv
-# Uv runs the project out of the local .venv
-# Create venv by running `uv venv`
-
 # Install dependencies
 install:
     echo "Installing dependencies"
     uv sync
     echo "."
 
+# Install developer dependencies
+dev-install:
+    echo "Installing developer dependencies"
+    uv sync --dev
+    echo "."
+
 # Build the project
-build: clean lint install
+build: clean lint dev-install
     echo "Building"
     uv run -m build
     echo "."

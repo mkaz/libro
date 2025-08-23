@@ -97,21 +97,23 @@ def show_book_detail(db, review_id):
         return
 
     console = Console()
-    table = Table(show_header=True, title=f"Book & Review Details (Review ID: {review_id})")
+    table = Table(
+        show_header=True, title=f"Book & Review Details (Review ID: {review_id})"
+    )
     table.add_column("Field", style="cyan")
     table.add_column("Value", style="green")
 
     # Map of column names to display names
     display_names = [
         "Book ID",
-        "Title", 
+        "Title",
         "Author",
         "Publication Year",
         "Pages",
         "Genre",
         "Review ID",
         "Rating",
-        "Date Read", 
+        "Date Read",
         "My Review",
     ]
 
@@ -121,16 +123,12 @@ def show_book_detail(db, review_id):
 
     console.print(table)
 
-    # Show reading lists that contain this book  
+    # Show reading lists that contain this book
     book_id = book[0]  # First column is book ID
     reading_lists = ReadingListBook.get_lists_for_book(db, book_id)
-    
+
     if reading_lists:
         console.print(f"\n📚 [cyan]Reading Lists:[/cyan] {', '.join(reading_lists)}")
-    else:
-        console.print("\n[dim]This book is not in any reading lists.[/dim]")
-        console.print("[dim]Add it to a list with: libro list add <list_name>[/dim]")
-
 
 
 def show_books_only(db, args={}):
@@ -145,7 +143,7 @@ def show_books_only(db, args={}):
     title = args.get("title")
     year = args.get("year")
     year_explicit = args.get("year_explicit", False)
-    
+
     if author:
         books = get_books_only(db, author_name=author)
         table_title = f"Books by {author}"
@@ -159,7 +157,7 @@ def show_books_only(db, args={}):
         # Show most recent books (when no year was explicitly provided)
         books = get_books_only(db)
         table_title = "Recent Books (Latest 20)"
-        
+
     if not books:
         print("No books found.")
         return
@@ -191,7 +189,7 @@ def show_book_only_detail(db, book_id):
     cursor = db.cursor()
     cursor.execute(
         """SELECT id, title, author, pub_year, pages, genre
-        FROM books 
+        FROM books
         WHERE id = ?""",
         (book_id,),
     )
@@ -220,38 +218,38 @@ def show_book_only_detail(db, book_id):
         table.add_row(field, display_value)
 
     console.print(table)
-    
+
     # Show reading lists that contain this book
     reading_lists = ReadingListBook.get_lists_for_book(db, book_id)
-    
+
     if reading_lists:
-        console.print(f"\n📚 [cyan]Reading Lists:[/cyan] {', '.join(reading_lists)}")
+        console.print(f"\n[cyan]Reading Lists:[/cyan] {', '.join(reading_lists)}")
     else:
         console.print("\n[dim]This book is not in any reading lists.[/dim]")
         console.print("[dim]Add it to a list with: libro list add <list_id>[/dim]")
-    
+
     # Show reviews for this book
     cursor.execute(
-        """SELECT id, rating, date_read 
-        FROM reviews 
+        """SELECT id, rating, date_read
+        FROM reviews
         WHERE book_id = ?
         ORDER BY date_read DESC""",
         (book_id,),
     )
     reviews = cursor.fetchall()
-    
+
     if reviews:
-        console.print("\n📝 [cyan]Reviews:[/cyan]")
+        console.print("\n[cyan]Reviews:[/cyan]")
         review_table = Table()
         review_table.add_column("Review ID")
         review_table.add_column("Rating")
         review_table.add_column("Date Read")
-        
+
         for review in reviews:
             review_table.add_row(
                 str(review["id"]),
                 str(review["rating"]) if review["rating"] else "Not rated",
-                str(review["date_read"]) if review["date_read"] else "Not set"
+                str(review["date_read"]) if review["date_read"] else "Not set",
             )
         console.print(review_table)
     else:
@@ -267,7 +265,7 @@ def get_books_only(db, author_name=None, year=None, title=None):
             cursor.execute(
                 """
                 SELECT id, title, author, pub_year, pages, genre
-                FROM books 
+                FROM books
                 WHERE LOWER(author) LIKE LOWER(?)
                 ORDER BY LOWER(title)
             """,
@@ -277,7 +275,7 @@ def get_books_only(db, author_name=None, year=None, title=None):
             cursor.execute(
                 """
                 SELECT id, title, author, pub_year, pages, genre
-                FROM books 
+                FROM books
                 WHERE pub_year = ?
                 ORDER BY LOWER(title)
             """,
@@ -287,7 +285,7 @@ def get_books_only(db, author_name=None, year=None, title=None):
             cursor.execute(
                 """
                 SELECT id, title, author, pub_year, pages, genre
-                FROM books 
+                FROM books
                 WHERE LOWER(title) LIKE LOWER(?)
                 ORDER BY LOWER(title)
             """,
@@ -297,7 +295,7 @@ def get_books_only(db, author_name=None, year=None, title=None):
             cursor.execute(
                 """
                 SELECT id, title, author, pub_year, pages, genre
-                FROM books 
+                FROM books
                 ORDER BY id DESC
                 LIMIT 20
             """
@@ -352,12 +350,12 @@ def show_recent_reviews(db, args={}):
     """Show recent reviews (latest 20) or filtered reviews"""
     try:
         cursor = db.cursor()
-        
+
         # Check for filtering options
         author = args.get("author")
-        title = args.get("title") 
+        title = args.get("title")
         year = args.get("year")
-        
+
         if author:
             cursor.execute(
                 """
@@ -405,9 +403,9 @@ def show_recent_reviews(db, args={}):
                 """
             )
             table_title = "Recent Reviews (Latest 20)"
-            
+
         reviews = cursor.fetchall()
-        
+
         if not reviews:
             print("No reviews found.")
             return
@@ -443,7 +441,7 @@ def show_recent_reviews(db, args={}):
             )
 
         console.print(table)
-        
+
     except sqlite3.Error as e:
         print(f"Database error: {e}")
     except Exception as e:

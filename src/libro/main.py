@@ -5,7 +5,13 @@ from pathlib import Path
 from libro.config import init_args
 from libro.actions.show import show_book_detail, show_books_only, show_recent_reviews
 from libro.actions.report import report
-from libro.actions.modify import add_book_review, add_book, add_review, edit_book, edit_review
+from libro.actions.modify import (
+    add_book_review,
+    add_book,
+    add_review,
+    edit_book,
+    edit_review,
+)
 from libro.actions.db import init_db, migrate_db
 from libro.actions.importer import import_books
 from libro.actions.lists import manage_lists
@@ -34,7 +40,7 @@ def main():
         db = sqlite3.connect(dbfile)
         # Default to using column names instead of index
         db.row_factory = sqlite3.Row
-        
+
         # Run migration for existing databases
         migrate_db(db)
 
@@ -59,7 +65,9 @@ def main():
                     # Edit a book - need edit_id
                     edit_id = args.get("edit_id")
                     if edit_id is None:
-                        print("Please specify a book ID to edit: libro book edit <book_id>")
+                        print(
+                            "Please specify a book ID to edit: libro book edit <book_id>"
+                        )
                     else:
                         # Update args to use the edit_id as the main id
                         args["id"] = edit_id
@@ -82,7 +90,9 @@ def main():
                     # Add a review - need target_id (book_id)
                     target_id = args.get("target_id")
                     if target_id is None:
-                        print("Please specify a book ID to add review to: libro review add <book_id>")
+                        print(
+                            "Please specify a book ID to add review to: libro review add <book_id>"
+                        )
                     else:
                         # Update args to use the target_id as book_id
                         args["book_id"] = target_id
@@ -91,7 +101,9 @@ def main():
                     # Edit a review - need target_id (review_id)
                     target_id = args.get("target_id")
                     if target_id is None:
-                        print("Please specify a review ID to edit: libro review edit <review_id>")
+                        print(
+                            "Please specify a review ID to edit: libro review edit <review_id>"
+                        )
                     else:
                         # Update args to use the target_id as the main id
                         args["id"] = target_id
