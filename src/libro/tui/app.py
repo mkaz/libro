@@ -104,7 +104,11 @@ class LibroTUI(App):
                     )
                     genre_key = current_genre or "Unknown"
                     genre_header = f"{genre_display} ({genre_counts[genre_key]})"
-                    table.add_row("", genre_header, "", "", "", "")
+                    
+                    # Add genre header row that spans all columns
+                    row_key = table.add_row("", f"[bold cyan]{genre_header}[/bold cyan]", "", "", "", "")
+                    # Style the genre header row
+                    table.set_row_style(row_key, "bold on $accent")
 
                 # Format date
                 date_str = book["date_read"]
@@ -194,9 +198,7 @@ class LibroTUI(App):
         """Change the current year and reload data"""
         self.current_year = new_year
         self.sub_title = f"Books Read in {self.current_year}"
-        self.notify(f"Loading books for {self.current_year}")
         self.load_books_data()
-        self.notify(f"Books loaded for {self.current_year}")
 
     def action_books_view(self) -> None:
         """Switch to books-only view (placeholder for now)"""
