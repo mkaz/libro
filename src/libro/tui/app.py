@@ -10,6 +10,7 @@ from textual.binding import Binding
 from libro.actions.show import get_reviews
 from .screens.book_detail import BookDetailScreen
 from .screens.add_book import AddBookScreen
+from .screens.year_select import YearSelectScreen
 
 
 class LibroTUI(App):
@@ -31,6 +32,7 @@ class LibroTUI(App):
         Binding("q", "quit", "Quit"),
         Binding("r", "refresh", "Refresh"),
         Binding("a", "add_book", "Add Book"),
+        Binding("y", "select_year", "Select Year"),
         Binding("b", "books_view", "Books"),
         Binding("l", "lists_view", "Lists"),
         Binding("enter", "view_details", "View Details"),
@@ -47,7 +49,9 @@ class LibroTUI(App):
         yield Header()
         yield DataTable(id="books_table", cursor_type="row")
         yield Container(
-            Label("q: Quit | r: Refresh | a: Add Book | Enter: View Details | ?: Help"),
+            Label(
+                "q: Quit | r: Refresh | a: Add Book | y: Select Year | Enter: View Details | ?: Help"
+            ),
             classes="footer-menu",
         )
 
@@ -181,6 +185,18 @@ class LibroTUI(App):
     def action_add_book(self) -> None:
         """Add a new book and review"""
         self.push_screen(AddBookScreen(self.db_path))
+
+    def action_select_year(self) -> None:
+        """Open year selection dialog"""
+        self.push_screen(YearSelectScreen(self.db_path, self.current_year))
+
+    def change_year(self, new_year: int) -> None:
+        """Change the current year and reload data"""
+        self.current_year = new_year
+        self.sub_title = f"Books Read in {self.current_year}"
+        self.notify(f"Loading books for {self.current_year}")
+        self.load_books_data()
+        self.notify(f"Books loaded for {self.current_year}")
 
     def action_books_view(self) -> None:
         """Switch to books-only view (placeholder for now)"""
