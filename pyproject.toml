@@ -20,6 +20,7 @@ dependencies = [
     "appdirs>=1.4",
     "rich>=13.3",
     "prompt_toolkit",
+    "textual>=5.3.0",
 ]
 
 [project.urls]

@@ -154,6 +154,9 @@ def init_args() -> Dict:
         "--description", type=str, help="Description for new reading list"
     )
 
+    # TUI command
+    subparsers.add_parser("tui", help="Launch interactive TUI interface")
+
     args = vars(parser.parse_args())
 
     if args["version"]:
