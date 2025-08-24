@@ -15,7 +15,7 @@ from libro.actions.modify import (
 from libro.actions.db import init_db, migrate_db
 from libro.actions.importer import import_books
 from libro.actions.lists import manage_lists
-from libro.actions.tui import launch_tui
+from libro.tui import launch_tui
 
 
 def main():
