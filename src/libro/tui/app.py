@@ -6,6 +6,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import DataTable, Header, Label
 from textual.binding import Binding
+from rich.text import Text
 
 from libro.actions.show import get_reviews
 from .screens.book_detail import BookDetailScreen
@@ -26,6 +27,15 @@ class LibroTUI(App):
         color: $text;
         content-align: center middle;
     }
+
+    .genre-table {
+        margin-bottom: 0;
+    }
+
+    .header-label {
+        margin-top: 1;
+    }
+
     """
 
     BINDINGS = [
@@ -47,7 +57,7 @@ class LibroTUI(App):
     def compose(self) -> ComposeResult:
         """Create the UI layout"""
         yield Header()
-        yield DataTable(id="books_table", cursor_type="row")
+        yield Container(id="books_container")
         yield Container(
             Label(
                 "q: Quit | r: Refresh | a: Add Book | y: Select Year | Enter: View Details | ?: Help"
@@ -62,7 +72,7 @@ class LibroTUI(App):
         self.load_books_data()
 
     def load_books_data(self) -> None:
-        """Load and display books read in current year"""
+        """Load and display books read in current year with separate tables per genre"""
         try:
             db = sqlite3.connect(self.db_path)
             db.row_factory = sqlite3.Row
@@ -70,71 +80,73 @@ class LibroTUI(App):
             # Get books for current year (same logic as CLI report command)
             books = get_reviews(db, year=self.current_year)
 
-            table = self.query_one("#books_table", DataTable)
-            table.clear(columns=True)
-
-            # Add columns
-            table.add_column("Review ID", width=10)
-            table.add_column("Title", width=30)
-            table.add_column("Author", width=25)
-            table.add_column("Genre", width=15)
-            table.add_column("Rating", width=8)
-            table.add_column("Date Read", width=12)
+            # Clear the books container
+            container = self.query_one("#books_container", Container)
+            container.remove_children()
 
             if not books:
-                table.add_row("No books found for current year", "", "", "", "", "")
+                container.mount(Label("No books found for current year"))
                 return
 
-            # Group by genre and add rows
-            current_genre = None
-            genre_counts: dict[str, int] = {}
+            # Group books by genre
+            books_by_genre: dict[str, list] = {}
             for book in books:
                 genre_key = book["genre"] or "Unknown"
-                genre_counts[genre_key] = genre_counts.get(genre_key, 0) + 1
+                if genre_key not in books_by_genre:
+                    books_by_genre[genre_key] = []
+                books_by_genre[genre_key].append(book)
 
-            for book in books:
-                # Add genre separator if genre changes
-                if book["genre"] != current_genre:
-                    if current_genre is not None:
-                        table.add_row("", "", "", "", "", "")  # Empty separator row
-
-                    current_genre = book["genre"]
-                    genre_display = (
-                        current_genre.title() if current_genre else "Unknown"
-                    )
-                    genre_key = current_genre or "Unknown"
-                    genre_header = f"{genre_display} ({genre_counts[genre_key]})"
-                    
-                    # Add genre header row that spans all columns
-                    row_key = table.add_row("", f"[bold cyan]{genre_header}[/bold cyan]", "", "", "", "")
-                    # Style the genre header row
-                    table.set_row_style(row_key, "bold on $accent")
-
-                # Format date
-                date_str = book["date_read"]
-                if date_str:
-                    try:
-                        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-                        formatted_date = date_obj.strftime("%b %d")
-                    except ValueError:
-                        formatted_date = date_str
-                else:
-                    formatted_date = ""
-
-                table.add_row(
-                    str(book["review_id"]),
-                    book["title"],
-                    book["author"],
-                    book["genre"] or "",
-                    str(book["rating"]) if book["rating"] else "",
-                    formatted_date,
+            # Create a table for each genre
+            for genre, genre_books in books_by_genre.items():
+                genre_display = (
+                    genre.title() if genre and genre != "Unknown" else "Unknown"
                 )
+                genre_count = len(genre_books)
+
+                # Add genre header label
+                header_label = Label(
+                    f"[bold cyan]{genre_display} ({genre_count})[/bold cyan]",
+                    classes="header-label",
+                )
+                container.mount(header_label)
+
+                # Create table for this genre
+                table = DataTable(cursor_type="row", classes="genre-table")
+                table.add_column("Review ID", width=10)
+                table.add_column("Title", width=30)
+                table.add_column("Author", width=25)
+                table.add_column("Genre", width=15)
+                table.add_column("Rating", width=8)
+                table.add_column("Date Read", width=12)
+
+                # Add books for this genre
+                for book in genre_books:
+                    # Format date
+                    date_str = book["date_read"]
+                    if date_str:
+                        try:
+                            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                            formatted_date = date_obj.strftime("%b %d")
+                        except ValueError:
+                            formatted_date = date_str
+                    else:
+                        formatted_date = ""
+
+                    table.add_row(
+                        str(book["review_id"]),
+                        book["title"],
+                        book["author"],
+                        book["genre"] or "",
+                        str(book["rating"]) if book["rating"] else "",
+                        formatted_date,
+                    )
+
+                container.mount(table)
 
         except sqlite3.Error as e:
-            table = self.query_one("#books_table", DataTable)
-            table.clear(columns=True)
-            table.add_column("Error", width=50)
-            table.add_row(f"Database error: {e}")
+            container = self.query_one("#books_container", Container)
+            container.remove_children()
+            container.mount(Label(f"Database error: {e}"))
         finally:
             if "db" in locals():
                 db.close()
@@ -157,7 +169,13 @@ class LibroTUI(App):
 
     def _view_selected_book(self) -> None:
         """View details of the currently selected book"""
-        table = self.query_one("#books_table", DataTable)
+        # Find the currently focused table
+        focused_widget = self.focused
+        if not isinstance(focused_widget, DataTable):
+            self.notify("Select a book row first")
+            return
+
+        table = focused_widget
 
         if table.cursor_row is None:
             self.notify("No row selected")
@@ -173,7 +191,7 @@ class LibroTUI(App):
         # The first column should be the Review ID
         review_id_str = str(row_data[0])
 
-        # Skip empty rows and genre headers
+        # Skip empty rows
         if not review_id_str or review_id_str == "":
             self.notify("Select a book row to view details")
             return
