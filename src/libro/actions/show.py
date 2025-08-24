@@ -48,9 +48,10 @@ def show_books(db, args={}):
             if current_genre is not None:  # Don't add separator before first genre
                 table.add_row("", "", "", "", "", style="dim")
             current_genre = book["genre"]
+            genre_display = current_genre.title() if current_genre else "Unknown"
             table.add_row(
                 "",
-                f"[bold]{current_genre.title()} ({count[current_genre]})[/bold]",
+                f"[bold]{genre_display} ({count[current_genre]})[/bold]",
                 "",
                 "",
                 "",
