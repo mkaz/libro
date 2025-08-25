@@ -75,7 +75,6 @@ class YearSelectScreen(ModalScreen):
             yield Label(f"Currently showing: {self.current_year}")
             yield OptionList(*self.available_years, id="year_options")
 
-
     def on_option_list_option_selected(self, event) -> None:
         """Handle year selection from option list"""
         if event.option_list.id == "year_options":

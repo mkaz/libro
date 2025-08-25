@@ -67,7 +67,7 @@ class LibroTUI(App):
 
     def on_mount(self) -> None:
         """Initialize the table when the app starts"""
-        self.theme = "gruvbox"
+        self.theme = "textual-dark"
         self.sub_title = f"Books Read in {self.current_year}"
         self.load_books_data()
 

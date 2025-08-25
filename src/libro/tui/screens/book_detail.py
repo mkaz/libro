@@ -53,6 +53,26 @@ class BookDetailScreen(ModalScreen):
         width: 100%;
         margin-top: 1;
     }
+
+    .field-row Button {
+        width: 100%;
+        text-align: left;
+        background: $surface;
+        border: none;
+        height: 1;
+        margin: 0;
+        padding: 0 1;
+    }
+
+    .field-row Button:hover {
+        background: $primary-lighten-1;
+        color: $text;
+    }
+
+    .field-row Button:focus {
+        background: $primary;
+        color: $text;
+    }
     """
 
     BINDINGS = [
@@ -63,6 +83,7 @@ class BookDetailScreen(ModalScreen):
         super().__init__()
         self.db_path = db_path
         self.review_id = review_id
+        self.reading_lists: list[tuple[int, str]] = []
 
     def compose(self) -> ComposeResult:
         """Create the book detail view"""
@@ -153,11 +174,20 @@ class BookDetailScreen(ModalScreen):
             # Populate Reading Lists card
             lists_section = self.query_one("#lists_section", Container)
             book_id = book_data[0]
-            reading_lists = ReadingListBook.get_lists_for_book(db, book_id)
+            self.reading_lists = ReadingListBook.get_lists_with_ids_for_book(
+                db, book_id
+            )
 
-            if reading_lists:
-                for list_name in reading_lists:
-                    lists_section.mount(Label(f"• {list_name}", classes="field-row"))
+            if self.reading_lists:
+                for list_id, list_name in self.reading_lists:
+                    button = Button(
+                        f"📚 {list_name}",
+                        id=f"list_button_{list_id}",
+                        classes="field-row",
+                    )
+                    button.styles.width = "100%"
+                    button.styles.text_align = "left"
+                    lists_section.mount(button)
             else:
                 lists_section.mount(
                     Label("Not in any reading lists", classes="field-row")
@@ -173,6 +203,20 @@ class BookDetailScreen(ModalScreen):
         """Handle button presses"""
         if event.button.id == "close_button":
             self.action_close()
+        elif event.button.id and event.button.id.startswith("list_button_"):
+            # Extract list ID from button ID
+            try:
+                list_id_str = event.button.id.replace("list_button_", "")
+                list_id = int(list_id_str)
+                self.open_reading_list(list_id)
+            except ValueError:
+                self.notify("Invalid reading list ID")
+
+    def open_reading_list(self, list_id: int) -> None:
+        """Open the reading list screen"""
+        from .reading_list import ReadingListScreen
+
+        self.app.push_screen(ReadingListScreen(self.db_path, list_id))
 
     def action_close(self) -> None:
         """Close the detail screen"""
