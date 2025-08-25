@@ -2,8 +2,8 @@
 
 import sqlite3
 from textual.app import ComposeResult
-from textual.containers import Container
-from textual.widgets import Button, DataTable, Label
+from textual.containers import Container, Vertical
+from textual.widgets import Button, Label, TextArea
 from textual.screen import ModalScreen
 from textual.binding import Binding
 
@@ -23,12 +23,30 @@ class BookDetailScreen(ModalScreen):
         height: auto;
         background: $surface;
         border: thick $primary;
-        padding: 1;
+        padding: 0 1 1 1;
     }
 
-    .detail-table {
+    .section-card {
+        border: round $accent;
+        padding: 0 1 1 1;
+        margin: 1 0;
         height: auto;
-        margin-bottom: 1;
+    }
+
+    .section-header {
+        color: $text;
+        background: $accent;
+        padding: 0 1;
+        margin: -1 -1 1 -1;
+        text-style: bold;
+    }
+
+    .field-row {
+        margin: 0 1;
+    }
+
+    .review {
+        height: 6;
     }
 
     .close-button {
@@ -49,8 +67,20 @@ class BookDetailScreen(ModalScreen):
     def compose(self) -> ComposeResult:
         """Create the book detail view"""
         with Container(classes="detail-container"):
-            yield Label(f"Review Details - ID: {self.review_id}", classes="title")
-            yield DataTable(id="detail_table", classes="detail-table")
+            yield Label(f"Book & Review Details - Review ID: {self.review_id}")
+
+            # Book Details Card
+            with Container(classes="section-card", id="book_section"):
+                yield Label("Book Information", classes="section-header")
+
+            # Review Details Card
+            with Container(classes="section-card", id="review_section"):
+                yield Label("Review Information", classes="section-header")
+
+            # Reading Lists Card
+            with Container(classes="section-card", id="lists_section"):
+                yield Label("Reading Lists", classes="section-header")
+
             yield Button("Close", id="close_button", classes="close-button")
 
     def on_mount(self) -> None:
@@ -58,12 +88,12 @@ class BookDetailScreen(ModalScreen):
         self.load_book_details()
 
     def load_book_details(self) -> None:
-        """Load and display book and review details"""
+        """Load and display book and review details in cards"""
         try:
             db = sqlite3.connect(self.db_path)
             db.row_factory = sqlite3.Row
 
-            # Get book and review details (same query as CLI show command)
+            # Get book and review details
             cursor = db.cursor()
             cursor.execute(
                 """SELECT b.id, b.title, b.author, b.pub_year, b.pages, b.genre,
@@ -80,35 +110,58 @@ class BookDetailScreen(ModalScreen):
                 self.app.pop_screen()
                 return
 
-            # Set up the detail table
-            table = self.query_one("#detail_table", DataTable)
-            table.add_column("Field", width=20)
-            table.add_column("Value", width=50)
-
-            # Field mappings
-            display_data = [
+            # Populate Book Information card
+            book_section = self.query_one("#book_section", Container)
+            book_fields = [
                 ("Book ID", book_data[0]),
                 ("Title", book_data[1]),
                 ("Author", book_data[2]),
-                ("Publication Year", book_data[3]),
-                ("Pages", book_data[4]),
-                ("Genre", book_data[5]),
-                ("Review ID", book_data[6]),
-                ("Rating", book_data[7]),
-                ("Date Read", book_data[8]),
-                ("My Review", book_data[9]),
+                ("Publication Year", book_data[3] if book_data[3] else "Unknown"),
+                ("Pages", book_data[4] if book_data[4] else "Unknown"),
+                ("Genre", book_data[5] if book_data[5] else "Unknown"),
             ]
 
-            for field, value in display_data:
-                display_value = str(value) if value is not None else "Not set"
-                table.add_row(field, display_value)
+            for field, value in book_fields:
+                book_section.mount(Label(f"{field}: {value}", classes="field-row"))
 
-            # Show reading lists that contain this book
+            # Populate Review Information card
+            review_section = self.query_one("#review_section", Container)
+            review_fields = [
+                ("Review ID", book_data[6]),
+                ("Rating", f"{book_data[7]}/5" if book_data[7] else "Not rated"),
+                ("Date Read", book_data[8] if book_data[8] else "Not set"),
+            ]
+
+            for field, value in review_fields:
+                review_section.mount(Label(f"{field}: {value}", classes="field-row"))
+
+            # Add review text if it exists
+            if book_data[9]:
+                review_section.mount(Label("Review:", classes="field-row"))
+                review_section.mount(
+                    TextArea(
+                        f"{book_data[9]}",
+                        classes="review",
+                        read_only=True,
+                    )
+                )
+            else:
+                review_section.mount(
+                    Label("Review: No review written", classes="field-row")
+                )
+
+            # Populate Reading Lists card
+            lists_section = self.query_one("#lists_section", Container)
             book_id = book_data[0]
             reading_lists = ReadingListBook.get_lists_for_book(db, book_id)
 
             if reading_lists:
-                table.add_row("Reading Lists", ", ".join(reading_lists))
+                for list_name in reading_lists:
+                    lists_section.mount(Label(f"• {list_name}", classes="field-row"))
+            else:
+                lists_section.mount(
+                    Label("Not in any reading lists", classes="field-row")
+                )
 
         except sqlite3.Error as e:
             self.notify(f"Database error: {e}")

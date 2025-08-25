@@ -165,7 +165,7 @@ class LibroTUI(App):
 
     def on_data_table_row_selected(self, event) -> None:
         """Handle row selection in the data table"""
-        pass  # Just for navigation, Enter key will trigger view details
+        self._view_selected_book()
 
     def _view_selected_book(self) -> None:
         """View details of the currently selected book"""
