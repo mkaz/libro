@@ -6,7 +6,6 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import DataTable, Header, Label
 from textual.binding import Binding
-from rich.text import Text
 
 from libro.actions.show import get_reviews
 from .screens.book_detail import BookDetailScreen

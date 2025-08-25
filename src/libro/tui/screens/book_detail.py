@@ -2,7 +2,7 @@
 
 import sqlite3
 from textual.app import ComposeResult
-from textual.containers import Container, Vertical
+from textual.containers import Container
 from textual.widgets import Button, Label, TextArea
 from textual.screen import ModalScreen
 from textual.binding import Binding
