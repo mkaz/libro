@@ -15,6 +15,7 @@ lint:
 # Fix lint and format checks
 lint-fix:
     echo "Fixing lint issues..."
+    uv run python -m ruff check --fix src/libro/
     uv run python -m ruff format src/libro/
     echo "."
 
