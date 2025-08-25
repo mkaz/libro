@@ -21,7 +21,7 @@ class ReadingListScreen(ModalScreen):
 
     .list-container {
         width: 95;
-        height: 80;
+        height: 60;
         background: $surface;
         border: thick $primary;
         padding: 1;
@@ -196,6 +196,7 @@ class ReadingListScreen(ModalScreen):
 
                 self.app.push_screen(BookDetailScreen(self.db_path, review["id"]))
             else:
+                # For books without reviews, show book information in a simple way
                 self.notify("No review found for this book")
 
         except ValueError:

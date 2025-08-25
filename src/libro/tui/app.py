@@ -12,6 +12,7 @@ from libro.actions.show import get_reviews
 from .screens.book_detail import BookDetailScreen
 from .screens.add_book import AddBookScreen
 from .screens.year_select import YearSelectScreen
+from .screens.reading_lists import ReadingListsScreen
 
 
 class LibroTUI(App):
@@ -223,8 +224,8 @@ class LibroTUI(App):
         self.notify("Books view coming soon!")
 
     def action_lists_view(self) -> None:
-        """Switch to reading lists view (placeholder for now)"""
-        self.notify("Lists view coming soon!")
+        """Switch to reading lists view"""
+        self.push_screen(ReadingListsScreen(self.db_path))
 
     def action_help(self) -> None:
         """Show help dialog (placeholder for now)"""
