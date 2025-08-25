@@ -111,7 +111,7 @@ class LibroTUI(App):
                 container.mount(header_label)
 
                 # Create table for this genre
-                table = DataTable(cursor_type="row", classes="genre-table")
+                table: DataTable = DataTable(cursor_type="row", classes="genre-table")
                 table.add_column("Review ID", width=10)
                 table.add_column("Title", width=30)
                 table.add_column("Author", width=25)
@@ -176,10 +176,6 @@ class LibroTUI(App):
             return
 
         table = focused_widget
-
-        if table.cursor_row is None:
-            self.notify("No row selected")
-            return
 
         # Get the selected row data
         row_data = table.get_row_at(table.cursor_row)

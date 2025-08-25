@@ -18,9 +18,9 @@ class AuthorSuggester(Suggester):
     def __init__(self, db_path: str):
         super().__init__(use_cache=True, case_sensitive=False)
         self.db_path = db_path
-        self._authors = None
+        self._authors: list[str] | None = None
 
-    def _get_authors(self):
+    def _get_authors(self) -> list[str]:
         """Get all unique authors from the database"""
         if self._authors is None:
             try:

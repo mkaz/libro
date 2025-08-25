@@ -162,10 +162,6 @@ class ReadingListScreen(ModalScreen):
         """View details of the selected book"""
         table = self.query_one("#list_table", DataTable)
 
-        if table.cursor_row is None:
-            self.notify("No book selected")
-            return
-
         row_data = table.get_row_at(table.cursor_row)
         if not row_data or len(row_data) == 0:
             self.notify("Invalid selection")
