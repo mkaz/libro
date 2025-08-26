@@ -414,3 +414,21 @@ class ReadingListBook:
             (book_id,),
         )
         return [row["name"] for row in cursor.fetchall()]
+
+    @classmethod
+    def get_lists_with_ids_for_book(
+        cls, db: sqlite3.Connection, book_id: int
+    ) -> list[tuple[int, str]]:
+        """Get all reading lists (ID and name) that contain a specific book."""
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT rl.id, rl.name
+            FROM reading_list_books rlb
+            JOIN reading_lists rl ON rlb.list_id = rl.id
+            WHERE rlb.book_id = ?
+            ORDER BY rl.name
+            """,
+            (book_id,),
+        )
+        return [(row["id"], row["name"]) for row in cursor.fetchall()]
