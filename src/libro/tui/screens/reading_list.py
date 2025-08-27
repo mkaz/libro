@@ -21,7 +21,7 @@ class ReadingListScreen(ModalScreen):
 
     .list-container {
         width: 95;
-        height: 60;
+        height: 45;
         background: $surface;
         border: thick $primary;
         padding: 1;

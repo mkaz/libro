@@ -27,8 +27,8 @@ class AuthorSuggester(Suggester):
                 db = sqlite3.connect(self.db_path)
                 cursor = db.cursor()
                 cursor.execute("""
-                    SELECT DISTINCT author 
-                    FROM books 
+                    SELECT DISTINCT author
+                    FROM books
                     WHERE author IS NOT NULL AND author != ''
                     ORDER BY author
                 """)
@@ -69,21 +69,47 @@ class AddBookScreen(ModalScreen):
         background: $surface;
         border: thick $primary;
         padding: 1;
+        height: 48;
     }
 
-    .section-card {
+    .section-card-book {
         border: round $accent;
         padding: 0 1;
         margin: 1 0;
-        height: auto;
+        height: 17;
+    }
+
+    .section-card-review {
+        border: round $accent;
+        padding: 0 1;
+        margin: 1 0;
+        height: 22;
+    }
+
+    Input {
+        margin: 0;
+        padding: 0 1;
     }
 
     .mt-1 {
         margin-top: 1;
     }
 
+    .mr-1 {
+        margin-right: 2;
+    }
+
+    .ml-1 {
+        margin-left: 2;
+    }
+
     .mb-1 {
         margin-bottom: 1;
+    }
+
+    .horiz-row {
+        margin-top: 1;
+        height: 3;
     }
 
     TextArea {
@@ -134,42 +160,59 @@ class AddBookScreen(ModalScreen):
             yield Label("Add New Book & Review")
 
             # Book Information Card
-            with Container(classes="section-card"):
+            with Container(classes="section-card-book"):
                 yield Label("[bold cyan]Book Information[/bold cyan]")
                 yield Label("Title *", classes="mt-1")
-                yield Input(placeholder="Enter book title", id="title_input")
+                yield Input(
+                    placeholder="Enter book title", id="title_input", compact=True
+                )
 
                 yield Label("Author *", classes="mt-1")
                 yield Input(
                     placeholder="Enter author name",
                     id="author_input",
                     suggester=self.author_suggester,
+                    compact=True,
                 )
 
-                yield Label("Publication Year", classes="mt-1")
-                yield Input(placeholder="YYYY", id="year_input")
+                with Horizontal(classes="horiz-row"):
+                    with Container(classes="mr-1"):
+                        yield Label("Publication Year")
+                        yield Input(
+                            placeholder="YYYY",
+                            id="year_input",
+                            type="integer",
+                            compact=True,
+                        )
+                    with Container(classes="ml-1"):
+                        yield Label("Pages")
+                        yield Input(
+                            placeholder="Number of pages",
+                            id="pages_input",
+                            type="integer",
+                            compact=True,
+                        )
 
-                yield Label("Pages", classes="mt-1")
-                yield Input(placeholder="Number of pages", id="pages_input")
-
-                yield Label("Genre", classes="mt-1")
+                yield Label("Genre")
                 yield Select(self.genre_options, id="genre_select")
 
             # Review Information Card
-            with Container(classes="section-card"):
+            with Container(classes="section-card-review"):
                 yield Label("[bold cyan]Review Information[/bold cyan]")
                 yield Label("Date Read", classes="mt-1")
-                yield Input(placeholder="YYYY-MM-DD", id="date_input")
+                yield Input(placeholder="YYYY-MM-DD", id="date_input", compact=True)
 
                 yield Label("Rating (1-5)", classes="mt-1")
-                yield Input(placeholder="1-5", id="rating_input")
+                yield Input(
+                    placeholder="1-5", id="rating_input", type="integer", compact=True
+                )
 
                 yield Label("Your Review", classes="mt-1")
                 yield TextArea(id="review_textarea")
 
             with Horizontal():
-                yield Button("Save", id="save_button", variant="primary")
-                yield Button("Cancel", id="cancel_button")
+                yield Button("Save", id="save_button", variant="primary", compact=True)
+                yield Button("Cancel", id="cancel_button", compact=True)
 
     def on_button_pressed(self, event) -> None:
         """Handle button presses"""
