@@ -4,10 +4,10 @@ import sqlite3
 from datetime import datetime
 from textual.app import App, ComposeResult
 from textual.containers import Container
-from textual.widgets import DataTable, Header, Label
+from textual.widgets import DataTable, Header, Input, Label
 from textual.binding import Binding
 
-from libro.actions.show import get_reviews
+# Removed get_reviews import - now using custom filtered query
 from .screens.book_detail import BookDetailScreen
 from .screens.add_book import AddBookScreen
 from .screens.year_select import YearSelectScreen
@@ -28,6 +28,23 @@ class LibroTUI(App):
         content-align: center middle;
     }
 
+    .search-bar {
+        dock: bottom;
+        height: 1;
+        background: $primary;
+        display: none;
+    }
+
+    .search-bar.visible {
+        display: block;
+    }
+
+    .search-input {
+        width: 100%;
+        background: transparent;
+        border: none;
+    }
+
     .genre-table {
         margin-bottom: 0;
     }
@@ -45,6 +62,8 @@ class LibroTUI(App):
         Binding("y", "select_year", "Select Year"),
         Binding("l", "lists_view", "Lists"),
         Binding("s", "cycle_sort", "Sort"),
+        Binding("/", "search", "Search"),
+        Binding("escape", "exit_search", "Exit Search"),
         Binding("enter", "view_details", "View Details"),
     ]
 
@@ -55,6 +74,10 @@ class LibroTUI(App):
         # Sorting state: 0=Date, 1=Title, 2=Author, 3=Genre, 4=Rating
         self.sort_column = 0
         self.sort_columns = ["Date", "Title", "Author", "Genre", "Rating"]
+        # Search state
+        self.current_search = ""
+        self.show_all_years = False
+        self.search_visible = False
 
     def compose(self) -> ComposeResult:
         """Create the UI layout"""
@@ -62,37 +85,74 @@ class LibroTUI(App):
         yield Container(id="books_container")
         yield Container(
             Label(
-                "q: Quit | r: Refresh | a: Add Book | y: Select Year | s: Sort | Enter: View Details"
+                "q: Quit | /: Search | Esc: Exit Search | a: Add Book | y: Year | s: Sort | l: Lists"
             ),
             classes="footer-menu",
+        )
+        yield Container(
+            Input(
+                placeholder="Search title/author...",
+                id="search_input",
+                classes="search-input",
+            ),
+            classes="search-bar",
+            id="search_container",
         )
 
     def on_mount(self) -> None:
         """Initialize the table when the app starts"""
         self.theme = "textual-dark"
+        # If there's a current search, show the search bar
+        if self.current_search:
+            self.search_visible = True
+            search_container = self.query_one("#search_container", Container)
+            search_container.add_class("visible")
+            search_input = self.query_one("#search_input", Input)
+            search_input.value = self.current_search
         self.update_subtitle()
         self.load_books_data()
 
     def update_subtitle(self) -> None:
-        """Update the subtitle to show current year and sorting"""
+        """Update the subtitle to show current year, search, and sorting"""
         sort_name = self.sort_columns[self.sort_column]
-        self.sub_title = f"Books Read in {self.current_year} - Sorted by {sort_name}"
+
+        # Build subtitle with search info
+        if self.show_all_years:
+            year_info = "All Years"
+        else:
+            year_info = f"{self.current_year}"
+
+        if self.current_search:
+            search_str = f" | Search: {self.current_search}"
+        else:
+            search_str = ""
+
+        self.sub_title = (
+            f"Books Read in {year_info} - Sorted by {sort_name}{search_str}"
+        )
 
     def load_books_data(self) -> None:
-        """Load and display books read in current year with Fiction/Nonfiction grouping"""
+        """Load and display books with current filters applied"""
         try:
             db = sqlite3.connect(self.db_path)
             db.row_factory = sqlite3.Row
 
-            # Get books for current year (same logic as CLI report command)
-            books = get_reviews(db, year=self.current_year)
+            # Get books with filters applied
+            books = self._get_filtered_books(db)
 
             # Clear the books container
             container = self.query_one("#books_container", Container)
             container.remove_children()
 
             if not books:
-                container.mount(Label("No books found for current year"))
+                if self.current_search:
+                    container.mount(
+                        Label(f"No books found matching '{self.current_search}'")
+                    )
+                elif self.show_all_years:
+                    container.mount(Label("No books found"))
+                else:
+                    container.mount(Label(f"No books found for {self.current_year}"))
                 return
 
             # Sort books based on current sort column
@@ -177,6 +237,94 @@ class LibroTUI(App):
             return sorted(books, key=lambda x: x["rating"] or 0, reverse=True)
         else:
             return books
+
+    def _get_filtered_books(self, db):
+        """Get books with current search and year selection applied"""
+        # Start with base query
+        query = """
+            SELECT 
+                r.id as review_id, 
+                b.id as book_id,
+                b.title, 
+                b.author, 
+                b.genre, 
+                b.pub_year,
+                b.pages,
+                r.rating, 
+                r.date_read,
+                r.review
+            FROM reviews r
+            JOIN books b ON r.book_id = b.id
+            WHERE 1=1
+        """
+        params = []
+
+        # Apply year filter
+        if not self.show_all_years:
+            query += " AND strftime('%Y', r.date_read) = ?"
+            params.append(str(self.current_year))
+
+        # Apply search filter (title or author)
+        if self.current_search:
+            search_term = f"%{self.current_search}%"
+            query += (
+                " AND (LOWER(b.title) LIKE LOWER(?) OR LOWER(b.author) LIKE LOWER(?))"
+            )
+            params.extend([search_term, search_term])
+
+        query += " ORDER BY r.date_read DESC"
+
+        cursor = db.cursor()
+        cursor.execute(query, params)
+        return cursor.fetchall()
+
+    def action_search(self) -> None:
+        """Toggle search bar visibility"""
+        search_container = self.query_one("#search_container", Container)
+
+        if not self.search_visible:
+            # Show search bar
+            search_container.add_class("visible")
+            self.search_visible = True
+            # Focus the search input and restore current search
+            search_input = self.query_one("#search_input", Input)
+            search_input.value = self.current_search  # Restore current search term
+            search_input.focus()
+            # If there's existing search text, show all years
+            if self.current_search:
+                self.show_all_years = True
+        else:
+            self.action_exit_search()
+
+    def action_exit_search(self) -> None:
+        """Exit search mode if active, otherwise do nothing"""
+        if self.search_visible:
+            search_container = self.query_one("#search_container", Container)
+            search_container.remove_class("visible")
+            self.search_visible = False
+            self.current_search = ""
+            self.show_all_years = False
+            self.query_one("#search_input", Input).value = ""
+            self.update_subtitle()
+            self.load_books_data()
+
+    def on_input_changed(self, event) -> None:
+        """Handle live search as user types in search bar"""
+        if event.input.id == "search_input" and self.search_visible:
+            search_text = event.value.strip()
+            self.current_search = search_text
+
+            # Show all years when searching, return to year view when cleared
+            if search_text:
+                self.show_all_years = True
+            else:
+                self.show_all_years = False
+
+            self.update_subtitle()
+            self.load_books_data()
+
+            # Keep search bar visible as long as we're in search mode
+            # (The bar should only hide when user explicitly exits search mode)
 
     async def action_quit(self) -> None:
         """Exit the application"""
