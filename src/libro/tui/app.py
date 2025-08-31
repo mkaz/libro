@@ -45,6 +45,7 @@ class LibroTUI(App):
         Binding("y", "select_year", "Select Year"),
         Binding("b", "books_view", "Books"),
         Binding("l", "lists_view", "Lists"),
+        Binding("s", "cycle_sort", "Sort"),
         Binding("enter", "view_details", "View Details"),
         Binding("question_mark", "help", "Help"),
     ]
@@ -53,6 +54,9 @@ class LibroTUI(App):
         super().__init__()
         self.db_path = db_path
         self.current_year = datetime.now().year
+        # Sorting state: 0=Date, 1=Title, 2=Author, 3=Genre, 4=Rating
+        self.sort_column = 0
+        self.sort_columns = ["Date", "Title", "Author", "Genre", "Rating"]
 
     def compose(self) -> ComposeResult:
         """Create the UI layout"""
@@ -60,7 +64,7 @@ class LibroTUI(App):
         yield Container(id="books_container")
         yield Container(
             Label(
-                "q: Quit | r: Refresh | a: Add Book | y: Select Year | Enter: View Details | ?: Help"
+                "q: Quit | r: Refresh | a: Add Book | y: Select Year | s: Sort | Enter: View Details | ?: Help"
             ),
             classes="footer-menu",
         )
@@ -68,11 +72,16 @@ class LibroTUI(App):
     def on_mount(self) -> None:
         """Initialize the table when the app starts"""
         self.theme = "textual-dark"
-        self.sub_title = f"Books Read in {self.current_year}"
+        self.update_subtitle()
         self.load_books_data()
 
+    def update_subtitle(self) -> None:
+        """Update the subtitle to show current year and sorting"""
+        sort_name = self.sort_columns[self.sort_column]
+        self.sub_title = f"Books Read in {self.current_year} - Sorted by {sort_name}"
+
     def load_books_data(self) -> None:
-        """Load and display books read in current year with separate tables per genre"""
+        """Load and display books read in current year with Fiction/Nonfiction grouping"""
         try:
             db = sqlite3.connect(self.db_path)
             db.row_factory = sqlite3.Row
@@ -88,29 +97,34 @@ class LibroTUI(App):
                 container.mount(Label("No books found for current year"))
                 return
 
-            # Group books by genre
-            books_by_genre: dict[str, list] = {}
-            for book in books:
-                genre_key = book["genre"] or "Unknown"
-                if genre_key not in books_by_genre:
-                    books_by_genre[genre_key] = []
-                books_by_genre[genre_key].append(book)
+            # Sort books based on current sort column
+            sorted_books = self._sort_books(list(books))
 
-            # Create a table for each genre
-            for genre, genre_books in books_by_genre.items():
-                genre_display = (
-                    genre.title() if genre and genre != "Unknown" else "Unknown"
-                )
-                genre_count = len(genre_books)
+            # Group books by Fiction/Nonfiction
+            fiction_books = []
+            nonfiction_books = []
+            
+            for book in sorted_books:
+                if book["genre"] != "nonfiction":
+                    fiction_books.append(book)
+                else:
+                    nonfiction_books.append(book)
 
-                # Add genre header label
+            # Create tables for Fiction and Nonfiction groups
+            groups = [("Fiction", fiction_books), ("Nonfiction", nonfiction_books)]
+            
+            for group_name, group_books in groups:
+                if not group_books:  # Skip empty groups
+                    continue
+                    
+                # Add group header label
                 header_label = Label(
-                    f"[bold cyan]{genre_display} ({genre_count})[/bold cyan]",
+                    f"[bold cyan]{group_name} ({len(group_books)})[/bold cyan]",
                     classes="header-label",
                 )
                 container.mount(header_label)
 
-                # Create table for this genre
+                # Create table for this group
                 table: DataTable = DataTable(cursor_type="row", classes="genre-table")
                 table.add_column("Review ID", width=10)
                 table.add_column("Title", width=30)
@@ -119,8 +133,8 @@ class LibroTUI(App):
                 table.add_column("Rating", width=8)
                 table.add_column("Date Read", width=12)
 
-                # Add books for this genre
-                for book in genre_books:
+                # Add books for this group
+                for book in group_books:
                     # Format date
                     date_str = book["date_read"]
                     if date_str:
@@ -150,6 +164,21 @@ class LibroTUI(App):
         finally:
             if "db" in locals():
                 db.close()
+
+    def _sort_books(self, books: list) -> list:
+        """Sort books based on the current sort column"""
+        if self.sort_column == 0:  # Date
+            return sorted(books, key=lambda x: x["date_read"] or "", reverse=False)
+        elif self.sort_column == 1:  # Title
+            return sorted(books, key=lambda x: (x["title"] or "").lower())
+        elif self.sort_column == 2:  # Author
+            return sorted(books, key=lambda x: (x["author"] or "").lower())
+        elif self.sort_column == 3:  # Genre
+            return sorted(books, key=lambda x: (x["genre"] or "").lower())
+        elif self.sort_column == 4:  # Rating
+            return sorted(books, key=lambda x: x["rating"] or 0, reverse=True)
+        else:
+            return books
 
     async def action_quit(self) -> None:
         """Exit the application"""
@@ -211,7 +240,15 @@ class LibroTUI(App):
     def change_year(self, new_year: int) -> None:
         """Change the current year and reload data"""
         self.current_year = new_year
-        self.sub_title = f"Books Read in {self.current_year}"
+        self.update_subtitle()
+        self.load_books_data()
+
+    def action_cycle_sort(self) -> None:
+        """Cycle through different sorting options"""
+        self.sort_column = (self.sort_column + 1) % len(self.sort_columns)
+        sort_name = self.sort_columns[self.sort_column]
+        self.notify(f"Sorting by {sort_name}")
+        self.update_subtitle()
         self.load_books_data()
 
     def action_books_view(self) -> None:

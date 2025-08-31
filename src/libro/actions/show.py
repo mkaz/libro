@@ -30,28 +30,40 @@ def show_books(db, args={}):
     table.add_column("ID")
     table.add_column("Title")
     table.add_column("Author")
+    table.add_column("Genre")
     table.add_column("Rating")
     table.add_column("Date Read")
 
-    # Books are already sorted by genre (fiction first) and then by date in SQL query
-    sorted_books = books
-
-    ## Count books by genre
-    count: dict[str, int] = {}
+    # Books are sorted by date from SQL query, now group them by Fiction/Nonfiction
+    fiction_books = []
+    nonfiction_books = []
+    
     for book in books:
-        count[book["genre"]] = count.get(book["genre"], 0) + 1
+        if book["genre"] != "nonfiction":
+            fiction_books.append(book)
+        else:
+            nonfiction_books.append(book)
+    
+    # Combine with Fiction first, then Nonfiction (both already sorted by date DESC)
+    grouped_books = fiction_books + nonfiction_books
+    
+    ## Count books by Fiction/Nonfiction grouping
+    count = {"Fiction": len(fiction_books), "Nonfiction": len(nonfiction_books)}
 
-    current_genre = None
-    for book in sorted_books:
-        # Add genre separator if genre changes
-        if book["genre"] != current_genre:
-            if current_genre is not None:  # Don't add separator before first genre
-                table.add_row("", "", "", "", "", style="dim")
-            current_genre = book["genre"]
-            genre_display = current_genre.title() if current_genre else "Unknown"
+    current_group = None
+    for book in grouped_books:
+        # Determine which group this book belongs to
+        book_group = "Fiction" if book["genre"] != "nonfiction" else "Nonfiction"
+        
+        # Add group separator if group changes
+        if book_group != current_group:
+            if current_group is not None:  # Don't add separator before first group
+                table.add_row("", "", "", "", "", "", style="dim")
+            current_group = book_group
             table.add_row(
                 "",
-                f"[bold]{genre_display} ({count[current_genre]})[/bold]",
+                f"[bold]{current_group} ({count[current_group]})[/bold]",
+                "",
                 "",
                 "",
                 "",
@@ -73,6 +85,7 @@ def show_books(db, args={}):
             str(book["review_id"]),
             book["title"],
             book["author"],
+            book["genre"] or "Unknown",
             str(book["rating"]),
             formatted_date,
         )
@@ -322,7 +335,7 @@ def get_reviews(db, year=None, author_name=None):
                 FROM reviews r
                 LEFT JOIN books b ON r.book_id = b.id
                 WHERE strftime('%Y', r.date_read) = ?
-                ORDER BY CASE WHEN b.genre = 'fiction' THEN 0 ELSE 1 END, b.genre, r.date_read ASC
+                ORDER BY r.date_read ASC
             """,
                 (str(year),),
             )
@@ -333,7 +346,7 @@ def get_reviews(db, year=None, author_name=None):
                 FROM reviews r
                 LEFT JOIN books b ON r.book_id = b.id
                 WHERE LOWER(b.author) LIKE LOWER(?)
-                ORDER BY CASE WHEN b.genre = 'fiction' THEN 0 ELSE 1 END, b.genre, r.date_read ASC
+                ORDER BY r.date_read ASC
             """,
                 (f"%{author_name}%",),
             )
@@ -364,7 +377,7 @@ def show_recent_reviews(db, args={}):
                 FROM reviews r
                 JOIN books b ON r.book_id = b.id
                 WHERE LOWER(b.author) LIKE LOWER(?)
-                ORDER BY r.date_read DESC
+                ORDER BY r.date_read ASC
                 """,
                 (f"%{author}%",),
             )
@@ -376,7 +389,7 @@ def show_recent_reviews(db, args={}):
                 FROM reviews r
                 JOIN books b ON r.book_id = b.id
                 WHERE LOWER(b.title) LIKE LOWER(?)
-                ORDER BY r.date_read DESC
+                ORDER BY r.date_read ASC
                 """,
                 (f"%{title}%",),
             )
@@ -388,7 +401,7 @@ def show_recent_reviews(db, args={}):
                 FROM reviews r
                 JOIN books b ON r.book_id = b.id
                 WHERE strftime('%Y', r.date_read) = ?
-                ORDER BY r.date_read DESC
+                ORDER BY r.date_read ASC
                 """,
                 (str(year),),
             )
