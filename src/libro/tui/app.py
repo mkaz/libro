@@ -43,11 +43,9 @@ class LibroTUI(App):
         Binding("r", "refresh", "Refresh"),
         Binding("a", "add_book", "Add Book"),
         Binding("y", "select_year", "Select Year"),
-        Binding("b", "books_view", "Books"),
         Binding("l", "lists_view", "Lists"),
         Binding("s", "cycle_sort", "Sort"),
         Binding("enter", "view_details", "View Details"),
-        Binding("question_mark", "help", "Help"),
     ]
 
     def __init__(self, db_path: str):
@@ -64,7 +62,7 @@ class LibroTUI(App):
         yield Container(id="books_container")
         yield Container(
             Label(
-                "q: Quit | r: Refresh | a: Add Book | y: Select Year | s: Sort | Enter: View Details | ?: Help"
+                "q: Quit | r: Refresh | a: Add Book | y: Select Year | s: Sort | Enter: View Details"
             ),
             classes="footer-menu",
         )
@@ -103,7 +101,7 @@ class LibroTUI(App):
             # Group books by Fiction/Nonfiction
             fiction_books = []
             nonfiction_books = []
-            
+
             for book in sorted_books:
                 if book["genre"] != "nonfiction":
                     fiction_books.append(book)
@@ -112,11 +110,11 @@ class LibroTUI(App):
 
             # Create tables for Fiction and Nonfiction groups
             groups = [("Fiction", fiction_books), ("Nonfiction", nonfiction_books)]
-            
+
             for group_name, group_books in groups:
                 if not group_books:  # Skip empty groups
                     continue
-                    
+
                 # Add group header label
                 header_label = Label(
                     f"[bold cyan]{group_name} ({len(group_books)})[/bold cyan]",
@@ -251,14 +249,6 @@ class LibroTUI(App):
         self.update_subtitle()
         self.load_books_data()
 
-    def action_books_view(self) -> None:
-        """Switch to books-only view (placeholder for now)"""
-        self.notify("Books view coming soon!")
-
     def action_lists_view(self) -> None:
         """Switch to reading lists view"""
         self.push_screen(ReadingListsScreen(self.db_path))
-
-    def action_help(self) -> None:
-        """Show help dialog (placeholder for now)"""
-        self.notify("Help: Use arrow keys to navigate, Enter to select, q to quit")
