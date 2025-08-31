@@ -1,7 +1,6 @@
 """Reading list screen for displaying books in a specific list"""
 
 import sqlite3
-from datetime import datetime
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.widgets import DataTable, Label

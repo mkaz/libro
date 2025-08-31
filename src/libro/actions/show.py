@@ -37,16 +37,16 @@ def show_books(db, args={}):
     # Books are sorted by date from SQL query, now group them by Fiction/Nonfiction
     fiction_books = []
     nonfiction_books = []
-    
+
     for book in books:
         if book["genre"] != "nonfiction":
             fiction_books.append(book)
         else:
             nonfiction_books.append(book)
-    
+
     # Combine with Fiction first, then Nonfiction (both already sorted by date DESC)
     grouped_books = fiction_books + nonfiction_books
-    
+
     ## Count books by Fiction/Nonfiction grouping
     count = {"Fiction": len(fiction_books), "Nonfiction": len(nonfiction_books)}
 
@@ -54,7 +54,7 @@ def show_books(db, args={}):
     for book in grouped_books:
         # Determine which group this book belongs to
         book_group = "Fiction" if book["genre"] != "nonfiction" else "Nonfiction"
-        
+
         # Add group separator if group changes
         if book_group != current_group:
             if current_group is not None:  # Don't add separator before first group

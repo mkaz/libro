@@ -77,6 +77,7 @@ class BookDetailScreen(ModalScreen):
 
     BINDINGS = [
         Binding("escape", "close", "Close"),
+        Binding("e", "edit", "Edit"),
     ]
 
     def __init__(self, db_path: str, review_id: int):
@@ -110,6 +111,19 @@ class BookDetailScreen(ModalScreen):
 
     def load_book_details(self) -> None:
         """Load and display book and review details in cards"""
+        # Clear existing content first
+        book_section = self.query_one("#book_section", Container)
+        review_section = self.query_one("#review_section", Container)
+        lists_section = self.query_one("#lists_section", Container)
+
+        # Remove all children except the header labels
+        for child in list(book_section.children)[1:]:  # Keep first child (header)
+            child.remove()
+        for child in list(review_section.children)[1:]:  # Keep first child (header)
+            child.remove()
+        for child in list(lists_section.children)[1:]:  # Keep first child (header)
+            child.remove()
+
         try:
             db = sqlite3.connect(self.db_path)
             db.row_factory = sqlite3.Row
@@ -221,3 +235,9 @@ class BookDetailScreen(ModalScreen):
     def action_close(self) -> None:
         """Close the detail screen"""
         self.app.pop_screen()
+
+    def action_edit(self) -> None:
+        """Open edit screen for this book and review"""
+        from .edit_book import EditBookScreen
+
+        self.app.push_screen(EditBookScreen(self.db_path, self.review_id))
