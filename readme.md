@@ -1,6 +1,6 @@
 # Libro
 
-📚 Libro: A simple command-line tool to track your reading history, with your data stored locally in a SQLite database.
+📚 Libro: A terminal-based tool to track your reading history, with your data stored locally in a SQLite database.
 
 ## Core Concepts
 
@@ -14,19 +14,21 @@ This separation allows you to:
 - Add multiple reviews for the same book (re-reads)
 - Maintain a clean library of books separate from your reading history
 
-## Command Structure
+## Interface
 
-Libro's commands are organized around this book/review separation:
+Libro provides two ways to interact with your reading data:
 
-**Reports:**
-- `libro` (default) - Reading history table
+**Interactive TUI (Default):**
+- `libro` - Launch the interactive terminal interface with search and navigation
+- Navigate with arrow keys, search with `/`, add books with `a`, view lists with `l`
+- Press `q` to quit, `?` for help with key bindings
+
+**Command Line Interface:**
 - `libro report` - Reading history table  
 - `libro report --author` - Author statistics (most read authors)
 - `libro report --author "Name"` - Books/reviews by specific author  
 - `libro report --chart` - Yearly reading chart
 - `libro report 123` - Book/review details for review id
-
-**Actions:**
 - `libro add` - Add book + review
 - `libro book` - Book management (show, add, edit)
 - `libro review` - Review management (show, add, edit)
@@ -92,12 +94,23 @@ See: `libro --help` for more information.
 
 ### Examples
 
-#### Books Read in Year
+#### Interactive TUI Interface
 
-The default view shows your reading history, grouped by genre:
+The default interface is an interactive terminal application with search capabilities:
+
+- Launch with `libro` (no arguments)
+- Use arrow keys to navigate between books
+- Press `/` to search by title or author
+- Press `Enter` to view book details
+- Press `a` to add new books
+- Press `l` to view reading lists
+
+#### CLI Report View
+
+Access the traditional table view with `libro report`:
 
 ```
-❯ libro
+❯ libro report
                                  Books Read in 2025
 ┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━┓
 ┃ ID         ┃ Title                        ┃ Author               ┃ Rating ┃ Date Read    ┃

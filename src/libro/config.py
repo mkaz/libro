@@ -168,7 +168,7 @@ def init_args() -> Dict:
         args["db"] = get_db_loc()
 
     if args["command"] is None:
-        args["command"] = "report"
+        args["command"] = "tui"
 
     # Track whether year was explicitly provided
     args["year_explicit"] = args.get("year") is not None
