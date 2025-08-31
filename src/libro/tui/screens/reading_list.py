@@ -99,16 +99,14 @@ class ReadingListScreen(ModalScreen):
             # Set up the table
             table = self.query_one("#list_table", DataTable)
             table.clear(columns=True)
-            table.add_column("ID", width=8)
-            table.add_column("Status", width=8)
+            table.add_column("ID", width=6)
+            table.add_column("", width=4)
             table.add_column("Title", width=30)
             table.add_column("Author", width=25)
-            table.add_column("Genre", width=15)
-            table.add_column("Rating", width=8)
-            table.add_column("Date Read", width=12)
+            table.add_column("Year", width=8)
 
             if not books:
-                table.add_row("", "", "No books in this list", "", "", "", "")
+                table.add_row("", "", "No books in this list", "", "")
             else:
                 # Sort books: unread first, then by added date
                 sorted_books = sorted(
@@ -116,26 +114,14 @@ class ReadingListScreen(ModalScreen):
                 )
 
                 for book in sorted_books:
-                    status = "✅" if book["is_read"] else "📖"
-                    rating_str = str(book["rating"]) if book["rating"] else "—"
-                    date_str = book["date_read"] if book["date_read"] else "—"
-
-                    # Format date if it exists
-                    if date_str and date_str != "—":
-                        try:
-                            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-                            date_str = date_obj.strftime("%b %d")
-                        except ValueError:
-                            pass  # Keep original format if parsing fails
+                    status = "✅" if book["is_read"] else ""
 
                     table.add_row(
                         str(book["book_id"]),
                         status,
                         book["title"],
                         book["author"],
-                        book["genre"] or "",
-                        rating_str,
-                        date_str,
+                        str(book["pub_year"]) if book["pub_year"] else "",
                         key=str(
                             book["book_id"]
                         ),  # Use book_id as row key for navigation
