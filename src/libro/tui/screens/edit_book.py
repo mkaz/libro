@@ -1,4 +1,15 @@
-"""Edit book screen with form for updating existing books and reviews"""
+"""Edit book screen with form for updating existing books and reviews
+
+This screen allows editing both book metadata (title, author, year, pages, genre)
+and review data (rating, date read, review text) for an existing book/review pair.
+
+Key features:
+- Pre-populates all form fields with existing data
+- Validates changes and only updates what was modified
+- Supports genre selection with database-driven options
+- Author name auto-completion based on existing authors
+- Refreshes parent screens after successful update
+"""
 
 import sqlite3
 from datetime import datetime
@@ -133,28 +144,48 @@ class EditBookScreen(ModalScreen):
         self.genre_options = self._get_genre_options()
         self.author_suggester = AuthorSuggester(db_path)
 
-        # Load genre early so we can use it in compose
-        self._load_genre_data()
+        # Load book data early so we can set initial values in compose
+        self._load_initial_data()
 
-    def _load_genre_data(self) -> None:
-        """Load just the genre from the database for use in compose"""
+    def _load_initial_data(self) -> None:
+        """Load existing book and review data for initialization"""
         try:
             db = sqlite3.connect(self.db_path)
             db.row_factory = sqlite3.Row
 
             cursor = db.cursor()
             cursor.execute(
-                """SELECT b.genre
+                """SELECT b.id, b.title, b.author, b.pub_year, b.pages, b.genre,
+                          r.id, r.rating, r.date_read, r.review
                 FROM books b
                 LEFT JOIN reviews r ON b.id = r.book_id
                 WHERE r.id = ?""",
                 (self.review_id,),
             )
             data = cursor.fetchone()
-            if data:
-                self.current_genre = data[0]
+
+            if not data:
+                return
+
+            # Store all the data for use in compose and later
+            self.book_id = data[0]
+            self.original_book_data = {
+                "id": data[0],
+                "title": data[1],
+                "author": data[2],
+                "pub_year": data[3],
+                "pages": data[4],
+                "genre": data[5],
+            }
+            self.original_review_data = {
+                "id": data[6],
+                "rating": data[7],
+                "date_read": data[8],
+                "review": data[9],
+            }
+            self.current_genre = data[5]
         except sqlite3.Error:
-            pass  # Will leave current_genre as None
+            pass  # Will leave data as defaults
         finally:
             if "db" in locals():
                 db.close()
@@ -253,84 +284,47 @@ class EditBookScreen(ModalScreen):
                 yield Button("Cancel", id="cancel_button", compact=True)
 
     def on_mount(self) -> None:
-        """Load existing book and review data when screen opens"""
-        self.load_existing_data()
+        """Populate form fields when screen opens"""
+        self._populate_form_fields()
 
-        # Skip setting genre for now to test other functionality
-        # if self.current_genre:
-        #     self.call_after_refresh(self._set_genre_value)
-
-    def _set_genre_value(self) -> None:
-        """Set the genre select value after screen is fully loaded"""
-        if self.current_genre:
-            genre_select = self.query_one("#genre_select", Select)
-            # Find the option that matches the genre from database
-            for option_value, option_display in self.genre_options:
-                if option_value == self.current_genre:
-                    genre_select.value = option_value
-                    break
-
-    def load_existing_data(self) -> None:
-        """Load existing book and review data into the form"""
-        try:
-            db = sqlite3.connect(self.db_path)
-            db.row_factory = sqlite3.Row
-
-            cursor = db.cursor()
-            cursor.execute(
-                """SELECT b.id, b.title, b.author, b.pub_year, b.pages, b.genre,
-                          r.id, r.rating, r.date_read, r.review
-                FROM books b
-                LEFT JOIN reviews r ON b.id = r.book_id
-                WHERE r.id = ?""",
-                (self.review_id,),
-            )
-            data = cursor.fetchone()
-
-            if not data:
-                self.notify(f"No review found with ID {self.review_id}")
-                self.app.pop_screen()
-                return
-
-            self.book_id = data[0]
-            self.original_book_data = {
-                "id": data[0],
-                "title": data[1],
-                "author": data[2],
-                "pub_year": data[3],
-                "pages": data[4],
-                "genre": data[5],
-            }
-            self.original_review_data = {
-                "id": data[6],
-                "rating": data[7],
-                "date_read": data[8],
-                "review": data[9],
-            }
-
-            # Populate form fields
-            self.query_one("#title_input", Input).value = data[1] or ""
-            self.query_one("#author_input", Input).value = data[2] or ""
-            self.query_one("#year_input", Input).value = str(data[3]) if data[3] else ""
-            self.query_one("#pages_input", Input).value = (
-                str(data[4]) if data[4] else ""
-            )
-
-            # Store genre for setting after mount
-            self.current_genre = data[5]
-
-            self.query_one("#date_input", Input).value = str(data[8]) if data[8] else ""
-            self.query_one("#rating_input", Input).value = (
-                str(data[7]) if data[7] else ""
-            )
-            self.query_one("#review_textarea", TextArea).text = data[9] or ""
-
-        except sqlite3.Error as e:
-            self.notify(f"Database error: {e}")
+    def _populate_form_fields(self) -> None:
+        """Populate form fields with loaded data"""
+        if not self.original_book_data:
+            self.notify(f"No review found with ID {self.review_id}")
             self.app.pop_screen()
-        finally:
-            if "db" in locals():
-                db.close()
+            return
+
+        # Populate form fields with loaded data
+        self.query_one("#title_input", Input).value = (
+            self.original_book_data["title"] or ""
+        )
+        self.query_one("#author_input", Input).value = (
+            self.original_book_data["author"] or ""
+        )
+        self.query_one("#year_input", Input).value = (
+            str(self.original_book_data["pub_year"])
+            if self.original_book_data["pub_year"]
+            else ""
+        )
+        self.query_one("#pages_input", Input).value = (
+            str(self.original_book_data["pages"])
+            if self.original_book_data["pages"]
+            else ""
+        )
+
+        self.query_one("#date_input", Input).value = (
+            str(self.original_review_data["date_read"])
+            if self.original_review_data["date_read"]
+            else ""
+        )
+        self.query_one("#rating_input", Input).value = (
+            str(self.original_review_data["rating"])
+            if self.original_review_data["rating"]
+            else ""
+        )
+        self.query_one("#review_textarea", TextArea).text = (
+            self.original_review_data["review"] or ""
+        )
 
     def on_button_pressed(self, event) -> None:
         """Handle button presses"""
