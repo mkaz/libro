@@ -5,9 +5,13 @@ from pathlib import Path
 from typing import Dict
 from datetime import datetime
 from appdirs import AppDirs
-import importlib.metadata
 
-__version__ = importlib.metadata.version("libro-book")
+
+def get_version() -> str:
+    """Get version lazily when needed"""
+    import importlib.metadata
+
+    return importlib.metadata.version("libro-book")
 
 
 def init_args() -> Dict:
@@ -160,7 +164,7 @@ def init_args() -> Dict:
     args = vars(parser.parse_args())
 
     if args["version"]:
-        print(f"libro v{__version__}")
+        print(f"libro v{get_version()}")
         sys.exit()
 
     # if not specified on command-line figure it out

@@ -3,19 +3,6 @@ import sys
 from pathlib import Path
 
 from libro.config import init_args
-from libro.actions.show import show_book_detail, show_books_only, show_recent_reviews
-from libro.actions.report import report
-from libro.actions.modify import (
-    add_book_review,
-    add_book,
-    add_review,
-    edit_book,
-    edit_review,
-)
-from libro.actions.db import init_db, migrate_db
-from libro.actions.importer import import_books
-from libro.actions.lists import manage_lists
-from libro.tui import launch_tui
 
 
 def main():
@@ -34,6 +21,8 @@ def main():
             print("No database created")
             sys.exit(1)
 
+        from libro.actions.db import init_db
+
         init_db(dbfile)
         print("Database created")
 
@@ -43,18 +32,31 @@ def main():
         db.row_factory = sqlite3.Row
 
         # Run migration for existing databases
+        from libro.actions.db import migrate_db
+
         migrate_db(db)
 
         match args["command"]:
             case "add":
+                from libro.actions.modify import add_book_review
+
                 add_book_review(db, args)
             case "report":
+                from libro.actions.report import report
+
                 report(db, args)
             case "import":
+                from libro.actions.importer import import_books
+
                 import_books(db, args)
             case "list":
+                from libro.actions.lists import manage_lists
+
                 manage_lists(db, args)
             case "book":
+                from libro.actions.show import show_books_only
+                from libro.actions.modify import add_book, edit_book
+
                 action_or_id = args.get("action_or_id")
                 if action_or_id is None:
                     # No argument - show recent books
@@ -83,6 +85,9 @@ def main():
                         print(f"Unknown book action or invalid ID: {action_or_id}")
                         print("Valid actions: add, edit, or a book ID number")
             case "review":
+                from libro.actions.show import show_recent_reviews, show_book_detail
+                from libro.actions.modify import add_review, edit_review
+
                 action_or_id = args.get("action_or_id")
                 if action_or_id is None:
                     # No argument - show recent reviews (or filtered reviews)
@@ -118,6 +123,8 @@ def main():
                         print(f"Unknown review action or invalid ID: {action_or_id}")
                         print("Valid actions: add, edit, or a review ID number")
             case "tui":
+                from libro.tui import launch_tui
+
                 launch_tui(str(dbfile))
             case _:
                 print("Not yet implemented")

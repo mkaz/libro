@@ -1,7 +1,6 @@
 """TUI interface for Libro using Textual"""
 
 from .app import LibroTUI
-from .screens import BookDetailScreen, AddBookScreen
 
 
 def launch_tui(db_path: str) -> None:
@@ -10,4 +9,4 @@ def launch_tui(db_path: str) -> None:
     app.run()
 
 
-__all__ = ["launch_tui", "LibroTUI", "BookDetailScreen", "AddBookScreen"]
+__all__ = ["launch_tui", "LibroTUI"]

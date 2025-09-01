@@ -8,10 +8,7 @@ from textual.widgets import DataTable, Header, Input, Label
 from textual.binding import Binding
 
 # Removed get_reviews import - now using custom filtered query
-from .screens.book_detail import BookDetailScreen
-from .screens.add_book import AddBookScreen
-from .screens.year_select import YearSelectScreen
-from .screens.reading_lists import ReadingListsScreen
+# Screen imports are now lazy-loaded when needed
 
 
 class LibroTUI(App):
@@ -370,6 +367,8 @@ class LibroTUI(App):
         try:
             review_id = int(review_id_str)
             # Open the book detail screen
+            from .screens.book_detail import BookDetailScreen
+
             self.push_screen(BookDetailScreen(self.db_path, review_id))
         except ValueError:
             self.notify("Select a book row to view details")
@@ -377,10 +376,14 @@ class LibroTUI(App):
 
     def action_add_book(self) -> None:
         """Add a new book and review"""
+        from .screens.add_book import AddBookScreen
+
         self.push_screen(AddBookScreen(self.db_path))
 
     def action_select_year(self) -> None:
         """Open year selection dialog"""
+        from .screens.year_select import YearSelectScreen
+
         self.push_screen(YearSelectScreen(self.db_path, self.current_year))
 
     def change_year(self, new_year: int) -> None:
@@ -399,4 +402,6 @@ class LibroTUI(App):
 
     def action_lists_view(self) -> None:
         """Switch to reading lists view"""
+        from .screens.reading_lists import ReadingListsScreen
+
         self.push_screen(ReadingListsScreen(self.db_path))
