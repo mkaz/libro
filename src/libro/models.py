@@ -4,6 +4,21 @@ import sqlite3
 from datetime import date
 
 
+# Register date adapter to fix Python 3.12+ deprecation warning
+def adapt_date_iso(val):
+    """Adapt datetime.date to ISO 8601 date."""
+    return val.isoformat()
+
+
+def convert_date(val):
+    """Convert ISO 8601 date to datetime.date object."""
+    return date.fromisoformat(val.decode())
+
+
+sqlite3.register_adapter(date, adapt_date_iso)
+sqlite3.register_converter("date", convert_date)
+
+
 @dataclass
 class Book:
     """Represents a book in the database."""
