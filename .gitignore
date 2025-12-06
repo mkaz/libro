@@ -1,7 +1,5 @@
 data/
 libro.db
 libro.bak
+/libro
 
-.ruff_cache
-uv.lock
-.venv/
