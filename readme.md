@@ -312,19 +312,27 @@ libro list stats 1
 
 ## Install
 
-Libro is packaged as `libro-book` on PyPI.
+### From Source
 
-```
-pip install libro-book
-```
-
-You can also clone this repository and install it locally:
-
-```
+```bash
 git clone https://github.com/mkaz/libro.git
 cd libro
-pip install -e .
+go build -o libro cmd/libro/main.go
+./libro --help
 ```
+
+You can copy the `libro` binary to somewhere in your PATH:
+
+```bash
+cp libro /usr/local/bin/
+# or
+cp libro ~/bin/
+```
+
+### Requirements
+
+- Go 1.25 or higher
+- SQLite3 (usually pre-installed on most systems)
 
 ## Setup
 

@@ -8,17 +8,20 @@ The easiest way to get up and running:
 
 1. Fork the repo
 2. Clone your fork locally
-3. Make sure you have Python 3.10+ and install `uv` if you don't have it
-4. Run `just install` to set up dependencies
-5. Run `uv run libro --help` to make sure everything works
+3. Make sure you have Go 1.25+ installed
+4. Run `go mod download` to fetch dependencies
+5. Run `go build -o libro cmd/libro/main.go` to build
+6. Run `./libro --help` to make sure everything works
 
 ## Making Changes
 
 ### Development Workflow
 
-- `just lint` - Check your code style (uses ruff)
-- `just run <args>` - Test your changes with the CLI
-- `just build` - Full build process before submitting
+- `go fmt ./...` - Format your code
+- `go vet ./...` - Check for common errors
+- `go build -o libro cmd/libro/main.go` - Build the binary
+- `./libro <args>` - Test your changes with the CLI
+- `go test ./...` - Run tests (when available)
 
 ### What I'm Looking For
 
@@ -38,14 +41,15 @@ I'm pretty relaxed about contributions, but here are some things that would be e
 
 ## Code Style
 
-I use ruff for formatting and linting, so just run `just lint` and fix any issues it finds. The existing code style is pretty straightforward - try to match what's already there.
+Use standard Go formatting (`go fmt`) and conventions. The existing code style is pretty straightforward - try to match what's already there. Run `go vet ./...` to catch common issues.
 
 ## Submitting Changes
 
 1. Create a branch for your changes
 2. Make your changes and test them
-3. Run `just lint` to make sure everything looks good
-4. Open a pull request with a clear description of what you changed and why
+3. Run `go fmt ./...` and `go vet ./...` to make sure everything looks good
+4. Build and test the binary to ensure it works
+5. Open a pull request with a clear description of what you changed and why
 
 No need for fancy commit message formats or elaborate PR templates. Just explain what you did in plain English.
 

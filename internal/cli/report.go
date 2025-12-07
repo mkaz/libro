@@ -11,14 +11,14 @@ import (
 
 var (
 	headerStyle = lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
-		Padding(0, 1)
+			Bold(true).
+			Foreground(lipgloss.Color("229")).
+			Background(lipgloss.Color("57")).
+			Padding(0, 1)
 
 	rowStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("252")).
-		Padding(0, 1)
+			Foreground(lipgloss.Color("252")).
+			Padding(0, 1)
 )
 
 var reportCmd = &cobra.Command{
@@ -36,10 +36,10 @@ var reportCmd = &cobra.Command{
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		fmt.Fprintln(w,
 			headerStyle.Render("ID")+"\t"+
-			headerStyle.Render("Title")+"\t"+
-			headerStyle.Render("Author")+"\t"+
-			headerStyle.Render("Rating")+"\t"+
-			headerStyle.Render("Date Read"))
+				headerStyle.Render("Title")+"\t"+
+				headerStyle.Render("Author")+"\t"+
+				headerStyle.Render("Rating")+"\t"+
+				headerStyle.Render("Date Read"))
 
 		for _, r := range reviews {
 			rating := "-"

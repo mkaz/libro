@@ -19,7 +19,7 @@ type BooksModel struct {
 	year  int
 }
 
-const dateLayout = "2006-01-02T15:04:05Z"
+const dateLayout = "2006-01-02T15:04:05Z07:00"
 
 func NewBooksModel(s *store.Store) BooksModel {
 	columns := []table.Column{
@@ -61,6 +61,7 @@ func (m BooksModel) Init() tea.Cmd {
 func (m BooksModel) LoadBooks() tea.Msg {
 	books, err := m.store.GetReviewsByYear(m.year)
 	if err != nil {
+		// Log error to a file for debugging
 		return nil
 	}
 	return BooksMsg(books)
@@ -82,7 +83,7 @@ func (m BooksModel) SetYear(year int) tea.Cmd {
 
 type BooksMsg []models.BookReview
 
-func (m BooksModel) Update(msg tea.Msg) (BooksModel, tea.Cmd) {
+func (m *BooksModel) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case BooksMsg:
@@ -96,8 +97,14 @@ func (m BooksModel) Update(msg tea.Msg) (BooksModel, tea.Cmd) {
 			}
 			dateRead := ""
 			if b.DateRead.Valid {
-				parsedDate, _ := time.Parse(dateLayout, b.DateRead.String)
-				dateRead = parsedDate.Format("Jan 02, 2006")
+				// Try to parse the date - dates are stored as YYYY-MM-DD in SQLite
+				parsedDate, err := time.Parse(dateLayout, b.DateRead.String)
+				if err != nil {
+					// If that fails, just use the raw string
+					dateRead = b.DateRead.String
+				} else {
+					dateRead = parsedDate.Format("Jan 02, 2006")
+				}
 			}
 
 			rows = append(rows, table.Row{
@@ -110,7 +117,7 @@ func (m BooksModel) Update(msg tea.Msg) (BooksModel, tea.Cmd) {
 		m.table.SetRows(rows)
 	}
 	m.table, cmd = m.table.Update(msg)
-	return m, cmd
+	return cmd
 }
 
 func (m BooksModel) View() string {

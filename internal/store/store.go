@@ -98,8 +98,8 @@ func (s *Store) AddReview(review *models.Review) (int64, error) {
 
 func (s *Store) GetReview(id int64) (*models.BookReview, error) {
 	query := `
-        SELECT r.id, r.book_id, r.date_read, r.rating, r.review, 
-               b.title, b.author, b.pub_year, b.pages, b.genre
+        SELECT r.id, r.book_id, r.date_read, NULLIF(r.rating, ''), NULLIF(r.review, ''),
+               b.title, b.author, NULLIF(b.pub_year, ''), NULLIF(b.pages, ''), NULLIF(b.genre, '')
         FROM reviews r
         JOIN books b ON r.book_id = b.id
         WHERE r.id = ?
@@ -118,8 +118,8 @@ func (s *Store) GetReview(id int64) (*models.BookReview, error) {
 
 func (s *Store) GetRecentReviews(limit int) ([]models.BookReview, error) {
 	query := `
-        SELECT r.id, r.book_id, r.date_read, r.rating, r.review, 
-               b.title, b.author, b.pub_year, b.pages, b.genre
+        SELECT r.id, r.book_id, r.date_read, NULLIF(r.rating, ''), NULLIF(r.review, ''),
+               b.title, b.author, NULLIF(b.pub_year, ''), NULLIF(b.pages, ''), NULLIF(b.genre, '')
         FROM reviews r
         JOIN books b ON r.book_id = b.id
         ORDER BY r.date_read DESC, r.id DESC
@@ -150,8 +150,8 @@ func (s *Store) GetReviewsByYear(year int) ([]models.BookReview, error) {
 	end := time.Date(year, 12, 31, 23, 59, 59, 0, time.UTC).Format("2006-01-02")
 
 	query := `
-        SELECT r.id, r.book_id, r.date_read, r.rating, r.review, 
-               b.title, b.author, b.pub_year, b.pages, b.genre
+        SELECT r.id, r.book_id, r.date_read, NULLIF(r.rating, ''), NULLIF(r.review, ''),
+               b.title, b.author, NULLIF(b.pub_year, ''), NULLIF(b.pages, ''), NULLIF(b.genre, '')
         FROM reviews r
         JOIN books b ON r.book_id = b.id
         WHERE r.date_read BETWEEN ? AND ?
@@ -173,6 +173,31 @@ func (s *Store) GetReviewsByYear(year int) ([]models.BookReview, error) {
 		reviews = append(reviews, br)
 	}
 	return reviews, nil
+}
+
+func (s *Store) GetAvailableYears() ([]int, error) {
+	query := `
+		SELECT DISTINCT strftime('%Y', date_read) as year
+		FROM reviews
+		WHERE date_read IS NOT NULL
+		ORDER BY year DESC
+	`
+	rows, err := s.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var years []int
+	for rows.Next() {
+		var yearStr string
+		if err := rows.Scan(&yearStr); err != nil {
+			return nil, err
+		}
+		year, _ := time.Parse("2006", yearStr)
+		years = append(years, year.Year())
+	}
+	return years, nil
 }
 
 // Reading Lists

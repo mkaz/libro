@@ -23,9 +23,9 @@ var bookCmd = &cobra.Command{
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		fmt.Fprintln(w,
 			headerStyle.Render("ID")+"\t"+
-			headerStyle.Render("Title")+"\t"+
-			headerStyle.Render("Author")+"\t"+
-			headerStyle.Render("Year"))
+				headerStyle.Render("Title")+"\t"+
+				headerStyle.Render("Author")+"\t"+
+				headerStyle.Render("Year"))
 
 		for _, b := range books {
 			year := ""
