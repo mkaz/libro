@@ -13,10 +13,12 @@ import (
 )
 
 type BooksModel struct {
-	store *store.Store
-	table table.Model
-	books []models.BookReview
-	year  int
+	store       *store.Store
+	table       table.Model
+	books       []models.BookReview
+	year        int
+	searchQuery string
+	searchAll   bool // When true, search across all years
 }
 
 const dateLayout = "2006-01-02T15:04:05Z07:00"
@@ -59,7 +61,21 @@ func (m BooksModel) Init() tea.Cmd {
 }
 
 func (m BooksModel) LoadBooks() tea.Msg {
-	books, err := m.store.GetReviewsByYear(m.year)
+	var books []models.BookReview
+	var err error
+
+	if m.searchQuery != "" {
+		// If searching, use search query
+		year := m.year
+		if m.searchAll {
+			year = 0 // 0 means search all years
+		}
+		books, err = m.store.SearchReviews(m.searchQuery, year)
+	} else {
+		// Normal year view
+		books, err = m.store.GetReviewsByYear(m.year)
+	}
+
 	if err != nil {
 		// Log error to a file for debugging
 		return nil
@@ -67,13 +83,16 @@ func (m BooksModel) LoadBooks() tea.Msg {
 	return BooksMsg(books)
 }
 
-func (m BooksModel) SearchBooks(query string) tea.Cmd {
-	// TODO: Implementing search for read books if needed
-	// For now, we'll keep the existing search behavior but map it to BookReview if possible
-	// or maybe disable search in this view for now?
-	// The prompt asked for "only show books that I've read".
-	// Let's defer search modification or adapt it to search reviews.
-	return nil
+func (m *BooksModel) SetSearch(query string, searchAll bool) tea.Cmd {
+	m.searchQuery = query
+	m.searchAll = searchAll
+	return m.LoadBooks
+}
+
+func (m *BooksModel) ClearSearch() tea.Cmd {
+	m.searchQuery = ""
+	m.searchAll = false
+	return m.LoadBooks
 }
 
 func (m BooksModel) SetYear(year int) tea.Cmd {
@@ -121,8 +140,19 @@ func (m *BooksModel) Update(msg tea.Msg) tea.Cmd {
 }
 
 func (m BooksModel) View() string {
+	var header string
+	if m.searchQuery != "" {
+		if m.searchAll {
+			header = fmt.Sprintf("Search: \"%s\" (All Years) - %d results", m.searchQuery, len(m.books))
+		} else {
+			header = fmt.Sprintf("Search: \"%s\" (%d) - %d results", m.searchQuery, m.year, len(m.books))
+		}
+	} else {
+		header = fmt.Sprintf("Books Read in %d (%d)", m.year, len(m.books))
+	}
+
 	return lipgloss.JoinVertical(lipgloss.Left,
-		lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("Books Read in %d (%d)", m.year, len(m.books)))+"\n",
+		lipgloss.NewStyle().Bold(true).Render(header)+"\n",
 		baseStyle.Render(m.table.View()),
 	) + "\n"
 }

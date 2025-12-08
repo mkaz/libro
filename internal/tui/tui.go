@@ -75,10 +75,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "q", "ctrl+c":
 				return m, tea.Quit
 			case "a":
-				m.state = viewAdd
-				m.formData = &BookForm{}
-				m.form = NewAddBookForm(m.formData, m.store)
-				return m, m.form.Init()
+				// Only allow "add book" when not searching
+				if m.booksModel.searchQuery == "" {
+					m.state = viewAdd
+					m.formData = &BookForm{}
+					m.form = NewAddBookForm(m.formData, m.store)
+					return m, m.form.Init()
+				} else {
+					// When in search mode, "A" toggles search all years
+					m.booksModel.searchAll = !m.booksModel.searchAll
+					return m, m.booksModel.LoadBooks
+				}
 			case "/":
 				m.state = viewSearch
 				m.searchInput.Focus()
@@ -87,6 +94,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = viewYearSelector
 				m.yearSelector = NewYearSelector(m.store)
 				return m, m.yearSelector.Init()
+			case "esc":
+				// Clear search when pressing Esc in list view
+				if m.booksModel.searchQuery != "" {
+					return m, m.booksModel.ClearSearch()
+				}
 			}
 		}
 		cmd = m.booksModel.Update(msg)
@@ -124,19 +136,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.searchInput, cmd = m.searchInput.Update(msg)
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
-			switch msg.Type {
-			case tea.KeyEnter:
-				// query := m.searchInput.Value()
-				// m.state = viewList
-				// return m, m.booksModel.SearchBooks(query)
-				// Search disabled for now in year view
-				m.state = viewList
-				return m, nil
-			case tea.KeyEsc:
+			switch msg.String() {
+			case "enter":
+				query := m.searchInput.Value()
+				if query != "" {
+					m.state = viewList
+					m.searchInput.Blur()
+					return m, m.booksModel.SetSearch(query, false)
+				}
+			case "esc":
 				m.state = viewList
 				m.searchInput.Blur()
 				m.searchInput.Reset()
-				return m, m.booksModel.LoadBooks
+				return m, m.booksModel.ClearSearch()
 			}
 		}
 		return m, cmd
@@ -160,11 +172,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	switch m.state {
 	case viewList:
-		return m.booksModel.View() + "\n  [y] Change Year  [a] Add Book  [q] Quit\n"
+		var footer string
+		if m.booksModel.searchQuery != "" {
+			if m.booksModel.searchAll {
+				footer = "\n  [a] Search Current Year  [/] New Search  [esc] Clear Search  [q] Quit\n"
+			} else {
+				footer = "\n  [a] Search All Years  [/] New Search  [esc] Clear Search  [q] Quit\n"
+			}
+		} else {
+			footer = "\n  [y] Change Year  [/] Search  [a] Add Book  [q] Quit\n"
+		}
+		return m.booksModel.View() + footer
 	case viewAdd:
 		return baseStyle.Render(m.form.View())
 	case viewSearch:
-		return fmt.Sprintf("\n%s\n\n%s", m.searchInput.View(), m.booksModel.View())
+		return fmt.Sprintf("\n%s\n\n  [enter] Search  [esc] Cancel\n", m.searchInput.View())
 	case viewYearSelector:
 		return m.yearSelector.View() + "\n\n  [↑/↓] Navigate  [enter] Select  [esc] Cancel\n"
 	}
