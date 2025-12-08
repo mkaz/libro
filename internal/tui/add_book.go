@@ -8,6 +8,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/mkaz/libro/internal/models"
+	"github.com/mkaz/libro/internal/store"
 )
 
 type BookForm struct {
@@ -43,7 +44,11 @@ func (f *BookForm) ToBook() *models.Book {
 	return b
 }
 
-func NewAddBookForm(form *BookForm) *huh.Form {
+func NewAddBookForm(form *BookForm, s *store.Store) *huh.Form {
+	// Get autocomplete suggestions
+	authors, _ := s.GetUniqueAuthors()
+	genres, _ := s.GetUniqueGenres()
+
 	return huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
@@ -59,6 +64,7 @@ func NewAddBookForm(form *BookForm) *huh.Form {
 			huh.NewInput().
 				Title("Author").
 				Value(&form.Author).
+				Suggestions(authors).
 				Validate(func(str string) error {
 					if str == "" {
 						return errors.New("author is required")
@@ -98,7 +104,8 @@ func NewAddBookForm(form *BookForm) *huh.Form {
 
 			huh.NewInput().
 				Title("Genre").
-				Value(&form.Genre),
+				Value(&form.Genre).
+				Suggestions(genres),
 		),
 	)
 }

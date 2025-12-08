@@ -281,3 +281,43 @@ func (s *Store) RemoveBookFromList(listID, bookID int64) error {
 	_, err := s.DB.Exec(query, listID, bookID)
 	return err
 }
+
+// GetUniqueAuthors returns all unique authors from the books table
+func (s *Store) GetUniqueAuthors() ([]string, error) {
+	query := `SELECT DISTINCT author FROM books WHERE author IS NOT NULL AND author != '' ORDER BY author ASC`
+	rows, err := s.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var authors []string
+	for rows.Next() {
+		var author string
+		if err := rows.Scan(&author); err != nil {
+			return nil, err
+		}
+		authors = append(authors, author)
+	}
+	return authors, nil
+}
+
+// GetUniqueGenres returns all unique genres from the books table
+func (s *Store) GetUniqueGenres() ([]string, error) {
+	query := `SELECT DISTINCT genre FROM books WHERE genre IS NOT NULL AND genre != '' ORDER BY genre ASC`
+	rows, err := s.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var genres []string
+	for rows.Next() {
+		var genre string
+		if err := rows.Scan(&genre); err != nil {
+			return nil, err
+		}
+		genres = append(genres, genre)
+	}
+	return genres, nil
+}

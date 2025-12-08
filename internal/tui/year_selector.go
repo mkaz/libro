@@ -16,13 +16,13 @@ type yearItem struct {
 }
 
 func (i yearItem) FilterValue() string { return strconv.Itoa(i.year) }
-func (i yearItem) Title() string       { return strconv.Itoa(i.year) }
-func (i yearItem) Description() string {
+func (i yearItem) Title() string {
 	if i.count == 1 {
-		return "1 book"
+		return fmt.Sprintf("%d - 1 book", i.year)
 	}
-	return fmt.Sprintf("%d books", i.count)
+	return fmt.Sprintf("%d - %d books", i.year, i.count)
 }
+func (i yearItem) Description() string { return "" }
 
 type YearSelectorModel struct {
 	list  list.Model
@@ -33,13 +33,11 @@ type YearSelectedMsg int
 
 func NewYearSelector(s *store.Store) YearSelectorModel {
 	delegate := list.NewDefaultDelegate()
+	delegate.ShowDescription = false
 	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.
 		Foreground(lipgloss.Color("229")).
 		Background(lipgloss.Color("57")).
 		Bold(true)
-	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.
-		Foreground(lipgloss.Color("246")).
-		Background(lipgloss.Color("57"))
 
 	l := list.New([]list.Item{}, delegate, 30, 14)
 	l.Title = "Select Year"

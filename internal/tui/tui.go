@@ -77,7 +77,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "a":
 				m.state = viewAdd
 				m.formData = &BookForm{}
-				m.form = NewAddBookForm(m.formData)
+				m.form = NewAddBookForm(m.formData, m.store)
 				return m, m.form.Init()
 			case "/":
 				m.state = viewSearch
