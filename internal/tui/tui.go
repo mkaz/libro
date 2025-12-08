@@ -120,10 +120,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if m.form.State == huh.StateCompleted {
 			book := m.formData.ToBook()
-			_, err := m.store.AddBook(book)
+			bookID, err := m.store.AddBook(book)
 			if err != nil {
 				// TODO: handle error
+				m.state = viewList
+				return m, m.booksModel.LoadBooks
 			}
+
+			// Add review if any review data was provided
+			if m.formData.HasReview() {
+				review := m.formData.ToReview(bookID)
+				_, err := m.store.AddReview(review)
+				if err != nil {
+					// TODO: handle error
+				}
+			}
+
 			m.state = viewList
 			// Return a command that reloads the books
 			return m, m.booksModel.LoadBooks
