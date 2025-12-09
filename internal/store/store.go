@@ -354,6 +354,77 @@ func (s *Store) GetUniqueAuthors() ([]string, error) {
 	return authors, nil
 }
 
+// YearCount represents the count of books read in a year
+type YearCount struct {
+	Year  int
+	Count int
+}
+
+// MonthCount represents the count of books read in a month
+type MonthCount struct {
+	Month int
+	Count int
+}
+
+// GetYearlyCounts returns the count of books read per year
+func (s *Store) GetYearlyCounts() ([]YearCount, error) {
+	query := `
+		SELECT strftime('%Y', date_read) as year, COUNT(*) as count
+		FROM reviews
+		WHERE date_read IS NOT NULL
+		GROUP BY year
+		ORDER BY year ASC
+	`
+	rows, err := s.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var counts []YearCount
+	for rows.Next() {
+		var yearStr string
+		var count int
+		if err := rows.Scan(&yearStr, &count); err != nil {
+			return nil, err
+		}
+		year, _ := time.Parse("2006", yearStr)
+		counts = append(counts, YearCount{Year: year.Year(), Count: count})
+	}
+	return counts, nil
+}
+
+// GetMonthlyCounts returns the count of books read per month for a specific year
+func (s *Store) GetMonthlyCounts(year int) ([]MonthCount, error) {
+	start := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+	end := time.Date(year, 12, 31, 23, 59, 59, 0, time.UTC).Format("2006-01-02")
+
+	query := `
+		SELECT strftime('%m', date_read) as month, COUNT(*) as count
+		FROM reviews
+		WHERE date_read BETWEEN ? AND ?
+		GROUP BY month
+		ORDER BY month ASC
+	`
+	rows, err := s.DB.Query(query, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var counts []MonthCount
+	for rows.Next() {
+		var monthStr string
+		var count int
+		if err := rows.Scan(&monthStr, &count); err != nil {
+			return nil, err
+		}
+		month, _ := time.Parse("01", monthStr)
+		counts = append(counts, MonthCount{Month: int(month.Month()), Count: count})
+	}
+	return counts, nil
+}
+
 // GetUniqueGenres returns all unique genres from the books table
 func (s *Store) GetUniqueGenres() ([]string, error) {
 	query := `SELECT DISTINCT genre FROM books WHERE genre IS NOT NULL AND genre != '' ORDER BY genre ASC`

@@ -23,10 +23,10 @@ var (
 
 var reportCmd = &cobra.Command{
 	Use:   "report",
-	Short: "Show reports",
+	Short: "Show reading report",
 	Run: func(cmd *cobra.Command, args []string) {
 		s := getStore(cmd)
-		// TODO: handle flags
+
 		reviews, err := s.GetRecentReviews(50)
 		if err != nil {
 			fmt.Println(err)
