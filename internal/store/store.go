@@ -334,6 +334,110 @@ func (s *Store) SearchReviews(query string, year int) ([]models.BookReview, erro
 	return reviews, nil
 }
 
+// SearchReviewsByAuthor searches for reviews by author only, optionally filtered by year
+func (s *Store) SearchReviewsByAuthor(author string, year int) ([]models.BookReview, error) {
+	searchPattern := "%" + author + "%"
+
+	var rows *sql.Rows
+	var err error
+
+	if year > 0 {
+		// Search within a specific year
+		start := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+		end := time.Date(year, 12, 31, 23, 59, 59, 0, time.UTC).Format("2006-01-02")
+
+		querySQL := `
+			SELECT r.id, r.book_id, r.date_read, NULLIF(r.rating, ''), NULLIF(r.review, ''),
+				   b.title, b.author, NULLIF(b.pub_year, ''), NULLIF(b.pages, ''), NULLIF(b.genre, '')
+			FROM reviews r
+			JOIN books b ON r.book_id = b.id
+			WHERE r.date_read BETWEEN ? AND ?
+			  AND b.author LIKE ?
+			ORDER BY r.date_read DESC
+		`
+		rows, err = s.DB.Query(querySQL, start, end, searchPattern)
+	} else {
+		// Search all years
+		querySQL := `
+			SELECT r.id, r.book_id, r.date_read, NULLIF(r.rating, ''), NULLIF(r.review, ''),
+				   b.title, b.author, NULLIF(b.pub_year, ''), NULLIF(b.pages, ''), NULLIF(b.genre, '')
+			FROM reviews r
+			JOIN books b ON r.book_id = b.id
+			WHERE b.author LIKE ?
+			ORDER BY r.date_read DESC
+		`
+		rows, err = s.DB.Query(querySQL, searchPattern)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var reviews []models.BookReview
+	for rows.Next() {
+		var br models.BookReview
+		if err := rows.Scan(&br.ReviewID, &br.BookID, &br.DateRead, &br.Rating, &br.ReviewText,
+			&br.BookTitle, &br.BookAuthor, &br.BookPubYear, &br.BookPages, &br.BookGenre); err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, br)
+	}
+	return reviews, nil
+}
+
+// SearchReviewsByTitle searches for reviews by title only, optionally filtered by year
+func (s *Store) SearchReviewsByTitle(title string, year int) ([]models.BookReview, error) {
+	searchPattern := "%" + title + "%"
+
+	var rows *sql.Rows
+	var err error
+
+	if year > 0 {
+		// Search within a specific year
+		start := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+		end := time.Date(year, 12, 31, 23, 59, 59, 0, time.UTC).Format("2006-01-02")
+
+		querySQL := `
+			SELECT r.id, r.book_id, r.date_read, NULLIF(r.rating, ''), NULLIF(r.review, ''),
+				   b.title, b.author, NULLIF(b.pub_year, ''), NULLIF(b.pages, ''), NULLIF(b.genre, '')
+			FROM reviews r
+			JOIN books b ON r.book_id = b.id
+			WHERE r.date_read BETWEEN ? AND ?
+			  AND b.title LIKE ?
+			ORDER BY r.date_read DESC
+		`
+		rows, err = s.DB.Query(querySQL, start, end, searchPattern)
+	} else {
+		// Search all years
+		querySQL := `
+			SELECT r.id, r.book_id, r.date_read, NULLIF(r.rating, ''), NULLIF(r.review, ''),
+				   b.title, b.author, NULLIF(b.pub_year, ''), NULLIF(b.pages, ''), NULLIF(b.genre, '')
+			FROM reviews r
+			JOIN books b ON r.book_id = b.id
+			WHERE b.title LIKE ?
+			ORDER BY r.date_read DESC
+		`
+		rows, err = s.DB.Query(querySQL, searchPattern)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var reviews []models.BookReview
+	for rows.Next() {
+		var br models.BookReview
+		if err := rows.Scan(&br.ReviewID, &br.BookID, &br.DateRead, &br.Rating, &br.ReviewText,
+			&br.BookTitle, &br.BookAuthor, &br.BookPubYear, &br.BookPages, &br.BookGenre); err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, br)
+	}
+	return reviews, nil
+}
+
 // GetUniqueAuthors returns all unique authors from the books table
 func (s *Store) GetUniqueAuthors() ([]string, error) {
 	query := `SELECT DISTINCT author FROM books WHERE author IS NOT NULL AND author != '' ORDER BY author ASC`
