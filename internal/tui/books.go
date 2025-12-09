@@ -21,6 +21,14 @@ type BooksModel struct {
 	searchAll   bool // When true, search across all years
 }
 
+func (m BooksModel) GetSelectedBook() *models.BookReview {
+	cursor := m.table.Cursor()
+	if cursor >= 0 && cursor < len(m.books) {
+		return &m.books[cursor]
+	}
+	return nil
+}
+
 const dateLayout = "2006-01-02T15:04:05Z07:00"
 
 func NewBooksModel(s *store.Store) BooksModel {

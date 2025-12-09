@@ -17,6 +17,7 @@ const (
 	viewAdd
 	viewSearch
 	viewYearSelector
+	viewBookDetail
 )
 
 func Start(s *store.Store) {
@@ -35,6 +36,7 @@ type model struct {
 	formData     *BookForm
 	searchInput  textinput.Model
 	yearSelector YearSelectorModel
+	bookDetail   BookDetailModel
 }
 
 func initialModel(s *store.Store) model {
@@ -94,6 +96,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = viewYearSelector
 				m.yearSelector = NewYearSelector(m.store)
 				return m, m.yearSelector.Init()
+			case "enter":
+				// Show book detail
+				if book := m.booksModel.GetSelectedBook(); book != nil {
+					m.bookDetail = NewBookDetail(*book)
+					m.state = viewBookDetail
+					return m, nil
+				}
 			case "esc":
 				// Clear search when pressing Esc in list view
 				if m.booksModel.searchQuery != "" {
@@ -176,6 +185,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.yearSelector, cmd = m.yearSelector.Update(msg)
 		return m, cmd
+
+	case viewBookDetail:
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "esc", "q", "enter":
+				m.state = viewList
+				return m, nil
+			}
+		}
+		m.bookDetail, cmd = m.bookDetail.Update(msg)
+		return m, cmd
 	}
 
 	return m, nil
@@ -187,12 +208,12 @@ func (m model) View() string {
 		var footer string
 		if m.booksModel.searchQuery != "" {
 			if m.booksModel.searchAll {
-				footer = "\n  [a] Search Current Year  [/] New Search  [esc] Clear Search  [q] Quit\n"
+				footer = "\n  [enter] View Details  [a] Search Current Year  [/] New Search  [esc] Clear Search  [q] Quit\n"
 			} else {
-				footer = "\n  [a] Search All Years  [/] New Search  [esc] Clear Search  [q] Quit\n"
+				footer = "\n  [enter] View Details  [a] Search All Years  [/] New Search  [esc] Clear Search  [q] Quit\n"
 			}
 		} else {
-			footer = "\n  [y] Change Year  [/] Search  [a] Add Book  [q] Quit\n"
+			footer = "\n  [enter] View Details  [y] Change Year  [/] Search  [a] Add Book  [q] Quit\n"
 		}
 		return m.booksModel.View() + footer
 	case viewAdd:
@@ -201,6 +222,8 @@ func (m model) View() string {
 		return fmt.Sprintf("\n%s\n\n  [enter] Search  [esc] Cancel\n", m.searchInput.View())
 	case viewYearSelector:
 		return m.yearSelector.View() + "\n\n  [↑/↓] Navigate  [enter] Select  [esc] Cancel\n"
+	case viewBookDetail:
+		return "\n" + m.bookDetail.View() + "\n\n  [enter/esc] Back to List  [q] Quit\n"
 	}
 	return ""
 }
