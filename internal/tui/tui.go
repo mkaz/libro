@@ -18,6 +18,8 @@ const (
 	viewSearch
 	viewYearSelector
 	viewBookDetail
+	viewReadingLists
+	viewReadingListBooks
 )
 
 func Start(s *store.Store) {
@@ -29,14 +31,16 @@ func Start(s *store.Store) {
 }
 
 type model struct {
-	store        *store.Store
-	state        sessionState
-	booksModel   BooksModel
-	form         *huh.Form
-	formData     *BookForm
-	searchInput  textinput.Model
-	yearSelector YearSelectorModel
-	bookDetail   BookDetailModel
+	store            *store.Store
+	state            sessionState
+	booksModel       BooksModel
+	form             *huh.Form
+	formData         *BookForm
+	searchInput      textinput.Model
+	yearSelector     YearSelectorModel
+	bookDetail       BookDetailModel
+	readingLists     ReadingListsModel
+	readingListBooks ReadingListBooksModel
 }
 
 func initialModel(s *store.Store) model {
@@ -52,6 +56,7 @@ func initialModel(s *store.Store) model {
 		booksModel:   NewBooksModel(s),
 		searchInput:  ti,
 		yearSelector: NewYearSelector(s),
+		readingLists: NewReadingListsModel(s),
 	}
 }
 
@@ -67,6 +72,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.booksModel.year = int(yearMsg)
 		m.state = viewList
 		return m, m.booksModel.LoadBooks
+	}
+
+	// Handle reading list selection message globally
+	if listMsg, ok := msg.(ReadingListSelectedMsg); ok {
+		m.readingListBooks = NewReadingListBooksModel(m.store, listMsg.ListID, listMsg.ListName)
+		m.state = viewReadingListBooks
+		return m, m.readingListBooks.Init()
 	}
 
 	switch m.state {
@@ -96,6 +108,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = viewYearSelector
 				m.yearSelector = NewYearSelector(m.store)
 				return m, m.yearSelector.Init()
+			case "l":
+				m.state = viewReadingLists
+				m.readingLists = NewReadingListsModel(m.store)
+				return m, m.readingLists.Init()
 			case "enter":
 				// Show book detail
 				if book := m.booksModel.GetSelectedBook(); book != nil {
@@ -197,6 +213,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.bookDetail, cmd = m.bookDetail.Update(msg)
 		return m, cmd
+
+	case viewReadingLists:
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "esc", "q":
+				m.state = viewList
+				return m, nil
+			}
+		}
+		cmd = m.readingLists.Update(msg)
+		return m, cmd
+
+	case viewReadingListBooks:
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "esc":
+				m.state = viewReadingLists
+				return m, m.readingLists.Init()
+			case "q":
+				m.state = viewList
+				return m, nil
+			}
+		}
+		cmd = m.readingListBooks.Update(msg)
+		return m, cmd
 	}
 
 	return m, nil
@@ -213,7 +256,7 @@ func (m model) View() string {
 				footer = "\n  [enter] View Details  [a] Search All Years  [/] New Search  [esc] Clear Search  [q] Quit\n"
 			}
 		} else {
-			footer = "\n  [enter] View Details  [y] Change Year  [/] Search  [a] Add Book  [q] Quit\n"
+			footer = "\n  [enter] View Details  [y] Change Year  [l] Lists  [/] Search  [a] Add Book  [q] Quit\n"
 		}
 		return m.booksModel.View() + footer
 	case viewAdd:
@@ -224,6 +267,10 @@ func (m model) View() string {
 		return m.yearSelector.View() + "\n\n  [↑/↓] Navigate  [enter] Select  [esc] Cancel\n"
 	case viewBookDetail:
 		return "\n" + m.bookDetail.View() + "\n\n  [enter/esc] Back to List  [q] Quit\n"
+	case viewReadingLists:
+		return "\n" + m.readingLists.View() + "\n\n  [enter] View List  [esc] Back to Books  [q] Quit\n"
+	case viewReadingListBooks:
+		return "\n" + m.readingListBooks.View() + "\n  [esc] Back to Lists  [q] Back to Books\n"
 	}
 	return ""
 }
