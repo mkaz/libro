@@ -248,7 +248,7 @@ func (s *Store) GetListBooks(listID int64) ([]models.ReadingListBookDetail, erro
         JOIN books b ON rlb.book_id = b.id
         LEFT JOIN reviews r ON b.id = r.book_id
         WHERE rlb.list_id = ?
-        ORDER BY rlb.priority DESC, rlb.added_date ASC
+        ORDER BY is_read ASC, r.date_read DESC
     `
 	rows, err := s.DB.Query(query, listID)
 	if err != nil {
