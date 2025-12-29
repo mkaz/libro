@@ -2,10 +2,12 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mkaz/libro/internal/models"
+	"github.com/mkaz/libro/internal/store"
 	"github.com/spf13/cobra"
 )
 
@@ -28,8 +30,20 @@ var reportCmd = &cobra.Command{
 		s := getStore(cmd)
 
 		author, _ := cmd.Flags().GetString("author")
+		author = strings.TrimSpace(author)
 		title, _ := cmd.Flags().GetString("title")
 		year, _ := cmd.Flags().GetInt("year")
+
+		// Check if --author flag was explicitly provided
+		authorFlagSet := cmd.Flags().Changed("author")
+
+		// If --author flag provided with no value, show author counts
+		if authorFlagSet && author == "" {
+			limit, _ := cmd.Flags().GetInt("limit")
+			undated, _ := cmd.Flags().GetBool("undated")
+			showAuthorCounts(s, limit, undated)
+			return
+		}
 
 		var reviews []models.BookReview
 		var err error
@@ -95,9 +109,33 @@ var reportCmd = &cobra.Command{
 	},
 }
 
+func showAuthorCounts(s *store.Store, minCount int, includeUndated bool) {
+	counts, err := s.GetAuthorCounts(minCount, includeUndated)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Print header
+	headerLine := fmt.Sprintf("%-5s  %-50s", "Count", "Author")
+	fmt.Println(headerStyle.Render(headerLine))
+
+	for _, ac := range counts {
+		author := ac.Author
+		if len(author) > 50 {
+			author = author[:47] + "..."
+		}
+		line := fmt.Sprintf("%-5d  %-50s", ac.Count, author)
+		fmt.Println(rowStyle.Render(line))
+	}
+}
+
 func init() {
 	rootCmd.AddCommand(reportCmd)
-	reportCmd.Flags().String("author", "", "Filter by author name")
+	reportCmd.Flags().String("author", "", "Show author counts, or filter with --author=NAME")
+	reportCmd.Flags().Lookup("author").NoOptDefVal = " "
 	reportCmd.Flags().String("title", "", "Filter by title")
 	reportCmd.Flags().Int("year", 0, "Filter by year")
+	reportCmd.Flags().Int("limit", 3, "Minimum book count for --author")
+	reportCmd.Flags().Bool("undated", false, "Include books without read dates in --author counts")
 }

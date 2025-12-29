@@ -529,6 +529,56 @@ func (s *Store) GetMonthlyCounts(year int) ([]MonthCount, error) {
 	return counts, nil
 }
 
+// AuthorCount represents the count of books read by an author
+type AuthorCount struct {
+	Author string
+	Count  int
+}
+
+// GetAuthorCounts returns the count of books read per author, ordered by count descending
+// minCount filters to authors with at least this many books
+// includeUndated includes reviews without a date_read value
+func (s *Store) GetAuthorCounts(minCount int, includeUndated bool) ([]AuthorCount, error) {
+	var query string
+	if includeUndated {
+		query = `
+			SELECT b.author, COUNT(*) as count
+			FROM reviews r
+			JOIN books b ON r.book_id = b.id
+			WHERE b.author IS NOT NULL AND b.author != ''
+			GROUP BY b.author
+			HAVING count >= ?
+			ORDER BY count DESC, b.author ASC
+		`
+	} else {
+		query = `
+			SELECT b.author, COUNT(*) as count
+			FROM reviews r
+			JOIN books b ON r.book_id = b.id
+			WHERE b.author IS NOT NULL AND b.author != ''
+			  AND r.date_read IS NOT NULL AND r.date_read != ''
+			GROUP BY b.author
+			HAVING count >= ?
+			ORDER BY count DESC, b.author ASC
+		`
+	}
+	rows, err := s.DB.Query(query, minCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var counts []AuthorCount
+	for rows.Next() {
+		var ac AuthorCount
+		if err := rows.Scan(&ac.Author, &ac.Count); err != nil {
+			return nil, err
+		}
+		counts = append(counts, ac)
+	}
+	return counts, nil
+}
+
 // GetUniqueGenres returns all unique genres from the books table
 func (s *Store) GetUniqueGenres() ([]string, error) {
 	query := `SELECT DISTINCT genre FROM books WHERE genre IS NOT NULL AND genre != '' ORDER BY genre ASC`
