@@ -6,19 +6,15 @@ import (
 	"os"
 	"strconv"
 	"text/tabwriter"
+	"time"
 
 	"github.com/mkaz/libro/internal/models"
 	"github.com/spf13/cobra"
 )
 
 var listCmd = &cobra.Command{
-	Use:   "list",
+	Use:   "list [id]",
 	Short: "Manage reading lists",
-}
-
-var listShowCmd = &cobra.Command{
-	Use:   "show [id]",
-	Short: "Show reading lists or specific list",
 	Run: func(cmd *cobra.Command, args []string) {
 		s := getStore(cmd)
 		if len(args) > 0 {
@@ -57,7 +53,9 @@ var listShowCmd = &cobra.Command{
 			}
 			created := ""
 			if l.CreatedDate.Valid {
-				created = l.CreatedDate.String
+				if t, err := time.Parse(time.RFC3339, l.CreatedDate.String); err == nil {
+					created = t.Format("Jan 02, 2006")
+				}
 			}
 			fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", l.ID, l.Name, desc, created)
 		}
@@ -108,7 +106,6 @@ var listAddCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.AddCommand(listShowCmd)
 	listCmd.AddCommand(listCreateCmd)
 	listCmd.AddCommand(listAddCmd)
 
