@@ -45,19 +45,30 @@ var listCmd = &cobra.Command{
 			return
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintln(w, "ID\tName\tDescription\tCreated")
+		fmt.Fprintln(w, "ID\tName                      \tStats          \tCreated")
 		for _, l := range lists {
-			desc := ""
-			if l.Description.Valid {
-				desc = l.Description.String
+			// Get stats for this list
+			books, _ := s.GetListBooks(l.ID)
+			total := len(books)
+			read := 0
+			for _, b := range books {
+				if b.IsRead {
+					read++
+				}
 			}
+			pct := 0
+			if total > 0 {
+				pct = read * 100 / total
+			}
+			stats := fmt.Sprintf("%d/%d (%d%%)", read, total, pct)
+
 			created := ""
 			if l.CreatedDate.Valid {
 				if t, err := time.Parse(time.RFC3339, l.CreatedDate.String); err == nil {
 					created = t.Format("Jan 02, 2006")
 				}
 			}
-			fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", l.ID, l.Name, desc, created)
+			fmt.Fprintf(w, "%d\t%-26s\t%-15s\t%s\n", l.ID, l.Name, stats, created)
 		}
 		w.Flush()
 	},
