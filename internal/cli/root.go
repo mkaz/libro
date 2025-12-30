@@ -29,6 +29,8 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().String("db", "", "SQLite file")
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+
 }
 
 func getStore(cmd *cobra.Command) *store.Store {
