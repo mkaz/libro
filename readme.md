@@ -16,13 +16,6 @@ This separation allows you to:
 
 ## Interface
 
-Libro provides two ways to interact with your reading data:
-
-**Interactive TUI (Default):**
-- `libro` - Launch the interactive terminal interface with search and navigation
-- Navigate with arrow keys, search with `/`, add books with `a`, view lists with `l`
-- Press `q` to quit, `?` for help with key bindings
-
 **Command Line Interface:**
 - `libro report` - Reading history table  
 - `libro report --author` - Author statistics (most read authors)
@@ -94,20 +87,9 @@ See: `libro --help` for more information.
 
 ### Examples
 
-#### Interactive TUI Interface
+#### Report View
 
-The default interface is an interactive terminal application with search capabilities:
-
-- Launch with `libro` (no arguments)
-- Use arrow keys to navigate between books
-- Press `/` to search by title or author
-- Press `Enter` to view book details
-- Press `a` to add new books
-- Press `l` to view reading lists
-
-#### CLI Report View
-
-Access the traditional table view with `libro report`:
+Access the table view with `libro report`:
 
 ```
 ❯ libro report
