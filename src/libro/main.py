@@ -122,10 +122,6 @@ def main():
                     except ValueError:
                         print(f"Unknown review action or invalid ID: {action_or_id}")
                         print("Valid actions: add, edit, or a review ID number")
-            case "tui":
-                from libro.tui import launch_tui
-
-                launch_tui(str(dbfile))
             case _:
                 print("Not yet implemented")
 

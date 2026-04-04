@@ -16,7 +16,8 @@ def get_version() -> str:
 
 def init_args() -> Dict:
     """Parse and return the arguments."""
-    parser = argparse.ArgumentParser(description="Book list")
+    parser = argparse.ArgumentParser(description="Book list", add_help=False)
+    parser.add_argument("--help", action="help", help="Show this help message and exit")
     parser.add_argument("--db", help="SQLite file")
     parser.add_argument("-v", "--version", action="store_true")
     parser.add_argument("-i", "--info", action="store_true")
@@ -158,9 +159,6 @@ def init_args() -> Dict:
         "--description", type=str, help="Description for new reading list"
     )
 
-    # TUI command
-    subparsers.add_parser("tui", help="Launch interactive TUI interface")
-
     args = vars(parser.parse_args())
 
     if args["version"]:
@@ -172,7 +170,7 @@ def init_args() -> Dict:
         args["db"] = get_db_loc()
 
     if args["command"] is None:
-        args["command"] = "tui"
+        args["command"] = "report"
 
     # Track whether year was explicitly provided
     args["year_explicit"] = args.get("year") is not None
