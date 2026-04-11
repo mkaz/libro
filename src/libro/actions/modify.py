@@ -177,11 +177,16 @@ def add_book_review(db, args):
         if not my_review:  # Handle empty input
             my_review = None
 
-        # Create and insert book using the internal model
-        book = Book(  # Using _Book for insertion
-            title=title, author=author, pub_year=pub_year, pages=pages, genre=genre
-        )
-        book_id = book.insert(db)
+        # Check if book already exists by title and author
+        existing_book = Book.find_by_title_author(db, title, author)
+        if existing_book:
+            book_id = existing_book.id
+            print(f"\nFound existing book '{title}' (ID: {book_id}), adding review to it.")
+        else:
+            book = Book(
+                title=title, author=author, pub_year=pub_year, pages=pages, genre=genre
+            )
+            book_id = book.insert(db)
 
         # Create and insert review using the internal model
         review = Review(  # Using _Review for insertion
