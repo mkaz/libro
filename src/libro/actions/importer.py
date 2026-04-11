@@ -76,15 +76,19 @@ def import_books(db, args):
             if "read" in shelf:
                 count += 1
 
-                # Create and insert book
-                book = Book(
-                    title=title,
-                    author=author,
-                    pub_year=int(pub_year) if pub_year else None,
-                    pages=int(pages) if pages else None,
-                    genre="fiction",  # Default to fiction, could be improved
-                )
-                book_id = book.insert(db)
+                # Check if book already exists to avoid duplicates on re-import
+                existing_book = Book.find_by_title_author(db, title, author)
+                if existing_book:
+                    book_id = existing_book.id
+                else:
+                    book = Book(
+                        title=title,
+                        author=author,
+                        pub_year=int(pub_year) if pub_year else None,
+                        pages=int(pages) if pages else None,
+                        genre=None,
+                    )
+                    book_id = book.insert(db)
 
                 # Create and insert review
                 review_obj = Review(

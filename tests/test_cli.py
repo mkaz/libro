@@ -19,7 +19,7 @@ class TestArgumentParsing:
         """Test default argument parsing."""
         with patch('sys.argv', ['libro']):
             args = init_args()
-            assert args["command"] == "tui"  # Default command
+            assert args["command"] == "report"  # Default command
             assert "db" in args  # Database path should be set
 
     def test_book_command_args(self):

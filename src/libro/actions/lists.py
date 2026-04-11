@@ -234,7 +234,8 @@ def _add_existing_books_to_list(
     console: Console,
 ):
     """Add existing books by their IDs to a reading list."""
-    assert reading_list.id is not None, "Reading list must have an ID"
+    if reading_list.id is None:
+        raise ValueError("Reading list must have an ID")
     added_count = 0
     errors = []
 
@@ -284,7 +285,8 @@ def _add_new_book_to_list(
     db: sqlite3.Connection, reading_list: ReadingList, console: Console
 ):
     """Add a new book to a reading list using interactive prompts."""
-    assert reading_list.id is not None, "Reading list must have an ID"
+    if reading_list.id is None:
+        raise ValueError("Reading list must have an ID")
     session: PromptSession[str] = PromptSession(style=style)
     console.print(f"[blue]Adding book to '{reading_list.name}' reading list[/blue]\n")
 

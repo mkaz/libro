@@ -62,22 +62,35 @@ def show_author_report(db, args):
     # In that case, we default to 3.
     if limit is None:
         limit = 3
-    where_clause = (
-        "" if args.get("undated") is True else "WHERE r.date_read IS NOT NULL"
-    )
+    include_undated = args.get("undated") is True
 
     try:
         cursor = db.cursor()
-        query = f"""
-            SELECT b.author, COUNT(*) as count
-            FROM reviews r
-            JOIN books b ON r.book_id = b.id
-            {where_clause}
-            GROUP BY b.author
-            HAVING count >= :limit
-            ORDER BY count DESC
-        """
-        cursor.execute(query, {"limit": limit})
+        if include_undated:
+            cursor.execute(
+                """
+                SELECT b.author, COUNT(*) as count
+                FROM reviews r
+                JOIN books b ON r.book_id = b.id
+                GROUP BY b.author
+                HAVING count >= :limit
+                ORDER BY count DESC
+                """,
+                {"limit": limit},
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT b.author, COUNT(*) as count
+                FROM reviews r
+                JOIN books b ON r.book_id = b.id
+                WHERE r.date_read IS NOT NULL
+                GROUP BY b.author
+                HAVING count >= :limit
+                ORDER BY count DESC
+                """,
+                {"limit": limit},
+            )
         authors = cursor.fetchall()
 
         if not authors:

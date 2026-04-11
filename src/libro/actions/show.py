@@ -5,7 +5,9 @@ from rich.table import Table
 from libro.models import ReadingListBook
 
 
-def show_books(db, args={}):
+def show_books(db, args=None):
+    if args is None:
+        args = {}
     # if id is not none, show book detail
     if args.get("id") is not None:
         show_book_detail(db, args.get("id"))
@@ -39,10 +41,10 @@ def show_books(db, args={}):
     nonfiction_books = []
 
     for book in books:
-        if book["genre"] != "nonfiction":
-            fiction_books.append(book)
-        else:
+        if (book["genre"] or "").lower() == "nonfiction":
             nonfiction_books.append(book)
+        else:
+            fiction_books.append(book)
 
     # Combine with Fiction first, then Nonfiction (both already sorted by date DESC)
     grouped_books = fiction_books + nonfiction_books
@@ -53,7 +55,7 @@ def show_books(db, args={}):
     current_group = None
     for book in grouped_books:
         # Determine which group this book belongs to
-        book_group = "Fiction" if book["genre"] != "nonfiction" else "Nonfiction"
+        book_group = "Nonfiction" if (book["genre"] or "").lower() == "nonfiction" else "Fiction"
 
         # Add group separator if group changes
         if book_group != current_group:
@@ -86,7 +88,7 @@ def show_books(db, args={}):
             book["title"],
             book["author"],
             book["genre"] or "Unknown",
-            str(book["rating"]),
+            str(book["rating"]) if book["rating"] else "Not rated",
             formatted_date,
         )
 
@@ -145,7 +147,9 @@ def show_book_detail(db, review_id):
         console.print(f"\n📚 [cyan]Reading Lists:[/cyan] {', '.join(reading_lists)}")
 
 
-def show_books_only(db, args={}):
+def show_books_only(db, args=None):
+    if args is None:
+        args = {}
     """Show books without review information (for libro book show)"""
     # if id is not none, show book detail
     if args.get("id") is not None:
@@ -350,6 +354,15 @@ def get_reviews(db, year=None, author_name=None):
             """,
                 (f"%{author_name}%",),
             )
+        else:
+            cursor.execute(
+                """
+                SELECT r.id as review_id, b.id as book_id, b.title, b.author, b.genre, r.rating, r.date_read
+                FROM reviews r
+                LEFT JOIN books b ON r.book_id = b.id
+                ORDER BY r.date_read ASC
+            """
+            )
         books = cursor.fetchall()
         return books
     except sqlite3.Error as e:
@@ -360,7 +373,9 @@ def get_reviews(db, year=None, author_name=None):
         return None
 
 
-def show_recent_reviews(db, args={}):
+def show_recent_reviews(db, args=None):
+    if args is None:
+        args = {}
     """Show recent reviews (latest 20) or filtered reviews"""
     try:
         cursor = db.cursor()

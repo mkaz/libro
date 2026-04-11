@@ -11,6 +11,9 @@ from rich.console import Console
 
 from libro.models import BookReview, Book, Review
 
+# Sentinel to distinguish "field not changed" from "field cleared to None"
+_UNCHANGED = object()
+
 
 class AuthorCompleter(Completer):
     """Provides tab completion for author names based on frequency of books."""
@@ -253,7 +256,7 @@ def add_book(db, args):
             style="green",
         )
         console.print(
-            "💡 Use 'libro review add {book_id}' to add a review later.", style="dim"
+            f"💡 Use 'libro review add {book_id}' to add a review later.", style="dim"
         )
 
     except KeyboardInterrupt:
@@ -377,8 +380,8 @@ def _update_field(
     else:
         new_value = new_str if new_str else None
 
-    # Return new value if it's different from current
-    return new_value if new_value != current_value else None
+    # Return sentinel if unchanged, new value (including None) if changed
+    return _UNCHANGED if new_value == current_value else new_value
 
 
 def edit_book(db, args):
@@ -456,9 +459,9 @@ def _update_book_database(db, updated_book_data, book_id):
     try:
         cursor = db.cursor()
 
-        # Filter out None values (unchanged fields)
+        # Filter out unchanged fields (sentinel value)
         filtered_book_data = {
-            k: v for k, v in updated_book_data.items() if v is not None
+            k: v for k, v in updated_book_data.items() if v is not _UNCHANGED
         }
 
         if filtered_book_data:
@@ -547,9 +550,9 @@ def _update_review_database(db, updated_review_data, book_review):
     try:
         cursor = db.cursor()
 
-        # Filter out None values (unchanged fields)
+        # Filter out unchanged fields (sentinel value)
         filtered_review_data = {
-            k: v for k, v in updated_review_data.items() if v is not None
+            k: v for k, v in updated_review_data.items() if v is not _UNCHANGED
         }
 
         if filtered_review_data:
