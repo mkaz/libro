@@ -55,7 +55,9 @@ def show_books(db, args=None):
     current_group = None
     for book in grouped_books:
         # Determine which group this book belongs to
-        book_group = "Nonfiction" if (book["genre"] or "").lower() == "nonfiction" else "Fiction"
+        book_group = (
+            "Nonfiction" if (book["genre"] or "").lower() == "nonfiction" else "Fiction"
+        )
 
         # Add group separator if group changes
         if book_group != current_group:
