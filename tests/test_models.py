@@ -22,10 +22,10 @@ class TestBook:
         """Test inserting a book into the database."""
         book = Book(**sample_book_data)
         book_id = book.insert(temp_db)
-        
+
         assert book_id is not None
         assert book.id == book_id
-        
+
         # Verify it's in the database
         cursor = temp_db.cursor()
         cursor.execute("SELECT * FROM books WHERE id = ?", (book_id,))
@@ -38,12 +38,12 @@ class TestBook:
         """Test finding a book by title and author."""
         book = Book(**sample_book_data)
         book.insert(temp_db)
-        
+
         found_book = Book.find_by_title_author(temp_db, "Test Book", "Test Author")
         assert found_book is not None
         assert found_book.title == "Test Book"
         assert found_book.author == "Test Author"
-        
+
         # Test case insensitive search
         found_book = Book.find_by_title_author(temp_db, "test book", "test author")
         assert found_book is not None
@@ -70,14 +70,14 @@ class TestReview:
         # First create a book
         book = Book(**sample_book_data)
         book_id = book.insert(temp_db)
-        
+
         # Then create a review
         review = Review(book_id=book_id, **sample_review_data)
         review_id = review.insert(temp_db)
-        
+
         assert review_id is not None
         assert review.id == review_id
-        
+
         # Verify it's in the database
         cursor = temp_db.cursor()
         cursor.execute("SELECT * FROM reviews WHERE id = ?", (review_id,))
@@ -90,15 +90,12 @@ class TestReview:
         """Test review with date object instead of string."""
         book = Book(**sample_book_data)
         book_id = book.insert(temp_db)
-        
+
         review = Review(
-            book_id=book_id,
-            rating=5,
-            date_read=date(2023, 12, 15),
-            review="Excellent!"
+            book_id=book_id, rating=5, date_read=date(2023, 12, 15), review="Excellent!"
         )
         review_id = review.insert(temp_db)
-        
+
         assert review_id is not None
 
 
@@ -114,12 +111,14 @@ class TestReadingList:
 
     def test_reading_list_insert(self, temp_db):
         """Test inserting a reading list into the database."""
-        reading_list = ReadingList(name="Sci-Fi Classics", description="Classic science fiction")
+        reading_list = ReadingList(
+            name="Sci-Fi Classics", description="Classic science fiction"
+        )
         list_id = reading_list.insert(temp_db)
-        
+
         assert list_id is not None
         assert reading_list.id == list_id
-        
+
         # Verify it's in the database
         cursor = temp_db.cursor()
         cursor.execute("SELECT * FROM reading_lists WHERE id = ?", (list_id,))
@@ -132,7 +131,7 @@ class TestReadingList:
         """Test finding a reading list by name."""
         reading_list = ReadingList(name="Fantasy", description="Fantasy novels")
         reading_list.insert(temp_db)
-        
+
         found_list = ReadingList.get_by_name(temp_db, "Fantasy")
         assert found_list is not None
         assert found_list.name == "Fantasy"
@@ -142,7 +141,7 @@ class TestReadingList:
         """Test finding a reading list by ID."""
         reading_list = ReadingList(name="Mystery", description="Mystery novels")
         list_id = reading_list.insert(temp_db)
-        
+
         found_list = ReadingList.get_by_id(temp_db, list_id)
         assert found_list is not None
         assert found_list.id == list_id
@@ -164,17 +163,17 @@ class TestReadingListBook:
         # Create book and reading list
         book = Book(**sample_book_data)
         book_id = book.insert(temp_db)
-        
+
         reading_list = ReadingList(name="Test List", description="Test")
         list_id = reading_list.insert(temp_db)
-        
+
         # Create association
         rlb = ReadingListBook(list_id=list_id, book_id=book_id, priority=1)
         rlb_id = rlb.insert(temp_db)
-        
+
         assert rlb_id is not None
         assert rlb.id == rlb_id
-        
+
         # Verify it's in the database
         cursor = temp_db.cursor()
         cursor.execute("SELECT * FROM reading_list_books WHERE id = ?", (rlb_id,))
@@ -188,18 +187,18 @@ class TestReadingListBook:
         # Create book
         book = Book(**sample_book_data)
         book_id = book.insert(temp_db)
-        
+
         # Create two reading lists
         list1 = ReadingList(name="List 1", description="First list")
         list1_id = list1.insert(temp_db)
-        
+
         list2 = ReadingList(name="List 2", description="Second list")
         list2_id = list2.insert(temp_db)
-        
+
         # Add book to both lists
         ReadingListBook(list_id=list1_id, book_id=book_id).insert(temp_db)
         ReadingListBook(list_id=list2_id, book_id=book_id).insert(temp_db)
-        
+
         # Get lists for book
         lists = ReadingListBook.get_lists_for_book(temp_db, book_id)
         assert len(lists) == 2

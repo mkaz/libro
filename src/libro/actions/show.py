@@ -98,7 +98,10 @@ def show_books(db, args=None):
 
 
 def _plain_field_lines(fields):
-    return [f"{field}: {value if value is not None else 'Not set'}" for field, value in fields]
+    return [
+        f"{field}: {value if value is not None else 'Not set'}"
+        for field, value in fields
+    ]
 
 
 def show_book_detail(db, review_id, plain=False):
@@ -259,7 +262,9 @@ def show_book_only_detail(db, book_id, plain=False):
             for review in reviews:
                 rating = review["rating"] if review["rating"] else "Not rated"
                 date_read = review["date_read"] if review["date_read"] else "Not set"
-                print(f"- Review ID: {review['id']}, Rating: {rating}, Date Read: {date_read}")
+                print(
+                    f"- Review ID: {review['id']}, Rating: {rating}, Date Read: {date_read}"
+                )
         else:
             print("\nReviews: None")
         return
