@@ -97,7 +97,11 @@ def show_books(db, args=None):
     console.print(table)
 
 
-def show_book_detail(db, review_id):
+def _plain_field_lines(fields):
+    return [f"{field}: {value if value is not None else 'Not set'}" for field, value in fields]
+
+
+def show_book_detail(db, review_id, plain=False):
     """Show details for a review (this is what the main show command calls)"""
     cursor = db.cursor()
     cursor.execute(
@@ -114,6 +118,27 @@ def show_book_detail(db, review_id):
         print(f"No review found with Review ID {review_id}")
         return
 
+    detail_fields = [
+        ("Book ID", book["id"]),
+        ("Title", book["title"]),
+        ("Author", book["author"]),
+        ("Publication Year", book["pub_year"]),
+        ("Pages", book["pages"]),
+        ("Genre", book["genre"]),
+        ("Review ID", book[6]),
+        ("Rating", book["rating"]),
+        ("Date Read", book["date_read"]),
+        ("My Review", book["review"]),
+    ]
+    book_id = book[0]  # First column is book ID
+    reading_lists = ReadingListBook.get_lists_for_book(db, book_id)
+
+    if plain:
+        print("\n".join(_plain_field_lines(detail_fields)))
+        if reading_lists:
+            print(f"\nReading Lists: {', '.join(reading_lists)}")
+        return
+
     console = Console()
     table = Table(
         show_header=True, title=f"Book & Review Details (Review ID: {review_id})"
@@ -121,29 +146,11 @@ def show_book_detail(db, review_id):
     table.add_column("Field", style="cyan")
     table.add_column("Value", style="green")
 
-    # Map of column names to display names
-    display_names = [
-        "Book ID",
-        "Title",
-        "Author",
-        "Publication Year",
-        "Pages",
-        "Genre",
-        "Review ID",
-        "Rating",
-        "Date Read",
-        "My Review",
-    ]
-
-    for col, value in zip(range(len(display_names)), book):
+    for field, value in detail_fields:
         display_value = str(value) if value is not None else "Not set"
-        table.add_row(display_names[col], display_value)
+        table.add_row(field, display_value)
 
     console.print(table)
-
-    # Show reading lists that contain this book
-    book_id = book[0]  # First column is book ID
-    reading_lists = ReadingListBook.get_lists_for_book(db, book_id)
 
     if reading_lists:
         console.print(f"\n📚 [cyan]Reading Lists:[/cyan] {', '.join(reading_lists)}")
@@ -155,7 +162,7 @@ def show_books_only(db, args=None):
     """Show books without review information (for libro book show)"""
     # if id is not none, show book detail
     if args.get("id") is not None:
-        show_book_only_detail(db, args.get("id"))
+        show_book_only_detail(db, args.get("id"), plain=args.get("plain", False))
         return
 
     # Check if filtering by author, title, or year
@@ -204,7 +211,7 @@ def show_books_only(db, args=None):
     console.print(table)
 
 
-def show_book_only_detail(db, book_id):
+def show_book_only_detail(db, book_id, plain=False):
     """Show details for a specific book without reviews"""
     cursor = db.cursor()
     cursor.execute(
@@ -219,11 +226,6 @@ def show_book_only_detail(db, book_id):
         print(f"No book found with Book ID {book_id}")
         return
 
-    console = Console()
-    table = Table(show_header=True, title=f"Book Details (Book ID: {book_id})")
-    table.add_column("Field", style="cyan")
-    table.add_column("Value", style="green")
-
     book_fields = [
         ("Book ID", book["id"]),
         ("Title", book["title"]),
@@ -233,20 +235,7 @@ def show_book_only_detail(db, book_id):
         ("Genre", book["genre"]),
     ]
 
-    for field, value in book_fields:
-        display_value = str(value) if value is not None else "Not set"
-        table.add_row(field, display_value)
-
-    console.print(table)
-
-    # Show reading lists that contain this book
     reading_lists = ReadingListBook.get_lists_for_book(db, book_id)
-
-    if reading_lists:
-        console.print(f"\n[cyan]Reading Lists:[/cyan] {', '.join(reading_lists)}")
-    else:
-        console.print("\n[dim]This book is not in any reading lists.[/dim]")
-        console.print("[dim]Add it to a list with: libro list add <list_id>[/dim]")
 
     # Show reviews for this book
     cursor.execute(
@@ -257,6 +246,40 @@ def show_book_only_detail(db, book_id):
         (book_id,),
     )
     reviews = cursor.fetchall()
+
+    if plain:
+        print("\n".join(_plain_field_lines(book_fields)))
+        if reading_lists:
+            print(f"\nReading Lists: {', '.join(reading_lists)}")
+        else:
+            print("\nReading Lists: None")
+
+        if reviews:
+            print("\nReviews:")
+            for review in reviews:
+                rating = review["rating"] if review["rating"] else "Not rated"
+                date_read = review["date_read"] if review["date_read"] else "Not set"
+                print(f"- Review ID: {review['id']}, Rating: {rating}, Date Read: {date_read}")
+        else:
+            print("\nReviews: None")
+        return
+
+    console = Console()
+    table = Table(show_header=True, title=f"Book Details (Book ID: {book_id})")
+    table.add_column("Field", style="cyan")
+    table.add_column("Value", style="green")
+
+    for field, value in book_fields:
+        display_value = str(value) if value is not None else "Not set"
+        table.add_row(field, display_value)
+
+    console.print(table)
+
+    if reading_lists:
+        console.print(f"\n[cyan]Reading Lists:[/cyan] {', '.join(reading_lists)}")
+    else:
+        console.print("\n[dim]This book is not in any reading lists.[/dim]")
+        console.print("[dim]Add it to a list with: libro list add <list_id>[/dim]")
 
     if reviews:
         console.print("\n[cyan]Reviews:[/cyan]")
@@ -330,41 +353,41 @@ def get_books_only(db, author_name=None, year=None, title=None):
         return None
 
 
-def get_reviews(db, year=None, author_name=None):
-    """Get reviews with book info, optionally filtered by year or author"""
+def get_reviews(db, year=None, author_name=None, title=None, rating=None, limit=None):
+    """Get reviews with book info, optionally filtered by review and book fields."""
     try:
         cursor = db.cursor()
+        query = """
+            SELECT r.id as review_id, b.id as book_id, b.title, b.author, b.genre, r.rating, r.date_read
+            FROM reviews r
+            LEFT JOIN books b ON r.book_id = b.id
+        """
+        where_clauses = []
+        params = []
+
         if year:
-            cursor.execute(
-                """
-                SELECT r.id as review_id, b.id as book_id, b.title, b.author, b.genre, r.rating, r.date_read
-                FROM reviews r
-                LEFT JOIN books b ON r.book_id = b.id
-                WHERE strftime('%Y', r.date_read) = ?
-                ORDER BY r.date_read ASC
-            """,
-                (str(year),),
-            )
-        elif author_name:
-            cursor.execute(
-                """
-                SELECT r.id as review_id, b.id as book_id, b.title, b.author, b.genre, r.rating, r.date_read
-                FROM reviews r
-                LEFT JOIN books b ON r.book_id = b.id
-                WHERE LOWER(b.author) LIKE LOWER(?)
-                ORDER BY r.date_read ASC
-            """,
-                (f"%{author_name}%",),
-            )
+            where_clauses.append("strftime('%Y', r.date_read) = ?")
+            params.append(str(year))
+        if author_name:
+            where_clauses.append("LOWER(b.author) LIKE LOWER(?)")
+            params.append(f"%{author_name}%")
+        if title:
+            where_clauses.append("LOWER(b.title) LIKE LOWER(?)")
+            params.append(f"%{title}%")
+        if rating is not None:
+            where_clauses.append("r.rating = ?")
+            params.append(rating)
+
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+
+        if limit is not None and not where_clauses:
+            query += " ORDER BY r.id DESC LIMIT ?"
+            params.append(limit)
         else:
-            cursor.execute(
-                """
-                SELECT r.id as review_id, b.id as book_id, b.title, b.author, b.genre, r.rating, r.date_read
-                FROM reviews r
-                LEFT JOIN books b ON r.book_id = b.id
-                ORDER BY r.date_read ASC
-            """
-            )
+            query += " ORDER BY r.date_read ASC"
+
+        cursor.execute(query, params)
         books = cursor.fetchall()
         return books
     except sqlite3.Error as e:
@@ -380,62 +403,34 @@ def show_recent_reviews(db, args=None):
         args = {}
     """Show recent reviews (latest 20) or filtered reviews"""
     try:
-        cursor = db.cursor()
-
         # Check for filtering options
         author = args.get("author")
         title = args.get("title")
+        rating = args.get("rating")
         year = args.get("year")
+        year_explicit = args.get("year_explicit", False)
 
-        if author:
-            cursor.execute(
-                """
-                SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
-                FROM reviews r
-                JOIN books b ON r.book_id = b.id
-                WHERE LOWER(b.author) LIKE LOWER(?)
-                ORDER BY r.date_read ASC
-                """,
-                (f"%{author}%",),
+        if author or title or rating is not None or year_explicit:
+            reviews = get_reviews(
+                db,
+                year=year if year_explicit else None,
+                author_name=author,
+                title=title,
+                rating=rating,
             )
-            table_title = f"Reviews by {author}"
-        elif title:
-            cursor.execute(
-                """
-                SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
-                FROM reviews r
-                JOIN books b ON r.book_id = b.id
-                WHERE LOWER(b.title) LIKE LOWER(?)
-                ORDER BY r.date_read ASC
-                """,
-                (f"%{title}%",),
-            )
-            table_title = f"Reviews for books with title containing '{title}'"
-        elif year:
-            cursor.execute(
-                """
-                SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
-                FROM reviews r
-                JOIN books b ON r.book_id = b.id
-                WHERE strftime('%Y', r.date_read) = ?
-                ORDER BY r.date_read ASC
-                """,
-                (str(year),),
-            )
-            table_title = f"Reviews from {year}"
+            title_parts = []
+            if author:
+                title_parts.append(f"author '{author}'")
+            if title:
+                title_parts.append(f"title containing '{title}'")
+            if rating is not None:
+                title_parts.append(f"rating {rating}")
+            if year_explicit:
+                title_parts.append(f"year {year}")
+            table_title = f"Reviews matching {', '.join(title_parts)}"
         else:
-            cursor.execute(
-                """
-                SELECT r.id as review_id, b.title, b.author, b.genre, r.rating, r.date_read
-                FROM reviews r
-                JOIN books b ON r.book_id = b.id
-                ORDER BY r.id DESC
-                LIMIT 20
-                """
-            )
+            reviews = get_reviews(db, limit=20)
             table_title = "Recent Reviews (Latest 20)"
-
-        reviews = cursor.fetchall()
 
         if not reviews:
             print("No reviews found.")

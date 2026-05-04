@@ -118,7 +118,7 @@ def main():
                     # Try to parse as review ID
                     try:
                         review_id = int(action_or_id)
-                        show_book_detail(db, review_id)
+                        show_book_detail(db, review_id, plain=args.get("plain", False))
                     except ValueError:
                         print(f"Unknown review action or invalid ID: {action_or_id}")
                         print("Valid actions: add, edit, or a review ID number")

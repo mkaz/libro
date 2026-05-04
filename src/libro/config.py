@@ -39,6 +39,9 @@ def init_args() -> Dict:
     report.add_argument("--limit", type=int, help="Minimum books read by author")
     report.add_argument("--undated", action="store_true", help="Include undated books")
     report.add_argument("--year", type=int, help="Year to filter books")
+    report.add_argument(
+        "--plain", action="store_true", help="Show detail output as plain text"
+    )
     report.add_argument("id", type=int, nargs="?", help="Show book ID details")
 
     # Add command with its specific arguments (backward compatibility - creates book + review)
@@ -58,6 +61,9 @@ def init_args() -> Dict:
     book_parser.add_argument("--year", type=int, help="Year to filter books")
     book_parser.add_argument(
         "--title", type=str, help="Show books by title (partial match)"
+    )
+    book_parser.add_argument(
+        "--plain", action="store_true", help="Show detail output as plain text"
     )
 
     # Review management command
@@ -81,6 +87,15 @@ def init_args() -> Dict:
     )
     review_parser.add_argument(
         "--title", type=str, help="Show reviews by book title (partial match)"
+    )
+    review_parser.add_argument(
+        "--rating",
+        type=int,
+        choices=range(1, 6),
+        help="Show reviews by rating (1-5)",
+    )
+    review_parser.add_argument(
+        "--plain", action="store_true", help="Show detail output as plain text"
     )
 
     # Import command with its specific arguments

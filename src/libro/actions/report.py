@@ -11,7 +11,7 @@ def report(db, args):
     """Main report function that routes to specific report types based on args."""
     # if id is not none, show book detail (same as old show command)
     if args.get("id") is not None:
-        show_book_detail(db, args.get("id"))
+        show_book_detail(db, args.get("id"), plain=args.get("plain", False))
         return
 
     # Check for author flag - show author statistics if True, or books by author if string

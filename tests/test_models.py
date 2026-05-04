@@ -1,9 +1,6 @@
 """Tests for libro models."""
 
-import sqlite3
 from datetime import date
-
-import pytest
 
 from libro.models import Book, Review, ReadingList, ReadingListBook
 

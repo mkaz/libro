@@ -3,7 +3,7 @@
 import sqlite3
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 
@@ -64,6 +64,21 @@ class TestArgumentParsing:
             assert args["command"] == "book"
             assert args.get("year") == 2023
 
+    def test_review_plain_args(self):
+        """Test plain text flag parsing for review detail output."""
+        with patch('sys.argv', ['libro', 'review', '--plain', '123']):
+            args = init_args()
+            assert args["command"] == "review"
+            assert args.get("plain") is True
+            assert args.get("action_or_id") == "123"
+
+    def test_review_rating_filter_args(self):
+        """Test rating filter argument parsing for reviews."""
+        with patch('sys.argv', ['libro', 'review', '--rating', '4']):
+            args = init_args()
+            assert args["command"] == "review"
+            assert args.get("rating") == 4
+
 
 class TestCLIIntegration:
     """Test CLI command integration with database operations."""
@@ -95,7 +110,7 @@ class TestCLIIntegration:
 
         # Mock sys.argv and stdout to test the command
         with patch('sys.argv', ['libro', '--db', mock_db_path, 'book']):
-            with patch('builtins.print') as mock_print:
+            with patch('builtins.print'):
                 # Mock the Rich console output since we can't easily capture it
                 with patch('libro.actions.show.Console') as mock_console:
                     main()
@@ -109,7 +124,7 @@ class TestCLIIntegration:
         
         with patch('sys.argv', ['libro', '--db', mock_db_path, 'book']):
             with patch('builtins.input', return_value='y'):
-                with patch('builtins.print') as mock_print:
+                with patch('builtins.print'):
                     with patch('libro.actions.show.Console'):
                         main()
                         # Check that database was created

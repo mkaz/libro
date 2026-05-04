@@ -2,13 +2,19 @@
 
 import sqlite3
 import tempfile
-from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from libro.actions.db import init_db
-from libro.actions.show import get_books_only, get_reviews
+from libro.actions.show import (
+    get_books_only,
+    get_reviews,
+    show_book_detail,
+    show_book_only_detail,
+    show_recent_reviews,
+)
 from libro.models import Book, Review
 
 
@@ -123,6 +129,106 @@ class TestShowActions:
         reviews = get_reviews(temp_db, author_name="Jane")
         assert len(reviews) == 1
         assert reviews[0]["author"] == "Jane Smith"
+
+    def test_get_reviews_by_rating(self, temp_db):
+        """Test getting reviews filtered by rating."""
+        book1 = Book(title="Book 1", author="Jane Smith", genre="fiction")
+        book1_id = book1.insert(temp_db)
+
+        book2 = Book(title="Book 2", author="John Doe", genre="fiction")
+        book2_id = book2.insert(temp_db)
+
+        Review(book_id=book1_id, rating=4, date_read="2023-01-01").insert(temp_db)
+        Review(book_id=book2_id, rating=5, date_read="2023-02-01").insert(temp_db)
+
+        reviews = get_reviews(temp_db, rating=4)
+        assert len(reviews) == 1
+        assert reviews[0]["rating"] == 4
+        assert reviews[0]["author"] == "Jane Smith"
+
+    def test_get_reviews_with_combined_filters(self, temp_db):
+        """Test getting reviews filtered by more than one field."""
+        jane_book = Book(title="Python Notes", author="Jane Smith", genre="fiction")
+        jane_book_id = jane_book.insert(temp_db)
+
+        john_book = Book(title="Python Notes", author="John Doe", genre="fiction")
+        john_book_id = john_book.insert(temp_db)
+
+        Review(book_id=jane_book_id, rating=4, date_read="2023-01-01").insert(temp_db)
+        Review(book_id=jane_book_id, rating=5, date_read="2023-02-01").insert(temp_db)
+        Review(book_id=john_book_id, rating=4, date_read="2023-03-01").insert(temp_db)
+
+        reviews = get_reviews(temp_db, author_name="Jane", title="Python", rating=4)
+        assert len(reviews) == 1
+        assert reviews[0]["author"] == "Jane Smith"
+        assert reviews[0]["title"] == "Python Notes"
+        assert reviews[0]["rating"] == 4
+
+    def test_show_recent_reviews_ignores_default_year(self, temp_db):
+        """Test default review listing shows recent reviews, not the current year."""
+        old_book = Book(title="Old Review", author="Author A", genre="fiction")
+        old_book_id = old_book.insert(temp_db)
+
+        new_book = Book(title="New Review", author="Author B", genre="fiction")
+        new_book_id = new_book.insert(temp_db)
+
+        Review(book_id=old_book_id, rating=3, date_read="2023-01-01").insert(temp_db)
+        Review(book_id=new_book_id, rating=5, date_read="2024-01-01").insert(temp_db)
+
+        with patch("libro.actions.show.Console") as mock_console:
+            show_recent_reviews(temp_db, {"year": 2024, "year_explicit": False})
+
+        rendered_table = mock_console.return_value.print.call_args[0][0]
+        assert rendered_table.title == "Recent Reviews (Latest 20)"
+        assert len(rendered_table.rows) == 2
+
+    def test_show_book_detail_plain_output(self, temp_db, capsys):
+        """Test review detail output in plain text mode."""
+        book = Book(
+            title="Plain Review Book",
+            author="Plain Author",
+            pub_year=2024,
+            pages=321,
+            genre="fiction",
+        )
+        book_id = book.insert(temp_db)
+        review = Review(
+            book_id=book_id,
+            rating=5,
+            date_read="2024-06-15",
+            review="Copy and paste review text.",
+        )
+        review_id = review.insert(temp_db)
+
+        show_book_detail(temp_db, review_id, plain=True)
+
+        output = capsys.readouterr().out
+        assert "Title: Plain Review Book" in output
+        assert "Author: Plain Author" in output
+        assert "Review ID: 1" in output
+        assert "My Review: Copy and paste review text." in output
+
+    def test_show_book_only_detail_plain_output(self, temp_db, capsys):
+        """Test book detail output in plain text mode."""
+        book = Book(
+            title="Plain Book",
+            author="Book Author",
+            pub_year=2023,
+            pages=250,
+            genre="nonfiction",
+        )
+        book_id = book.insert(temp_db)
+        review = Review(book_id=book_id, rating=4, date_read="2023-09-01")
+        review.insert(temp_db)
+
+        show_book_only_detail(temp_db, book_id, plain=True)
+
+        output = capsys.readouterr().out
+        assert "Title: Plain Book" in output
+        assert "Author: Book Author" in output
+        assert "Reading Lists: None" in output
+        assert "Reviews:" in output
+        assert "Rating: 4" in output
 
 
 class TestDatabaseInitialization:

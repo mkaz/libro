@@ -18,6 +18,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "appdirs>=1.4",
+    "prompt-toolkit>=3.0.52",
     "rich>=13.3",
 ]
 
