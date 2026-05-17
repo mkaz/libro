@@ -1,0 +1,597 @@
+@import 'halfmoon/css/halfmoon.min.css';
+
+:root {
+  color-scheme: light;
+  --libro-bg: #f6f3ec;
+  --libro-surface: #fffdf8;
+  --libro-panel: #ffffff;
+  --libro-border: #ddd3c3;
+  --libro-accent: #2f5d62;
+  --libro-accent-soft: #edf4f4;
+  --libro-copy: #2d2a26;
+  --libro-muted: #736b60;
+  --libro-highlight: #c8742b;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #faf7f0 0%, #f3ede2 100%);
+  color: var(--libro-copy);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+code {
+  background: #f6f0e4;
+  color: var(--libro-copy);
+  border: 1px solid var(--libro-border);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 253, 248, 0.94);
+  border-bottom: 1px solid var(--libro-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--libro-copy);
+}
+
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.nav-link,
+.list-summary-card {
+  border: 1px solid var(--libro-border);
+  background: #fff;
+  color: var(--libro-copy);
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.nav-link {
+  border-radius: 0.3rem;
+  padding: 0.4rem 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  box-shadow: inset 0 -1px 0 rgba(45, 42, 38, 0.05);
+}
+
+.nav-link:hover,
+.list-summary-card:hover {
+  border-color: var(--libro-accent);
+  background: var(--libro-accent-soft);
+}
+
+.nav-link.is-active {
+  border-color: var(--libro-accent);
+  background: var(--libro-accent);
+  color: #fff;
+}
+
+.list-summary-card.is-active {
+  border-color: #c9a227;
+  background: #fde68a;
+  color: var(--libro-copy);
+}
+
+.nav-link.is-active {
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.app-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.db-path {
+  max-width: 26rem;
+  overflow-wrap: anywhere;
+}
+
+.app-main {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.content-stack,
+.report-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.section-card {
+  background: var(--libro-panel);
+  border: 1px solid var(--libro-border);
+  border-radius: 0.45rem;
+  box-shadow: 0 12px 30px rgba(89, 72, 46, 0.06);
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.section-heading-inline {
+  align-items: end;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--libro-copy);
+}
+
+.section-copy {
+  color: var(--libro-muted);
+  font-size: 0.95rem;
+}
+
+.books-toolbar {
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+
+.books-toolbar-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.books-title {
+  font-size: 1.05rem;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.books-count {
+  font-size: 0.9rem;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.books-year-field {
+  min-width: 12rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.books-year-field .form-label {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.books-year-field .form-select {
+  min-width: 0;
+}
+
+.report-menu {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+}
+
+.report-menu-button {
+  border: 1px solid var(--libro-border);
+  border-radius: 0.3rem;
+  background: #fff;
+  color: var(--libro-copy);
+  padding: 0.38rem 0.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.report-menu-button:hover {
+  border-color: var(--libro-accent);
+  background: var(--libro-accent-soft);
+}
+
+.report-menu-button.is-active {
+  border-color: var(--libro-accent);
+  background: var(--libro-accent);
+  color: #fff;
+}
+
+.report-header {
+  margin-bottom: 0.8rem;
+}
+
+.report-author-controls {
+  display: flex;
+  align-items: end;
+  gap: 0.6rem;
+}
+
+.report-author-search {
+  min-width: 16rem;
+}
+
+.table-empty-state {
+  text-align: center;
+  padding: 1.25rem 0.75rem;
+  color: var(--libro-muted);
+}
+
+.libro-table thead th {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--libro-muted);
+}
+
+.libro-table > :not(caption) > * > * {
+  padding: 0.5rem 0.55rem;
+}
+
+.compact-field {
+  min-width: 8rem;
+}
+
+.review-textarea {
+  min-height: 12rem;
+}
+
+.add-form-card {
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.add-form-buttons {
+  padding-top: 1rem;
+}
+
+.lists-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box {
+  background: var(--libro-panel);
+  border: 1px solid var(--libro-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 24px 60px rgba(45, 42, 38, 0.22);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 22rem;
+}
+
+.modal-title {
+  margin: 0 0 1.1rem;
+  font-size: 1.15rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.list-books-stack {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.list-book-row {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.35rem;
+  border: 1px solid var(--libro-border);
+}
+
+.list-book-row.is-read {
+  background: var(--libro-accent-soft);
+  border-color: transparent;
+}
+
+.list-book-row.is-unread {
+  background: var(--libro-surface);
+}
+
+.list-book-status {
+  font-size: 0.95rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+.list-book-row.is-read .list-book-status {
+  color: var(--libro-accent);
+}
+
+.list-book-row.is-unread .list-book-status {
+  color: var(--libro-muted);
+}
+
+.list-book-row.is-read .list-book-info p {
+  color: var(--libro-muted);
+  font-size: 0.85rem;
+}
+
+.list-book-row.is-unread .list-book-info p {
+  color: var(--libro-muted);
+  font-size: 0.85rem;
+}
+
+.list-book-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.list-book-date {
+  font-size: 0.78rem;
+  color: var(--libro-muted);
+}
+
+.list-summary-stack,
+.search-results-stack {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.list-summary-card {
+  width: 100%;
+  text-align: left;
+  border-radius: 0.45rem;
+  padding: 0.75rem 0.85rem;
+}
+
+.list-meta-row {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0.5rem 0 0.4rem;
+  color: var(--libro-muted);
+  font-size: 0.85rem;
+}
+
+.list-detail-card {
+  min-width: 0;
+}
+
+.list-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.stat-chip {
+  border: 1px solid var(--libro-border);
+  border-radius: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  background: var(--libro-surface);
+}
+
+.stat-chip span {
+  display: block;
+  color: var(--libro-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stat-chip strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.1rem;
+  color: var(--libro-copy);
+}
+
+.reading-progress {
+  height: 0.65rem;
+  background: #ece4d8;
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, var(--libro-accent), var(--libro-highlight));
+}
+
+.search-result-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--libro-border);
+  border-radius: 0.35rem;
+  background: var(--libro-surface);
+}
+
+.search-result-row.is-disabled {
+  opacity: 0.6;
+}
+
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--libro-copy);
+  --bs-table-border-color: #e8e0d5;
+}
+
+.form-control,
+.form-select,
+.btn,
+.alert,
+.badge {
+  border-radius: 0.3rem;
+}
+
+.form-control,
+.form-select {
+  background: var(--libro-surface);
+  border-color: var(--libro-border);
+  color: var(--libro-copy);
+  padding: 0.45rem 0.6rem;
+}
+
+.btn-primary {
+  background: var(--libro-accent);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+}
+
+.btn {
+  border-color: var(--libro-border);
+  padding: 0.42rem 0.75rem;
+  line-height: 1.2;
+}
+
+.alert-success {
+  background: #edf7ef;
+  border-color: #b7d9c0;
+  color: #25563a;
+}
+
+.alert-danger {
+  background: #fff1ef;
+  border-color: #efc2bd;
+  color: #8e3d33;
+}
+
+.badge.bg-success {
+  background: #ddeee3 !important;
+  color: #25563a !important;
+}
+
+.badge.bg-secondary {
+  background: #eee6d9 !important;
+  color: #5d5447 !important;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.table-responsive {
+  margin-top: 0.15rem;
+}
+
+@media (max-width: 1280px) {
+  .list-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .lists-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .app-header {
+    align-items: flex-start;
+  }
+
+  .app-main {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-heading,
+  .section-heading-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .books-toolbar-main {
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+  }
+
+  .books-year-field {
+    min-width: 100%;
+  }
+
+  .report-menu {
+    flex-wrap: wrap;
+  }
+
+  .report-author-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-author-search {
+    min-width: 100%;
+  }
+
+  .search-result-row {
+    grid-template-columns: 1fr;
+  }
+
+  .app-status {
+    width: 100%;
+  }
+
+  .db-path {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .list-stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
