@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import type { ReviewRow, YearCount } from '../../../shared/types'
 import { api } from '../../lib/api'
+import { ReviewTable } from '../../lib/ReviewTable'
 
 function buildYearOptions(yearCounts: YearCount[]): number[] {
   const currentYear = new Date().getFullYear()
@@ -80,40 +81,10 @@ export function BooksByYearView() {
 
       <article className="card section-card">
         <div className="card-body">
-          <div className="table-responsive">
-            <table className="table align-middle libro-table">
-              <thead>
-                <tr>
-                  <th>Review ID</th>
-                  <th>Title</th>
-                  <th>Author</th>
-                  <th>Genre</th>
-                  <th>Rating</th>
-                  <th>Date Read</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reviews.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="table-empty-state">
-                      No books read in {selectedYear}.
-                    </td>
-                  </tr>
-                ) : (
-                  reviews.map((review) => (
-                    <tr key={review.reviewId}>
-                      <td>{review.reviewId}</td>
-                      <td>{review.title}</td>
-                      <td>{review.author}</td>
-                      <td>{review.genre ?? 'Unknown'}</td>
-                      <td>{review.rating ?? 'Unrated'}</td>
-                      <td>{review.dateRead ?? 'Not set'}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <ReviewTable
+            reviews={reviews}
+            emptyMessage={`No books read in ${selectedYear}.`}
+          />
         </div>
       </article>
     </section>

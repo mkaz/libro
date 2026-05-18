@@ -2,43 +2,9 @@ import { useEffect, useState } from 'react'
 
 import type { AuthorCount, ReviewRow } from '../../../shared/types'
 import { api } from '../../lib/api'
+import { ReviewTable } from '../../lib/ReviewTable'
 
 type ReportView = 'author' | 'rating'
-
-function ReviewTable({ reviews }: { reviews: ReviewRow[] }) {
-  if (reviews.length === 0) {
-    return <p className="text-muted mb-0">No reviews matched this filter.</p>
-  }
-
-  return (
-    <div className="table-responsive">
-      <table className="table align-middle libro-table">
-        <thead>
-          <tr>
-            <th>Review ID</th>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Genre</th>
-            <th>Rating</th>
-            <th>Date Read</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reviews.map((review) => (
-            <tr key={review.reviewId}>
-              <td>{review.reviewId}</td>
-              <td>{review.title}</td>
-              <td>{review.author}</td>
-              <td>{review.genre ?? 'Unknown'}</td>
-              <td>{review.rating ?? 'Unrated'}</td>
-              <td>{review.dateRead ?? 'Not set'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
 
 export function ReportsView() {
   const [activeReport, setActiveReport] = useState<ReportView>('author')

@@ -326,6 +326,40 @@ code {
   gap: 0.5rem;
 }
 
+.list-books-header {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  gap: 0.6rem;
+  padding: 0 0.75rem 0.4rem;
+  border-bottom: 1px solid var(--libro-border);
+  margin-bottom: 0.4rem;
+}
+
+.list-sort-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  padding-right: 0.5rem;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--libro-muted);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-sort-btn:hover {
+  color: var(--libro-copy);
+}
+
+.list-sort-btn.is-active {
+  color: var(--libro-accent);
+}
+
 .list-books-stack {
   display: grid;
   gap: 0.4rem;
@@ -333,7 +367,7 @@ code {
 
 .list-book-row {
   display: grid;
-  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
   align-items: center;
   gap: 0.6rem;
   padding: 0.55rem 0.75rem;
@@ -364,12 +398,21 @@ code {
   color: var(--libro-muted);
 }
 
-.list-book-row.is-read .list-book-info p {
-  color: var(--libro-muted);
-  font-size: 0.85rem;
+.list-book-info {
+  display: grid;
+  grid-template-columns: 5fr 1.5fr 1.5fr 1fr 2fr;
+  align-items: center;
+  min-width: 0;
 }
 
-.list-book-row.is-unread .list-book-info p {
+.list-book-col {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 0.5rem;
+}
+
+.list-book-meta-text {
   color: var(--libro-muted);
   font-size: 0.85rem;
 }

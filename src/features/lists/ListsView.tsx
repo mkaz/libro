@@ -1,11 +1,15 @@
-import { useDeferredValue, useEffect, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 
 import type {
+  ReadingListBookRow,
   ReadingListDetail,
   ReadingListSummary,
   SearchBookResult,
 } from '../../../shared/types'
+
+type SortKey = 'title' | 'author' | 'genre' | 'pubYear' | 'rating'
 import { api } from '../../lib/api'
+import { starsFor } from '../../lib/ratings'
 
 function ProgressBar({ percentage }: { percentage: number }) {
   return (
@@ -86,6 +90,27 @@ export function ListsView() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [sortKey, setSortKey] = useState<SortKey>('title')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+  function handleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
+
+  const sortedBooks = useMemo(() => {
+    if (!selectedList) return []
+    return [...selectedList.books].sort((a, b) => {
+      const av: string = String((a as ReadingListBookRow)[sortKey] ?? '')
+      const bv: string = String((b as ReadingListBookRow)[sortKey] ?? '')
+      const cmp = av.localeCompare(bv, undefined, { numeric: true })
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  }, [selectedList, sortKey, sortDir])
 
   async function loadLists(preferredListId?: number) {
     const nextLists = await api.lists.getAll()
@@ -260,13 +285,27 @@ export function ListsView() {
                 </div>
               </div>
 
-              <ProgressBar percentage={selectedList.stats.completionPercentage} />
-
               {selectedList.books.length > 0 ? (
                 <>
                   <hr className="my-20" />
+                  <div className="list-books-header">
+                    <span />
+                    <div className="list-book-info">
+                      {(['title', 'author', 'genre', 'pubYear', 'rating'] as SortKey[]).map((key) => (
+                        <button
+                          key={key}
+                          type="button"
+                          className={`list-sort-btn ${sortKey === key ? 'is-active' : ''}`}
+                          onClick={() => handleSort(key)}
+                        >
+                          {key === 'pubYear' ? 'Year' : key === 'rating' ? 'Rating' : key.charAt(0).toUpperCase() + key.slice(1)}
+                          {sortKey === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="list-books-stack">
-                    {selectedList.books.map((book) => (
+                    {sortedBooks.map((book) => (
                       <div
                         key={book.bookId}
                         className={`list-book-row ${book.isRead ? 'is-read' : 'is-unread'}`}
@@ -275,23 +314,19 @@ export function ListsView() {
                           {book.isRead ? '✓' : '○'}
                         </div>
                         <div className="list-book-info">
-                          <strong>{book.title}</strong>
-                          <p className="mb-0">
-                            {book.author}
-                            {book.genre ? ` · ${book.genre}` : ''}
-                            {book.pubYear ? ` · ${book.pubYear}` : ''}
-                          </p>
+                          <strong className="list-book-col">{book.title}</strong>
+                          <span className="list-book-col list-book-meta-text">{book.author}</span>
+                          <span className="list-book-col list-book-meta-text">{book.genre ?? ''}</span>
+                          <span className="list-book-col list-book-meta-text">{book.pubYear ?? ''}</span>
+                          <span className="list-book-col list-book-meta-text">
+                            {[
+                              book.rating ? starsFor(book.rating) : null,
+                              book.dateRead ? book.dateRead.slice(0, 4) : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </span>
                         </div>
-                        {book.isRead ? (
-                          <div className="list-book-meta">
-                            {book.rating ? (
-                              <span className="badge bg-secondary">{book.rating}/5</span>
-                            ) : null}
-                            {book.dateRead ? (
-                              <span className="list-book-date">{book.dateRead}</span>
-                            ) : null}
-                          </div>
-                        ) : null}
                       </div>
                     ))}
                   </div>
