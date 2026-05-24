@@ -159,7 +159,7 @@ code {
 }
 
 .section-heading-inline {
-  align-items: end;
+  align-items: flex-start;
 }
 
 .section-title {
@@ -241,17 +241,34 @@ code {
 }
 
 .report-header {
-  margin-bottom: 0.8rem;
+  margin-bottom: 1.5rem;
 }
 
 .report-author-controls {
   display: flex;
-  align-items: end;
-  gap: 0.6rem;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.report-author-filter-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.report-author-filter-stack .form-check {
+  margin-bottom: 0;
+  padding-top: 0.15rem;
 }
 
 .report-author-search {
   min-width: 16rem;
+}
+
+.search-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
 .table-empty-state {

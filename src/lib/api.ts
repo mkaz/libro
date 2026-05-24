@@ -24,7 +24,7 @@ export const api = {
   },
   reports: {
     getYearCounts: () => getApi().reports.getYearCounts(),
-    getAuthorCounts: (minimumBooks?: number) => getApi().reports.getAuthorCounts(minimumBooks),
+    getAuthorCounts: (minimumBooks?: number, includeUndated?: boolean) => getApi().reports.getAuthorCounts(minimumBooks, includeUndated),
     getReviews: (filters?: ReviewFilters) => getApi().reports.getReviews(filters),
   },
   lists: {

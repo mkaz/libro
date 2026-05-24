@@ -1,7 +1,7 @@
 {
   "name": "libro-desktop",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Desktop app for the Libro reading tracker",
   "author": "mkaz",
   "type": "module",

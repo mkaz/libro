@@ -17,18 +17,19 @@ export function getYearCounts(db: Database.Database): YearCount[] {
 export function getAuthorCounts(
   db: Database.Database,
   minimumBooks = 3,
+  includeUndated = false,
 ): AuthorCount[] {
   return db
     .prepare(
       `SELECT b.author as author, COUNT(*) as count
        FROM reviews r
        JOIN books b ON r.book_id = b.id
-       WHERE r.date_read IS NOT NULL
+       WHERE (? = 1 OR r.date_read IS NOT NULL)
        GROUP BY b.author
        HAVING count >= ?
        ORDER BY count DESC, LOWER(b.author) ASC`,
     )
-    .all(minimumBooks) as AuthorCount[]
+    .all(includeUndated ? 1 : 0, minimumBooks) as AuthorCount[]
 }
 
 export function getReviews(

@@ -16,8 +16,8 @@ export function registerIpcHandlers(): void {
   )
 
   ipcMain.handle('reports:get-year-counts', () => getYearCounts(getDatabase()))
-  ipcMain.handle('reports:get-author-counts', (_, minimumBooks?: number) =>
-    getAuthorCounts(getDatabase(), minimumBooks),
+  ipcMain.handle('reports:get-author-counts', (_, minimumBooks?: number, includeUndated?: boolean) =>
+    getAuthorCounts(getDatabase(), minimumBooks, includeUndated),
   )
   ipcMain.handle('reports:get-reviews', (_, filters) =>
     getReviews(getDatabase(), filters),

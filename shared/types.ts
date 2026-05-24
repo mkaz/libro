@@ -120,7 +120,7 @@ export interface LibroApi {
   }
   reports: {
     getYearCounts: () => Promise<YearCount[]>
-    getAuthorCounts: (minimumBooks?: number) => Promise<AuthorCount[]>
+    getAuthorCounts: (minimumBooks?: number, includeUndated?: boolean) => Promise<AuthorCount[]>
     getReviews: (filters?: ReviewFilters) => Promise<ReviewRow[]>
   }
   lists: {

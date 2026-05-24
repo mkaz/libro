@@ -12,8 +12,8 @@ const api: LibroApi = {
   },
   reports: {
     getYearCounts: () => ipcRenderer.invoke('reports:get-year-counts'),
-    getAuthorCounts: (minimumBooks) =>
-      ipcRenderer.invoke('reports:get-author-counts', minimumBooks),
+    getAuthorCounts: (minimumBooks, includeUndated) =>
+      ipcRenderer.invoke('reports:get-author-counts', minimumBooks, includeUndated),
     getReviews: (filters) => ipcRenderer.invoke('reports:get-reviews', filters),
   },
   lists: {

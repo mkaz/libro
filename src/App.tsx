@@ -5,13 +5,15 @@ import { AddBookReviewForm } from './features/add/AddBookReviewForm'
 import { BooksByYearView } from './features/books/BooksByYearView'
 import { ListsView } from './features/lists/ListsView'
 import { ReportsView } from './features/reports/ReportsView'
+import { SearchView } from './features/search/SearchView'
 import { api } from './lib/api'
 
-type View = 'books' | 'reports' | 'lists' | 'add'
+type View = 'books' | 'reports' | 'search' | 'lists' | 'add'
 
 const navItems: Array<{ id: View; label: string }> = [
   { id: 'books', label: 'Books' },
   { id: 'reports', label: 'Reports' },
+  { id: 'search', label: 'Search' },
   { id: 'lists', label: 'Lists' },
   { id: 'add', label: 'Add Book' },
 ]
@@ -65,6 +67,7 @@ export function App() {
       <main className="app-main">
         {activeView === 'books' ? <BooksByYearView /> : null}
         {activeView === 'reports' ? <ReportsView /> : null}
+        {activeView === 'search' ? <SearchView /> : null}
         {activeView === 'lists' ? <ListsView /> : null}
         {activeView === 'add' ? <AddBookReviewForm /> : null}
       </main>
