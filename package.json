@@ -7,16 +7,12 @@
   "type": "module",
   "main": "dist-electron/main.cjs",
   "scripts": {
-    "dev": "concurrently -k \"npm:dev:renderer\" \"npm:dev:electron:build\" \"npm:dev:electron\"",
-    "dev:renderer": "vite",
-    "dev:electron:build": "tsup --config tsup.config.ts --watch",
-    "dev:electron": "wait-on tcp:5173 dist-electron/main.cjs && electronmon dist-electron/main.cjs",
+    "dev": "npm run build:electron && concurrently -k \"vite\" \"wait-on tcp:5173 && electron dist-electron/main.cjs\"",
     "build": "npm run typecheck && vite build && npm run build:electron",
     "build:electron": "tsup --config tsup.config.ts",
     "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "package": "npm run build && electron-builder --mac",
+"package": "npm run build && electron-builder --mac",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {

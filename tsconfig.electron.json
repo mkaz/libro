@@ -15,5 +15,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["electron", "shared"]
+  "include": ["electron", "shared", "vite.config.ts"]
 }
