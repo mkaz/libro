@@ -55,6 +55,7 @@
     ],
     "mac": {
       "category": "public.app-category.productivity",
+      "icon": "public/libro-icon.png",
       "target": [
         "dmg"
       ]

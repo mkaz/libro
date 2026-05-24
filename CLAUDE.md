@@ -35,11 +35,15 @@ libro/
 ├── shared/
 │   └── types.ts      # Shared TypeScript interfaces (LibroApi, all input/output types)
 └── src/              # React renderer
-    ├── App.tsx        # Shell with nav (Books, Reports, Lists, Add Book)
-    ├── lib/api.ts     # Typed wrapper around window.libro (the context bridge)
+    ├── App.tsx        # Shell with nav (Books, Reports, Search, Lists, Add Book)
+    ├── lib/
+    │   ├── api.ts     # Typed wrapper around window.libro (the context bridge)
+    │   ├── ratings.ts # Star rating helpers
+    │   └── ReviewTable.tsx # Shared review table component
     └── features/
         ├── books/BooksByYearView.tsx
         ├── reports/ReportsView.tsx
+        ├── search/SearchView.tsx
         ├── lists/ListsView.tsx
         └── add/AddBookReviewForm.tsx
 ```
