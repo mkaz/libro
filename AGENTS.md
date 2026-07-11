@@ -39,7 +39,8 @@ libro/
     ├── lib/
     │   ├── api.ts     # Typed wrapper around window.libro (the context bridge)
     │   ├── ratings.ts # Star rating helpers
-    │   └── ReviewTable.tsx # Shared review table component
+    │   ├── ReviewTable.tsx # Shared review table component (rows open BookDetailModal)
+    │   └── BookDetailModal.tsx # Modal showing full book details + all reviews
     └── features/
         ├── books/BooksByYearView.tsx
         ├── reports/ReportsView.tsx
