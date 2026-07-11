@@ -30,6 +30,23 @@ export interface ReviewRow {
   dateRead: string | null
 }
 
+export interface BookReviewDetail {
+  reviewId: number
+  dateRead: string | null
+  rating: number | null
+  review: string | null
+}
+
+export interface BookDetail {
+  id: number
+  title: string
+  author: string
+  pubYear: number | null
+  pages: number | null
+  genre: string | null
+  reviews: BookReviewDetail[]
+}
+
 export interface YearCount {
   year: string
   count: number
@@ -117,6 +134,7 @@ export interface LibroApi {
   books: {
     addBookReview: (input: AddBookReviewInput) => Promise<AddBookReviewResult>
     searchBooks: (term: string, listId?: number) => Promise<SearchBookResult[]>
+    getBookDetail: (bookId: number) => Promise<BookDetail>
   }
   reports: {
     getYearCounts: () => Promise<YearCount[]>

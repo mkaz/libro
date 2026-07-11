@@ -21,6 +21,7 @@ export const api = {
   books: {
     addBookReview: (input: AddBookReviewInput) => getApi().books.addBookReview(input),
     searchBooks: (term: string, listId?: number) => getApi().books.searchBooks(term, listId),
+    getBookDetail: (bookId: number) => getApi().books.getBookDetail(bookId),
   },
   reports: {
     getYearCounts: () => getApi().reports.getYearCounts(),

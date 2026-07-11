@@ -3,6 +3,8 @@ import type Database from 'better-sqlite3'
 import type {
   AddBookReviewInput,
   AddBookReviewResult,
+  BookDetail,
+  BookReviewDetail,
   SearchBookResult,
 } from '../../shared/types'
 
@@ -74,6 +76,44 @@ export function addBookReview(
   })
 
   return transaction()
+}
+
+export function getBookDetail(
+  db: Database.Database,
+  bookId: number,
+): BookDetail {
+  const book = db
+    .prepare(
+      `SELECT
+         id,
+         title,
+         author,
+         pub_year as pubYear,
+         pages,
+         genre
+       FROM books
+       WHERE id = ?`,
+    )
+    .get(bookId) as Omit<BookDetail, 'reviews'> | undefined
+
+  if (!book) {
+    throw new Error(`Book ${bookId} not found.`)
+  }
+
+  const reviews = db
+    .prepare(
+      `SELECT
+         id as reviewId,
+         date_read as dateRead,
+         rating,
+         review
+       FROM reviews
+       WHERE book_id = ?
+       ORDER BY date_read DESC, id DESC`,
+    )
+    .all(bookId) as BookReviewDetail[]
+
+  return { ...book, reviews }
 }
 
 export function searchBooks(

@@ -1,4 +1,7 @@
+import { useState } from 'react'
+
 import type { ReviewRow } from '../../shared/types'
+import { BookDetailModal } from './BookDetailModal'
 import { starsFor } from './ratings'
 
 export function ReviewTable({
@@ -8,36 +11,58 @@ export function ReviewTable({
   reviews: ReviewRow[]
   emptyMessage?: string
 }) {
+  const [selectedBookId, setSelectedBookId] = useState<number | null>(null)
+
   if (reviews.length === 0) {
     return <p className="text-muted mb-0">{emptyMessage}</p>
   }
 
   return (
-    <div className="table-responsive">
-      <table className="table align-middle libro-table">
-        <thead>
-          <tr>
-            <th>Review ID</th>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Genre</th>
-            <th>Rating</th>
-            <th>Date Read</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reviews.map((review) => (
-            <tr key={review.reviewId}>
-              <td>{review.reviewId}</td>
-              <td>{review.title}</td>
-              <td>{review.author}</td>
-              <td>{review.genre ?? '—'}</td>
-              <td>{review.rating !== null ? starsFor(review.rating) : '—'}</td>
-              <td>{review.dateRead ?? '—'}</td>
+    <>
+      <div className="table-responsive">
+        <table className="table align-middle libro-table">
+          <thead>
+            <tr>
+              <th>Review ID</th>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Genre</th>
+              <th>Rating</th>
+              <th>Date Read</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {reviews.map((review) => (
+              <tr
+                key={review.reviewId}
+                className="libro-row-clickable"
+                onClick={() => setSelectedBookId(review.bookId)}
+                tabIndex={0}
+                role="button"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setSelectedBookId(review.bookId)
+                  }
+                }}
+              >
+                <td>{review.reviewId}</td>
+                <td>{review.title}</td>
+                <td>{review.author}</td>
+                <td>{review.genre ?? '—'}</td>
+                <td>{review.rating !== null ? starsFor(review.rating) : '—'}</td>
+                <td>{review.dateRead ?? '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {selectedBookId !== null ? (
+        <BookDetailModal
+          bookId={selectedBookId}
+          onClose={() => setSelectedBookId(null)}
+        />
+      ) : null}
+    </>
   )
 }

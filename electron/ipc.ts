@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 
 import { getDatabase, getDbInfo } from './db/client'
-import { addBookReview, searchBooks } from './db/books'
+import { addBookReview, getBookDetail, searchBooks } from './db/books'
 import { getAuthorCounts, getReviews, getYearCounts } from './db/reports'
 import { addBooksToList, createList, getAllLists, getListById } from './db/lists'
 
@@ -13,6 +13,9 @@ export function registerIpcHandlers(): void {
   )
   ipcMain.handle('books:search', (_, term: string, listId?: number) =>
     searchBooks(getDatabase(), term, listId),
+  )
+  ipcMain.handle('books:get-detail', (_, bookId: number) =>
+    getBookDetail(getDatabase(), bookId),
   )
 
   ipcMain.handle('reports:get-year-counts', () => getYearCounts(getDatabase()))

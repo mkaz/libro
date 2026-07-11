@@ -9,6 +9,7 @@ const api: LibroApi = {
   books: {
     addBookReview: (input) => ipcRenderer.invoke('books:add-book-review', input),
     searchBooks: (term, listId) => ipcRenderer.invoke('books:search', term, listId),
+    getBookDetail: (bookId) => ipcRenderer.invoke('books:get-detail', bookId),
   },
   reports: {
     getYearCounts: () => ipcRenderer.invoke('reports:get-year-counts'),

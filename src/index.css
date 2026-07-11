@@ -343,6 +343,92 @@ code {
   gap: 0.5rem;
 }
 
+.modal-box-wide {
+  max-width: 34rem;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.libro-row-clickable {
+  cursor: pointer;
+}
+
+.libro-row-clickable:hover {
+  background: var(--libro-hover, rgba(0, 0, 0, 0.04));
+}
+
+.book-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.book-detail-author {
+  margin: 0.15rem 0 1rem;
+  color: var(--libro-muted, #6b6b6b);
+  font-style: italic;
+}
+
+.book-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--libro-border);
+  border-bottom: 1px solid var(--libro-border);
+}
+
+.book-detail-meta div {
+  display: flex;
+  flex-direction: column;
+}
+
+.book-detail-meta dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--libro-muted, #6b6b6b);
+}
+
+.book-detail-meta dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.book-detail-subtitle {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.book-detail-reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.book-detail-review {
+  padding: 0.75rem;
+  border: 1px solid var(--libro-border);
+  border-radius: 0.4rem;
+}
+
+.book-detail-review-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--libro-muted, #6b6b6b);
+}
+
+.book-detail-review-body {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
 .list-books-header {
   display: grid;
   grid-template-columns: 1.5rem minmax(0, 1fr);
