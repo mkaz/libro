@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import type { AddBookReviewInput, AddBookReviewResult } from '../../../shared/types'
 import { api } from '../../lib/api'
+import { StarRating } from '../../lib/StarRating'
 
 const initialForm: AddBookReviewInput = {
   title: '',
@@ -159,24 +160,11 @@ export function AddBookReviewForm() {
           </div>
 
           <div className="col-12 col-md-6">
-            <label className="form-label" htmlFor="rating">
-              Rating
-            </label>
-            <select
-              id="rating"
-              className="form-select"
-              value={form.rating ?? ''}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, rating: toOptionalNumber(event.target.value) }))
-              }
-            >
-              <option value="">Unrated</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
+            <label className="form-label">Rating</label>
+            <StarRating
+              value={form.rating}
+              onChange={(rating) => setForm((current) => ({ ...current, rating }))}
+            />
           </div>
 
           <div className="col-12">

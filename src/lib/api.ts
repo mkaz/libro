@@ -4,6 +4,7 @@ import type {
   CreateListInput,
   LibroApi,
   ReviewFilters,
+  UpdateReviewInput,
 } from '../../shared/types'
 
 function getApi(): LibroApi {
@@ -20,6 +21,7 @@ export const api = {
   },
   books: {
     addBookReview: (input: AddBookReviewInput) => getApi().books.addBookReview(input),
+    updateReview: (input: UpdateReviewInput) => getApi().books.updateReview(input),
     searchBooks: (term: string, listId?: number) => getApi().books.searchBooks(term, listId),
     getBookDetail: (bookId: number) => getApi().books.getBookDetail(bookId),
   },

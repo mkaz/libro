@@ -306,6 +306,81 @@ code {
   padding-top: 1rem;
 }
 
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.star-rating-stars {
+  display: inline-flex;
+  gap: 0.15rem;
+}
+
+.star-rating-star {
+  position: relative;
+  display: inline-block;
+  width: 1.75rem;
+  height: 1.75rem;
+  line-height: 1.75rem;
+  font-size: 1.6rem;
+}
+
+.star-rating-zone {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.star-rating-left {
+  left: 0;
+}
+
+.star-rating-right {
+  right: 0;
+}
+
+.star-rating-glyph {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.star-rating-bg,
+.star-rating-fg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.star-rating-bg {
+  color: var(--libro-border, #c9c9c9);
+}
+
+.star-rating-fg {
+  color: #f5b301;
+  width: 0;
+}
+
+.star-rating-full .star-rating-fg {
+  width: 100%;
+}
+
+.star-rating-half .star-rating-fg {
+  width: 50%;
+}
+
+.star-rating-clear {
+  align-self: center;
+}
+
 .lists-layout {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
@@ -427,6 +502,24 @@ code {
   margin: 0;
   white-space: pre-wrap;
   line-height: 1.5;
+}
+
+.book-detail-review-head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.book-detail-review-editing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.review-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
 .list-books-header {

@@ -101,7 +101,16 @@ function createWindow(): BrowserWindow {
   if (app.isPackaged) {
     mainWindow.loadFile(path.resolve(__dirname, '../dist/index.html'))
   } else {
-    mainWindow.loadURL(rendererDevUrl)
+    const loadDevUrl = () => {
+      mainWindow.loadURL(rendererDevUrl).catch(() => {
+        // Dev server may not be ready yet; retry shortly.
+        setTimeout(loadDevUrl, 300)
+      })
+    }
+    mainWindow.webContents.on('did-fail-load', () => {
+      setTimeout(loadDevUrl, 300)
+    })
+    loadDevUrl()
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   }
 

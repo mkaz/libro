@@ -20,6 +20,13 @@ export interface AddBookReviewResult {
   usedExistingBook: boolean
 }
 
+export interface UpdateReviewInput {
+  reviewId: number
+  dateRead: string | null
+  rating: number | null
+  review: string | null
+}
+
 export interface ReviewRow {
   reviewId: number
   bookId: number
@@ -133,6 +140,7 @@ export interface LibroApi {
   }
   books: {
     addBookReview: (input: AddBookReviewInput) => Promise<AddBookReviewResult>
+    updateReview: (input: UpdateReviewInput) => Promise<void>
     searchBooks: (term: string, listId?: number) => Promise<SearchBookResult[]>
     getBookDetail: (bookId: number) => Promise<BookDetail>
   }

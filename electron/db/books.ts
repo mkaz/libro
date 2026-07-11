@@ -6,6 +6,7 @@ import type {
   BookDetail,
   BookReviewDetail,
   SearchBookResult,
+  UpdateReviewInput,
 } from '../../shared/types'
 
 function normalizeOptionalText(value: string | null): string | null {
@@ -76,6 +77,25 @@ export function addBookReview(
   })
 
   return transaction()
+}
+
+export function updateReview(
+  db: Database.Database,
+  input: UpdateReviewInput,
+): void {
+  const reviewText = normalizeOptionalText(input.review)
+
+  const result = db
+    .prepare(
+      `UPDATE reviews
+       SET date_read = ?, rating = ?, review = ?
+       WHERE id = ?`,
+    )
+    .run(input.dateRead, input.rating, reviewText, input.reviewId)
+
+  if (result.changes === 0) {
+    throw new Error(`Review ${input.reviewId} not found.`)
+  }
 }
 
 export function getBookDetail(
