@@ -23,6 +23,7 @@ const api: LibroApi = {
     getById: (listId) => ipcRenderer.invoke('lists:get-by-id', listId),
     create: (input) => ipcRenderer.invoke('lists:create', input),
     addBooks: (input) => ipcRenderer.invoke('lists:add-books', input),
+    addNewBook: (input) => ipcRenderer.invoke('lists:add-new-book', input),
   },
 }
 

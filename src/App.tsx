@@ -15,7 +15,7 @@ const navItems: Array<{ id: View; label: string }> = [
   { id: 'reports', label: 'Reports' },
   { id: 'search', label: 'Search' },
   { id: 'lists', label: 'Lists' },
-  { id: 'add', label: 'Add Book' },
+  { id: 'add', label: 'Add Review' },
 ]
 
 export function App() {

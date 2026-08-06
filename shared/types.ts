@@ -134,6 +134,20 @@ export interface AddBooksToListResult {
   skippedBookIds: number[]
 }
 
+export interface AddNewBookToListInput {
+  listId: number
+  title: string
+  author: string
+  pubYear: number | null
+  pages: number | null
+  genre: string | null
+}
+
+export interface AddNewBookToListResult {
+  bookId: number
+  usedExistingBook: boolean
+}
+
 export interface LibroApi {
   app: {
     getDbInfo: () => Promise<DbInfo>
@@ -154,5 +168,6 @@ export interface LibroApi {
     getById: (listId: number) => Promise<ReadingListDetail>
     create: (input: CreateListInput) => Promise<ReadingListSummary>
     addBooks: (input: AddBooksToListInput) => Promise<AddBooksToListResult>
+    addNewBook: (input: AddNewBookToListInput) => Promise<AddNewBookToListResult>
   }
 }

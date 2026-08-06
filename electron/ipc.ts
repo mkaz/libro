@@ -3,7 +3,7 @@ import { ipcMain } from 'electron'
 import { getDatabase, getDbInfo } from './db/client'
 import { addBookReview, getBookDetail, searchBooks, updateReview } from './db/books'
 import { getAuthorCounts, getReviews, getYearCounts } from './db/reports'
-import { addBooksToList, createList, getAllLists, getListById } from './db/lists'
+import { addBooksToList, addNewBookToList, createList, getAllLists, getListById } from './db/lists'
 
 export function registerIpcHandlers(): void {
   ipcMain.handle('app:get-db-info', () => getDbInfo())
@@ -36,5 +36,8 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('lists:create', (_, input) => createList(getDatabase(), input))
   ipcMain.handle('lists:add-books', (_, input) =>
     addBooksToList(getDatabase(), input),
+  )
+  ipcMain.handle('lists:add-new-book', (_, input) =>
+    addNewBookToList(getDatabase(), input),
   )
 }

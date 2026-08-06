@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 
 import type {
+  AddNewBookToListInput,
   ReadingListBookRow,
   ReadingListDetail,
   ReadingListSummary,
@@ -18,6 +19,139 @@ function ProgressBar({ percentage }: { percentage: number }) {
         <div className="progress-bar" style={{ width: `${percentage}%` }} />
       </div>
       <small className="text-muted">{percentage.toFixed(1)}% complete</small>
+    </div>
+  )
+}
+
+function toOptionalNumber(value: string): number | null {
+  return value.trim() ? Number(value) : null
+}
+
+const initialNewBookForm: Omit<AddNewBookToListInput, 'listId'> = {
+  title: '',
+  author: '',
+  pubYear: null,
+  pages: null,
+  genre: null,
+}
+
+function AddNewBookModal({
+  onClose,
+  onAdd,
+}: {
+  onClose: () => void
+  onAdd: (input: Omit<AddNewBookToListInput, 'listId'>) => Promise<void>
+}) {
+  const [form, setForm] = useState(initialNewBookForm)
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setSubmitting(true)
+    setError(null)
+
+    try {
+      await onAdd({
+        ...form,
+        title: form.title.trim(),
+        author: form.author.trim(),
+        genre: form.genre?.trim() || null,
+      })
+      onClose()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to add book.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="modal-box" onClick={(event) => event.stopPropagation()}>
+        <h3 className="modal-title">Add New Book</h3>
+        <p className="text-muted mb-20">Add an unread book directly to this list.</p>
+        {error ? <div className="alert alert-danger mb-15">{error}</div> : null}
+        <form className="row g-20" onSubmit={(event) => void handleSubmit(event)}>
+          <div className="col-12">
+            <label className="form-label" htmlFor="listBookTitle">
+              Title
+            </label>
+            <input
+              ref={inputRef}
+              id="listBookTitle"
+              className="form-control"
+              value={form.title}
+              onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+              required
+            />
+          </div>
+          <div className="col-12">
+            <label className="form-label" htmlFor="listBookAuthor">
+              Author
+            </label>
+            <input
+              id="listBookAuthor"
+              className="form-control"
+              value={form.author}
+              onChange={(event) => setForm((current) => ({ ...current, author: event.target.value }))}
+              required
+            />
+          </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label" htmlFor="listBookPubYear">
+              Publication year
+            </label>
+            <input
+              id="listBookPubYear"
+              className="form-control"
+              inputMode="numeric"
+              value={form.pubYear ?? ''}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, pubYear: toOptionalNumber(event.target.value) }))
+              }
+            />
+          </div>
+          <div className="col-12 col-md-6">
+            <label className="form-label" htmlFor="listBookPages">
+              Pages
+            </label>
+            <input
+              id="listBookPages"
+              className="form-control"
+              inputMode="numeric"
+              value={form.pages ?? ''}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, pages: toOptionalNumber(event.target.value) }))
+              }
+            />
+          </div>
+          <div className="col-12">
+            <label className="form-label" htmlFor="listBookGenre">
+              Genre
+            </label>
+            <input
+              id="listBookGenre"
+              className="form-control"
+              value={form.genre ?? ''}
+              onChange={(event) => setForm((current) => ({ ...current, genre: event.target.value }))}
+            />
+          </div>
+          <div className="col-12 modal-actions">
+            <button type="button" className="btn" onClick={onClose} disabled={submitting}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? 'Adding...' : 'Add book'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
@@ -88,6 +222,7 @@ export function ListsView() {
   const [searchResults, setSearchResults] = useState<SearchBookResult[]>([])
   const [selectedBookIds, setSelectedBookIds] = useState<number[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showAddNewBookModal, setShowAddNewBookModal] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('title')
@@ -173,6 +308,24 @@ export function ListsView() {
     await loadLists(created.id)
   }
 
+  async function handleAddNewBook(input: Omit<AddNewBookToListInput, 'listId'>) {
+    if (selectedListId === null) {
+      return
+    }
+
+    setError(null)
+    setMessage(null)
+
+    const result = await api.lists.addNewBook({ ...input, listId: selectedListId })
+    setMessage(
+      result.usedExistingBook
+        ? 'Existing book added to the list.'
+        : 'New unread book added to the list.',
+    )
+    await loadLists(selectedListId)
+    await loadListDetail(selectedListId)
+  }
+
   async function handleAddBooks() {
     if (selectedListId === null || selectedBookIds.length === 0) {
       return
@@ -206,6 +359,12 @@ export function ListsView() {
         <CreateListModal
           onClose={() => setShowCreateModal(false)}
           onCreate={handleCreateList}
+        />
+      ) : null}
+      {showAddNewBookModal ? (
+        <AddNewBookModal
+          onClose={() => setShowAddNewBookModal(false)}
+          onAdd={handleAddNewBook}
         />
       ) : null}
 
@@ -261,7 +420,20 @@ export function ListsView() {
         <div className="card-body">
           {selectedList ? (
             <>
-              <h2 className="section-title mb-5">{selectedList.name}</h2>
+              <div className="section-heading mb-5">
+                <h2 className="section-title mb-0">{selectedList.name}</h2>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setMessage(null)
+                    setError(null)
+                    setShowAddNewBookModal(true)
+                  }}
+                >
+                  + Add new book
+                </button>
+              </div>
               {selectedList.description ? (
                 <p className="section-copy mb-15">{selectedList.description}</p>
               ) : null}

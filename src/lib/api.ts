@@ -1,6 +1,7 @@
 import type {
   AddBookReviewInput,
   AddBooksToListInput,
+  AddNewBookToListInput,
   CreateListInput,
   LibroApi,
   ReviewFilters,
@@ -35,5 +36,6 @@ export const api = {
     getById: (listId: number) => getApi().lists.getById(listId),
     create: (input: CreateListInput) => getApi().lists.create(input),
     addBooks: (input: AddBooksToListInput) => getApi().lists.addBooks(input),
+    addNewBook: (input: AddNewBookToListInput) => getApi().lists.addNewBook(input),
   },
 }

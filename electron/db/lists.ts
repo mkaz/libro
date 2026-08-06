@@ -3,6 +3,8 @@ import type Database from 'better-sqlite3'
 import type {
   AddBooksToListInput,
   AddBooksToListResult,
+  AddNewBookToListInput,
+  AddNewBookToListResult,
   CreateListInput,
   ReadingListBookRow,
   ReadingListDetail,
@@ -169,6 +171,57 @@ export function createList(
     createdDate: null,
     ...hydrateStats(0, 0),
   }
+}
+
+export function addNewBookToList(
+  db: Database.Database,
+  input: AddNewBookToListInput,
+): AddNewBookToListResult {
+  const title = input.title.trim()
+  const author = input.author.trim()
+  const genre = input.genre?.trim().toLowerCase() || null
+
+  if (!title || !author) {
+    throw new Error('Title and author are required.')
+  }
+
+  const transaction = db.transaction(() => {
+    const list = db
+      .prepare('SELECT id FROM reading_lists WHERE id = ?')
+      .get(input.listId) as { id: number } | undefined
+
+    if (!list) {
+      throw new Error(`Reading list with ID ${input.listId} not found.`)
+    }
+
+    const existingBook = db
+      .prepare(
+        `SELECT id
+         FROM books
+         WHERE LOWER(title) = LOWER(?) AND LOWER(author) = LOWER(?)`,
+      )
+      .get(title, author) as { id: number } | undefined
+
+    const bookId =
+      existingBook?.id ??
+      Number(
+        db
+          .prepare(
+            `INSERT INTO books (title, author, pub_year, pages, genre)
+             VALUES (?, ?, ?, ?, ?)`,
+          )
+          .run(title, author, input.pubYear, input.pages, genre).lastInsertRowid,
+      )
+
+    db.prepare(
+      `INSERT OR IGNORE INTO reading_list_books (list_id, book_id, added_date, priority)
+       VALUES (?, ?, CURRENT_DATE, 0)`,
+    ).run(input.listId, bookId)
+
+    return { bookId, usedExistingBook: existingBook !== undefined }
+  })
+
+  return transaction()
 }
 
 export function addBooksToList(
