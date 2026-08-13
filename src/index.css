@@ -206,6 +206,7 @@ code {
 
 .books-year-field .form-label {
   margin-bottom: 0;
+  padding-top: 0;
   white-space: nowrap;
 }
 
@@ -294,6 +295,10 @@ code {
 
 .review-textarea {
   min-height: 12rem;
+}
+
+.row.g-20 {
+  row-gap: 1.25rem;
 }
 
 .add-form-card {
@@ -706,6 +711,11 @@ code {
   --bs-table-bg: transparent;
   --bs-table-color: var(--libro-copy);
   --bs-table-border-color: #e8e0d5;
+}
+
+.form-label {
+  padding-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .form-control,
