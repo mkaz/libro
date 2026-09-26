@@ -4,7 +4,13 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import { getBookCoverPath } from './db/books'
-import { closeDatabase, getDatabase, getDbPath, writeConfigDbPath } from './db/client'
+import {
+  closeDatabase,
+  getCoversDirectory,
+  getDatabase,
+  getDataDirectory,
+  writeConfigDbPath,
+} from './db/client'
 import { registerIpcHandlers } from './ipc'
 
 const rendererDevUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5173'
@@ -42,12 +48,11 @@ function registerCoverProtocol(): void {
       return notFoundResponse()
     }
 
-    const dbPath = getDbPath()
     const coverPath = getBookCoverPath(getDatabase(), bookId)
-    if (!dbPath || !coverPath) return notFoundResponse()
+    if (!coverPath) return notFoundResponse()
 
-    const coversDirectory = path.resolve(path.dirname(dbPath), 'covers')
-    const absoluteCoverPath = path.resolve(path.dirname(dbPath), coverPath)
+    const coversDirectory = path.resolve(getCoversDirectory())
+    const absoluteCoverPath = path.resolve(getDataDirectory(), coverPath)
     if (!absoluteCoverPath.startsWith(`${coversDirectory}${path.sep}`)) {
       return notFoundResponse()
     }
@@ -181,17 +186,7 @@ function createWindow(): BrowserWindow {
   return mainWindow
 }
 
-app.whenReady().then(async () => {
-  if (getDbPath() === null) {
-    const dbPath = await chooseDatabase()
-    if (!dbPath) {
-      app.quit()
-      return
-    }
-    writeConfigDbPath(dbPath)
-    closeDatabase() // reset cache so getDatabase() re-reads fresh config
-  }
-
+app.whenReady().then(() => {
   getDatabase()
   registerCoverProtocol()
   registerIpcHandlers()

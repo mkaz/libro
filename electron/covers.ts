@@ -7,7 +7,7 @@ import type {
   BookCoverSelection,
   BookCoverSource,
 } from '../shared/types'
-import { getDbPath } from './db/client'
+import { getCoversDirectory, getDataDirectory } from './db/client'
 import type { SavedBookCover } from './db/books'
 
 const OPEN_LIBRARY_BASE_URL = 'https://openlibrary.org'
@@ -266,10 +266,7 @@ export async function saveCoverLocally(
     throw new Error('The selected cover is too large.')
   }
 
-  const dbPath = getDbPath()
-  if (!dbPath) throw new Error('No database path configured.')
-
-  const coversDirectory = path.join(path.dirname(dbPath), 'covers')
+  const coversDirectory = getCoversDirectory()
   await mkdir(coversDirectory, { recursive: true })
   const filename = `${randomUUID()}${extension}`
   await writeFile(path.join(coversDirectory, filename), image, { flag: 'wx' })
@@ -282,7 +279,5 @@ export async function saveCoverLocally(
 }
 
 export async function deleteSavedCover(cover: SavedBookCover): Promise<void> {
-  const dbPath = getDbPath()
-  if (!dbPath) return
-  await rm(path.join(path.dirname(dbPath), cover.path), { force: true })
+  await rm(path.join(getDataDirectory(), cover.path), { force: true })
 }

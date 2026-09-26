@@ -3,11 +3,11 @@ import path from 'node:path'
 import process from 'node:process'
 
 function usage() {
-  console.log('Usage: npm run dev [-- --db <database-path>]')
+  console.log('Usage: npm run dev [-- --data-dir <directory> | --db <database-path>]')
 }
 
-function parseDatabasePath(args) {
-  let databasePath = null
+function parseStoragePath(args) {
+  let storagePath = null
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index]
@@ -17,26 +17,44 @@ function parseDatabasePath(args) {
       process.exit(0)
     }
 
+    if (argument === '--data-dir') {
+      const value = args[index + 1]
+      if (!value || value.startsWith('--')) {
+        throw new Error('--data-dir requires a directory.')
+      }
+      storagePath = { type: 'directory', path: value }
+      index += 1
+      continue
+    }
+
+    if (argument.startsWith('--data-dir=')) {
+      const value = argument.slice('--data-dir='.length)
+      if (!value) throw new Error('--data-dir requires a directory.')
+      storagePath = { type: 'directory', path: value }
+      continue
+    }
+
     if (argument === '--db') {
       const value = args[index + 1]
       if (!value || value.startsWith('--')) {
         throw new Error('--db requires a database path.')
       }
-      databasePath = value
+      storagePath = { type: 'database', path: value }
       index += 1
       continue
     }
 
     if (argument.startsWith('--db=')) {
-      databasePath = argument.slice('--db='.length)
-      if (!databasePath) throw new Error('--db requires a database path.')
+      const value = argument.slice('--db='.length)
+      if (!value) throw new Error('--db requires a database path.')
+      storagePath = { type: 'database', path: value }
       continue
     }
 
     throw new Error(`Unknown option: ${argument}`)
   }
 
-  return databasePath ? path.resolve(databasePath) : null
+  return storagePath ? { ...storagePath, path: path.resolve(storagePath.path) } : null
 }
 
 function run(command, args, env = process.env) {
@@ -56,12 +74,15 @@ function run(command, args, env = process.env) {
 }
 
 async function main() {
-  const databasePath = parseDatabasePath(process.argv.slice(2))
+  const storagePath = parseStoragePath(process.argv.slice(2))
   const env = { ...process.env }
 
-  if (databasePath) {
-    env.LIBRO_DB_OVERRIDE = databasePath
-    console.log(`Using development database: ${databasePath}`)
+  if (storagePath?.type === 'directory') {
+    env.LIBRO_DATA_DIR_OVERRIDE = storagePath.path
+    console.log(`Using development data directory: ${storagePath.path}`)
+  } else if (storagePath) {
+    env.LIBRO_DB_OVERRIDE = storagePath.path
+    console.log(`Using development database: ${storagePath.path}`)
   }
 
   await run('npm', ['run', 'build:electron'], env)

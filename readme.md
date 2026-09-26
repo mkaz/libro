@@ -2,19 +2,41 @@
 
 ## Development
 
-Start Libro with the configured database:
+Start Libro with its configured data directory:
 
 ```bash
 npm run dev
 ```
 
-To use an isolated database for testing, pass its path with `--db`:
+To use an isolated data directory for development, pass it with `--data-dir`:
 
 ```bash
-npm run dev -- --db ./data/cover-test/libro.db
+npm run dev -- --data-dir ./data/cover-test
 ```
 
-Libro creates the database if it does not exist. Covers are saved in a `covers` directory beside that database, so this command keeps both the test records and test covers separate from your configured library.
+Libro creates this layout as files are needed:
+
+```text
+cover-test/
+├── libro.db
+└── covers/
+```
+
+The older `--db <database-path>` option remains available for testing a specific database file. Covers are stored in a `covers` directory beside that file.
+
+## Data directory
+
+A packaged app stores data in Electron's per-user application directory by default. On macOS this is normally `~/Library/Application Support/Libro Desktop`. Use **File > Open Database…** to select another database; Libro remembers its containing directory in `libro-config.json` under the per-user application directory.
+
+The database path is resolved in this order:
+
+1. `LIBRO_DATA_DIR_OVERRIDE` or the legacy `LIBRO_DB_OVERRIDE`
+2. An existing `libro.db` in the current working directory
+3. `LIBRO_DATA_DIR` or the legacy `LIBRO_DB`
+4. The directory saved through **File > Open Database…**
+5. Electron's per-user application directory
+
+`LIBRO_DATA_DIR` and `LIBRO_DATA_DIR_OVERRIDE` name directories. Libro uses `libro.db` and `covers/` inside them. The `LIBRO_DB` variables name a database file directly and are retained for compatibility.
 
 ## Vite template notes
 
