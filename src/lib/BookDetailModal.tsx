@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import type { BookDetail, BookReviewDetail } from '../../shared/types'
+import type { BookCoverCandidate, BookDetail, BookReviewDetail } from '../../shared/types'
 import { api } from './api'
 import { BookCover } from './BookCover'
 import { starsFor } from './ratings'
@@ -9,12 +9,15 @@ import { StarRating } from './StarRating'
 export function BookDetailModal({
   bookId,
   onClose,
+  onCoverSaved,
 }: {
   bookId: number
   onClose: () => void
+  onCoverSaved?: () => void
 }) {
   const [book, setBook] = useState<BookDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [choosingCover, setChoosingCover] = useState(false)
 
   function loadBook() {
     void api.books
@@ -33,12 +36,13 @@ export function BookDetailModal({
   useEffect(() => {
     function handleKey(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        onClose()
+        if (choosingCover) setChoosingCover(false)
+        else onClose()
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [onClose])
+  }, [choosingCover, onClose])
 
   return (
     <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
@@ -48,15 +52,43 @@ export function BookDetailModal({
       >
         {error ? <div className="alert alert-danger">{error}</div> : null}
         {!book && !error ? <p className="text-muted mb-0">Loading…</p> : null}
-        {book ? (
+        {book && choosingCover ? (
+          <ExistingBookCoverPicker
+            book={book}
+            onCancel={() => setChoosingCover(false)}
+            onSaved={() => {
+              setChoosingCover(false)
+              loadBook()
+              onCoverSaved?.()
+            }}
+          />
+        ) : book ? (
           <>
             <div className="book-detail-layout">
-              <BookCover
-                bookId={book.id}
-                title={book.title}
-                hasCover={book.hasCover}
-                className="book-detail-cover"
-              />
+              {book.hasCover ? (
+                <BookCover
+                  bookId={book.id}
+                  title={book.title}
+                  hasCover
+                  className="book-detail-cover"
+                />
+              ) : (
+                <button
+                  type="button"
+                  className="book-detail-cover-button"
+                  onClick={() => setChoosingCover(true)}
+                  aria-label={`Add a cover for ${book.title}`}
+                  title="Add cover"
+                >
+                  <BookCover
+                    bookId={book.id}
+                    title={book.title}
+                    hasCover={false}
+                    className="book-detail-cover"
+                  />
+                  <span>Click to add</span>
+                </button>
+              )}
               <div className="book-detail-main">
                 <div className="book-detail-header">
                   <h3 className="modal-title mb-0">{book.title}</h3>
@@ -111,6 +143,134 @@ export function BookDetailModal({
             )}
           </>
         ) : null}
+      </div>
+    </div>
+  )
+}
+
+function ExistingBookCoverPicker({
+  book,
+  onCancel,
+  onSaved,
+}: {
+  book: BookDetail
+  onCancel: () => void
+  onSaved: () => void
+}) {
+  const [candidates, setCandidates] = useState<BookCoverCandidate[] | null>(null)
+  const [selectedCover, setSelectedCover] = useState<BookCoverCandidate | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    void api.books
+      .findCoverCandidates(book.title, book.author)
+      .then((results) => {
+        if (active) setCandidates(results)
+      })
+      .catch((lookupError: unknown) => {
+        if (!active) return
+        setCandidates([])
+        setError(lookupError instanceof Error ? lookupError.message : 'Failed to find covers.')
+      })
+    return () => {
+      active = false
+    }
+  }, [book.author, book.title])
+
+  async function handleSave() {
+    if (!selectedCover) return
+    setSaving(true)
+    setError(null)
+
+    try {
+      const result = await api.books.addBookCover({
+        bookId: book.id,
+        cover: {
+          source: selectedCover.source,
+          sourceId: selectedCover.sourceId,
+          imageUrl: selectedCover.imageUrl,
+        },
+      })
+      if (!result.coverSaved) {
+        setError('This book already has a cover.')
+        return
+      }
+      onSaved()
+    } catch (saveError: unknown) {
+      setError(saveError instanceof Error ? saveError.message : 'Failed to save cover.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="book-cover-picker">
+      <div>
+        <h3 className="modal-title mb-5">Choose a cover</h3>
+        <p className="book-detail-author mb-0">
+          {book.title} by {book.author}
+        </p>
+      </div>
+
+      {error ? <div className="alert alert-danger mb-0">{error}</div> : null}
+      {candidates === null ? <p className="text-muted mb-0">Finding covers…</p> : null}
+      {candidates?.length === 0 ? (
+        <p className="text-muted mb-0">No covers were found for this book.</p>
+      ) : null}
+
+      {candidates && candidates.length > 0 ? (
+        <div className="cover-candidate-grid">
+          {candidates.map((candidate) => {
+            const selected =
+              selectedCover?.source === candidate.source &&
+              selectedCover.sourceId === candidate.sourceId
+            return (
+              <button
+                key={`${candidate.source}:${candidate.sourceId}`}
+                type="button"
+                className={`cover-candidate${selected ? ' is-selected' : ''}`}
+                onClick={() => setSelectedCover(candidate)}
+                aria-pressed={selected}
+              >
+                <img src={candidate.thumbnailUrl} alt="" />
+                <span className="cover-candidate-copy">
+                  <strong>{candidate.title}</strong>
+                  <span>{candidate.author}</span>
+                  {candidate.publicationYear ? <span>{candidate.publicationYear}</span> : null}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+
+      {candidates?.[0]?.source === 'googlebooks' ? (
+        <p className="cover-attribution mb-0">
+          Cover results provided by Google Books.{' '}
+          <a
+            href={selectedCover?.sourceUrl ?? candidates[0].sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View on Google Books
+          </a>
+        </p>
+      ) : null}
+
+      <div className="modal-actions">
+        <button type="button" className="btn" onClick={onCancel} disabled={saving}>
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => void handleSave()}
+          disabled={!selectedCover || saving}
+        >
+          {saving ? 'Saving…' : 'Save cover'}
+        </button>
       </div>
     </div>
   )

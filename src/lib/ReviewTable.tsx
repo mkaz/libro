@@ -16,6 +16,7 @@ export function ReviewTable({
 }) {
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null)
   const [resultView, setResultView] = useState<ResultView>('list')
+  const [booksWithNewCovers, setBooksWithNewCovers] = useState<Set<number>>(() => new Set())
 
   if (reviews.length === 0) {
     return <p className="text-muted mb-0">{emptyMessage}</p>
@@ -78,7 +79,7 @@ export function ReviewTable({
               <BookCover
                 bookId={review.bookId}
                 title={review.title}
-                hasCover={review.hasCover}
+                hasCover={review.hasCover || booksWithNewCovers.has(review.bookId)}
                 className="book-result-cover"
               />
               <span className="book-result-copy">
@@ -98,6 +99,9 @@ export function ReviewTable({
         <BookDetailModal
           bookId={selectedBookId}
           onClose={() => setSelectedBookId(null)}
+          onCoverSaved={() => {
+            setBooksWithNewCovers((current) => new Set(current).add(selectedBookId))
+          }}
         />
       ) : null}
     </>

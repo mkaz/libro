@@ -10,6 +10,7 @@ const api: LibroApi = {
     findCoverCandidates: (title, author) =>
       ipcRenderer.invoke('books:find-cover-candidates', title, author),
     addBookReview: (input) => ipcRenderer.invoke('books:add-book-review', input),
+    addBookCover: (input) => ipcRenderer.invoke('books:add-cover', input),
     updateReview: (input) => ipcRenderer.invoke('books:update-review', input),
     searchBooks: (term, listId) => ipcRenderer.invoke('books:search', term, listId),
     getBookDetail: (bookId) => ipcRenderer.invoke('books:get-detail', bookId),

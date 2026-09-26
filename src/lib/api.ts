@@ -1,4 +1,5 @@
 import type {
+  AddBookCoverInput,
   AddBookReviewInput,
   AddBooksToListInput,
   AddNewBookToListInput,
@@ -24,6 +25,7 @@ export const api = {
     findCoverCandidates: (title: string, author: string) =>
       getApi().books.findCoverCandidates(title, author),
     addBookReview: (input: AddBookReviewInput) => getApi().books.addBookReview(input),
+    addBookCover: (input: AddBookCoverInput) => getApi().books.addBookCover(input),
     updateReview: (input: UpdateReviewInput) => getApi().books.updateReview(input),
     searchBooks: (term: string, listId?: number) => getApi().books.searchBooks(term, listId),
     getBookDetail: (bookId: number) => getApi().books.getBookDetail(bookId),

@@ -1,9 +1,9 @@
 import { ipcMain } from 'electron'
 
-import type { AddBookReviewInput } from '../shared/types'
+import type { AddBookCoverInput, AddBookReviewInput } from '../shared/types'
 import { deleteSavedCover, findCoverCandidates, saveCoverLocally } from './covers'
 import { getDatabase, getDbInfo } from './db/client'
-import { addBookReview, getBookDetail, searchBooks, updateReview } from './db/books'
+import { addBookCover, addBookReview, getBookDetail, searchBooks, updateReview } from './db/books'
 import { getAuthorCounts, getReviews, getYearCounts } from './db/reports'
 import { addBooksToList, addNewBookToList, createList, getAllLists, getListById } from './db/lists'
 
@@ -22,12 +22,31 @@ async function addBookReviewWithCover(input: AddBookReviewInput) {
     throw error
   }
 
-  if (result.usedExistingBook && savedCover) {
+  if (!result.coverSaved && savedCover) {
     await deleteSavedCover(savedCover).catch((cleanupError: unknown) => {
-      console.warn('Could not remove cover downloaded for an existing book.', cleanupError)
+      console.warn('Could not remove a cover the book did not use.', cleanupError)
     })
   }
   return result
+}
+
+async function addCoverToBook(input: AddBookCoverInput) {
+  const savedCover = await saveCoverLocally(input.cover)
+
+  try {
+    const coverSaved = addBookCover(getDatabase(), input.bookId, savedCover)
+    if (!coverSaved) {
+      await deleteSavedCover(savedCover).catch((cleanupError: unknown) => {
+        console.warn('Could not remove a cover the book did not use.', cleanupError)
+      })
+    }
+    return { coverSaved }
+  } catch (error) {
+    await deleteSavedCover(savedCover).catch((cleanupError: unknown) => {
+      console.warn('Could not remove unused cover after save failure.', cleanupError)
+    })
+    throw error
+  }
 }
 
 export function registerIpcHandlers(): void {
@@ -38,6 +57,9 @@ export function registerIpcHandlers(): void {
   )
   ipcMain.handle('books:add-book-review', (_, input: AddBookReviewInput) =>
     addBookReviewWithCover(input),
+  )
+  ipcMain.handle('books:add-cover', (_, input: AddBookCoverInput) =>
+    addCoverToBook(input),
   )
   ipcMain.handle('books:search', (_, term: string, listId?: number) =>
     searchBooks(getDatabase(), term, listId),

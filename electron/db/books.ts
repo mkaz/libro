@@ -41,11 +41,11 @@ export function addBookReview(
 
   const existingBook = db
     .prepare(
-      `SELECT id
+      `SELECT id, cover_path as coverPath
        FROM books
        WHERE LOWER(title) = LOWER(?) AND LOWER(author) = LOWER(?)`,
     )
-    .get(title, author) as { id: number } | undefined
+    .get(title, author) as { id: number; coverPath: string | null } | undefined
 
   const insertBook = db.prepare(
     `INSERT INTO books (
@@ -57,6 +57,11 @@ export function addBookReview(
   const insertReview = db.prepare(
     `INSERT INTO reviews (book_id, date_read, rating, review)
      VALUES (?, ?, ?, ?)`,
+  )
+  const updateMissingCover = db.prepare(
+    `UPDATE books
+     SET cover_source = ?, cover_source_id = ?, cover_path = ?
+     WHERE id = ? AND cover_path IS NULL`,
   )
 
   const transaction = db.transaction(() => {
@@ -74,6 +79,8 @@ export function addBookReview(
         cover?.path ?? null,
       )
       bookId = Number(bookResult.lastInsertRowid)
+    } else if (cover && existingBook && existingBook.coverPath === null) {
+      updateMissingCover.run(cover.source, cover.sourceId, cover.path, bookId)
     }
 
     const reviewResult = insertReview.run(
@@ -87,7 +94,7 @@ export function addBookReview(
       bookId,
       reviewId: Number(reviewResult.lastInsertRowid),
       usedExistingBook: existingBook !== undefined,
-      coverSaved: existingBook === undefined && cover !== null,
+      coverSaved: cover !== null && (existingBook === undefined || existingBook.coverPath === null),
     }
   })
 
@@ -111,6 +118,26 @@ export function updateReview(
   if (result.changes === 0) {
     throw new Error(`Review ${input.reviewId} not found.`)
   }
+}
+
+export function addBookCover(
+  db: Database.Database,
+  bookId: number,
+  cover: SavedBookCover,
+): boolean {
+  const result = db
+    .prepare(
+      `UPDATE books
+       SET cover_source = ?, cover_source_id = ?, cover_path = ?
+       WHERE id = ? AND cover_path IS NULL`,
+    )
+    .run(cover.source, cover.sourceId, cover.path, bookId)
+
+  if (result.changes === 1) return true
+
+  const bookExists = db.prepare('SELECT 1 FROM books WHERE id = ?').get(bookId)
+  if (!bookExists) throw new Error(`Book ${bookId} not found.`)
+  return false
 }
 
 export function getBookCoverPath(

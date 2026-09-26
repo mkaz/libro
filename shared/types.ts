@@ -19,6 +19,15 @@ export interface BookCoverCandidate extends BookCoverSelection {
   sourceUrl: string
 }
 
+export interface AddBookCoverInput {
+  bookId: number
+  cover: BookCoverSelection
+}
+
+export interface AddBookCoverResult {
+  coverSaved: boolean
+}
+
 export interface AddBookReviewInput {
   title: string
   author: string
@@ -175,6 +184,7 @@ export interface LibroApi {
   books: {
     findCoverCandidates: (title: string, author: string) => Promise<BookCoverCandidate[]>
     addBookReview: (input: AddBookReviewInput) => Promise<AddBookReviewResult>
+    addBookCover: (input: AddBookCoverInput) => Promise<AddBookCoverResult>
     updateReview: (input: UpdateReviewInput) => Promise<void>
     searchBooks: (term: string, listId?: number) => Promise<SearchBookResult[]>
     getBookDetail: (bookId: number) => Promise<BookDetail>

@@ -663,6 +663,41 @@ code {
   display: flex;
 }
 
+.book-detail-cover-button {
+  position: relative;
+  width: fit-content;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0.3rem;
+  background: transparent;
+  color: var(--libro-copy);
+  cursor: pointer;
+}
+
+.book-detail-cover-button > span {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 0.4rem;
+  background: rgba(45, 42, 38, 0.82);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.book-detail-cover-button:hover,
+.book-detail-cover-button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.25);
+}
+
+.book-cover-picker {
+  display: grid;
+  gap: 1rem;
+}
+
 .book-detail-header {
   display: flex;
   align-items: flex-start;
