@@ -16,7 +16,7 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "better-sqlite3": "^11.8.1",
+    "better-sqlite3": "^12.11.1",
     "halfmoon": "^2.0.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
@@ -30,7 +30,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.2",
     "electron": "^33.2.1",
-    "electron-builder": "^25.1.8",
+    "electron-builder": "^26.17.0",
     "electronmon": "^2.0.3",
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.1.0",

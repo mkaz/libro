@@ -11,6 +11,8 @@ npm ci
 npm run dev
 ```
 
+`npm ci` removes the existing `node_modules` directory and installs the versions in `package-lock.json`. It does not update the lockfile. This project also runs `electron-builder install-app-deps` after installation to rebuild `better-sqlite3` for Electron; loading it directly with Node.js may then fail with a `NODE_MODULE_VERSION` mismatch. Some deprecation warnings come from transitive dependencies and do not mean the install failed; check the command's exit status and any `npm error` lines.
+
 Check changes with `npm run lint` and `npm run build`.
 
 To use an isolated data directory for development, pass it with `--data-dir`:
