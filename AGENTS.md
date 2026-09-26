@@ -1,4 +1,4 @@
-# CLAUDE.md
+# Libro contributor guidance
 
 This file provides guidance to LLMs working with code in this repository.
 
@@ -126,9 +126,13 @@ IPC channel naming: `namespace:verb-noun` (e.g. `books:add-book-review`, `lists:
 
 Priority order:
 
-1. `libro.db` in cwd (if it exists)
-2. `LIBRO_DB` environment variable
-3. `{appData}/Libro/mkaz/libro.db`
+1. `LIBRO_DATA_DIR_OVERRIDE` or `LIBRO_DB_OVERRIDE`
+2. `libro.db` in cwd (if it exists)
+3. `LIBRO_DATA_DIR` or `LIBRO_DB`
+4. Database directory selected through **File > Open Database…**
+5. Electron's per-user application directory
+
+Covers are stored in `covers/` beside the database. See `readme.md` for details.
 
 ## Adding a New Feature
 

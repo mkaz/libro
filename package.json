@@ -12,7 +12,7 @@
     "build:electron": "tsup --config tsup.config.ts",
     "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "lint": "eslint .",
-"package": "npm run build && electron-builder --mac",
+    "package": "npm run build && electron-builder --mac",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {

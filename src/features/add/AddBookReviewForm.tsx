@@ -101,8 +101,8 @@ export function AddBookReviewForm() {
           <div>
             <h2 className="section-title mb-5">Add Book and Review</h2>
             <p className="section-copy mb-0">
-              This matches the CLI&apos;s main add command. If the book already exists by title and
-              author, the app attaches a new review instead of creating a duplicate book.
+              If the book already exists by title and author, Libro attaches a new review instead of
+              creating a duplicate book.
             </p>
           </div>
         </div>

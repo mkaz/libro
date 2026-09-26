@@ -14,7 +14,7 @@ Libro is a hobby project, but contributions are welcome.
 
 ## Making Changes
 
-Follow the pattern in CLAUDE.md for adding new features — types in `shared/types.ts`, queries in `electron/db/`, IPC handler in `electron/ipc.ts`, wired up in `preload.ts` and `src/lib/api.ts`, then the React component in `src/features/`.
+Follow the pattern in AGENTS.md for adding new features — types in `shared/types.ts`, queries in `electron/db/`, IPC handler in `electron/ipc.ts`, wired up in `preload.ts` and `src/lib/api.ts`, then the React component in `src/features/`.
 
 Run `npm run typecheck` and `npm run lint` before submitting.
 
