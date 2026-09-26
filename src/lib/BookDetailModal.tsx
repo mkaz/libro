@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import type { BookDetail, BookReviewDetail } from '../../shared/types'
 import { api } from './api'
+import { BookCover } from './BookCover'
 import { starsFor } from './ratings'
 import { StarRating } from './StarRating'
 
@@ -49,38 +50,48 @@ export function BookDetailModal({
         {!book && !error ? <p className="text-muted mb-0">Loading…</p> : null}
         {book ? (
           <>
-            <div className="book-detail-header">
-              <h3 className="modal-title mb-0">{book.title}</h3>
-              <button
-                type="button"
-                className="btn btn-sm"
-                onClick={onClose}
-                aria-label="Close"
-              >
-                ✕
-              </button>
+            <div className="book-detail-layout">
+              <BookCover
+                bookId={book.id}
+                title={book.title}
+                hasCover={book.hasCover}
+                className="book-detail-cover"
+              />
+              <div className="book-detail-main">
+                <div className="book-detail-header">
+                  <h3 className="modal-title mb-0">{book.title}</h3>
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    onClick={onClose}
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="book-detail-author">{book.author}</p>
+                <dl className="book-detail-meta">
+                  {book.pubYear !== null ? (
+                    <div>
+                      <dt>Published</dt>
+                      <dd>{book.pubYear}</dd>
+                    </div>
+                  ) : null}
+                  {book.pages !== null ? (
+                    <div>
+                      <dt>Pages</dt>
+                      <dd>{book.pages}</dd>
+                    </div>
+                  ) : null}
+                  {book.genre ? (
+                    <div>
+                      <dt>Genre</dt>
+                      <dd>{book.genre}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
             </div>
-            <p className="book-detail-author">{book.author}</p>
-            <dl className="book-detail-meta">
-              {book.pubYear !== null ? (
-                <div>
-                  <dt>Published</dt>
-                  <dd>{book.pubYear}</dd>
-                </div>
-              ) : null}
-              {book.pages !== null ? (
-                <div>
-                  <dt>Pages</dt>
-                  <dd>{book.pages}</dd>
-                </div>
-              ) : null}
-              {book.genre ? (
-                <div>
-                  <dt>Genre</dt>
-                  <dd>{book.genre}</dd>
-                </div>
-              ) : null}
-            </dl>
 
             <h4 className="book-detail-subtitle">
               {book.reviews.length === 1 ? 'Review' : 'Reviews'}

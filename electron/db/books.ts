@@ -113,6 +113,16 @@ export function updateReview(
   }
 }
 
+export function getBookCoverPath(
+  db: Database.Database,
+  bookId: number,
+): string | null {
+  const row = db
+    .prepare('SELECT cover_path as coverPath FROM books WHERE id = ?')
+    .get(bookId) as { coverPath: string | null } | undefined
+  return row?.coverPath ?? null
+}
+
 export function getBookDetail(
   db: Database.Database,
   bookId: number,
@@ -125,11 +135,12 @@ export function getBookDetail(
          author,
          pub_year as pubYear,
          pages,
-         genre
+         genre,
+         cover_path IS NOT NULL as hasCover
        FROM books
        WHERE id = ?`,
     )
-    .get(bookId) as Omit<BookDetail, 'reviews'> | undefined
+    .get(bookId) as (Omit<BookDetail, 'reviews' | 'hasCover'> & { hasCover: number }) | undefined
 
   if (!book) {
     throw new Error(`Book ${bookId} not found.`)
@@ -148,7 +159,7 @@ export function getBookDetail(
     )
     .all(bookId) as BookReviewDetail[]
 
-  return { ...book, reviews }
+  return { ...book, hasCover: Boolean(book.hasCover), reviews }
 }
 
 export function searchBooks(

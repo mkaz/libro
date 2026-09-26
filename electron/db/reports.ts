@@ -43,6 +43,7 @@ export function getReviews(
       b.title,
       b.author,
       b.genre,
+      b.cover_path IS NOT NULL as hasCover,
       r.rating,
       r.date_read as dateRead
     FROM reviews r
@@ -73,5 +74,7 @@ export function getReviews(
 
   query += ' ORDER BY r.date_read DESC, r.id DESC'
 
-  return db.prepare(query).all(...params) as ReviewRow[]
+  return (db.prepare(query).all(...params) as Array<Omit<ReviewRow, 'hasCover'> & { hasCover: number }>).map(
+    (row) => ({ ...row, hasCover: Boolean(row.hasCover) }),
+  )
 }

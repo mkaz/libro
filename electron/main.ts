@@ -1,11 +1,70 @@
-import { app, BrowserWindow, dialog, Menu, shell } from 'electron'
+import { app, BrowserWindow, dialog, Menu, protocol, shell } from 'electron'
 import type { MenuItemConstructorOptions } from 'electron'
+import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 
+import { getBookCoverPath } from './db/books'
 import { closeDatabase, getDatabase, getDbPath, writeConfigDbPath } from './db/client'
 import { registerIpcHandlers } from './ipc'
 
 const rendererDevUrl = process.env.VITE_DEV_SERVER_URL ?? 'http://127.0.0.1:5173'
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'libro-cover',
+    privileges: { standard: true, secure: true, supportFetchAPI: true },
+  },
+])
+
+function notFoundResponse(): Response {
+  return new Response('Cover not found.', { status: 404 })
+}
+
+function coverContentType(filePath: string): string {
+  switch (path.extname(filePath).toLowerCase()) {
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg'
+    case '.png':
+      return 'image/png'
+    case '.webp':
+      return 'image/webp'
+    default:
+      return 'application/octet-stream'
+  }
+}
+
+function registerCoverProtocol(): void {
+  protocol.handle('libro-cover', async (request) => {
+    const url = new URL(request.url)
+    const bookId = Number(url.pathname.slice(1))
+    if (url.hostname !== 'book' || !Number.isInteger(bookId) || bookId <= 0) {
+      return notFoundResponse()
+    }
+
+    const dbPath = getDbPath()
+    const coverPath = getBookCoverPath(getDatabase(), bookId)
+    if (!dbPath || !coverPath) return notFoundResponse()
+
+    const coversDirectory = path.resolve(path.dirname(dbPath), 'covers')
+    const absoluteCoverPath = path.resolve(path.dirname(dbPath), coverPath)
+    if (!absoluteCoverPath.startsWith(`${coversDirectory}${path.sep}`)) {
+      return notFoundResponse()
+    }
+
+    try {
+      const image = await readFile(absoluteCoverPath)
+      return new Response(new Uint8Array(image), {
+        headers: {
+          'Content-Type': coverContentType(absoluteCoverPath),
+          'Cache-Control': 'private, max-age=3600',
+        },
+      })
+    } catch {
+      return notFoundResponse()
+    }
+  })
+}
 
 async function chooseDatabase(): Promise<string | null> {
   const { response } = await dialog.showMessageBox({
@@ -134,6 +193,7 @@ app.whenReady().then(async () => {
   }
 
   getDatabase()
+  registerCoverProtocol()
   registerIpcHandlers()
   const mainWindow = createWindow()
   buildMenu(mainWindow)

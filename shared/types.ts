@@ -51,6 +51,7 @@ export interface ReviewRow {
   title: string
   author: string
   genre: string | null
+  hasCover: boolean
   rating: number | null
   dateRead: string | null
 }
@@ -69,6 +70,7 @@ export interface BookDetail {
   pubYear: number | null
   pages: number | null
   genre: string | null
+  hasCover: boolean
   reviews: BookReviewDetail[]
 }
 
