@@ -158,6 +158,9 @@ function ExistingBookCoverPicker({
   onSaved: () => void
 }) {
   const [candidates, setCandidates] = useState<BookCoverCandidate[] | null>(null)
+  const [googleCandidates, setGoogleCandidates] = useState<BookCoverCandidate[] | null>(null)
+  const [googleError, setGoogleError] = useState<string | null>(null)
+  const [lookingUpGoogle, setLookingUpGoogle] = useState(false)
   const [selectedCover, setSelectedCover] = useState<BookCoverCandidate | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -178,6 +181,18 @@ function ExistingBookCoverPicker({
       active = false
     }
   }, [book.author, book.title])
+
+  async function findGoogleCovers() {
+    setLookingUpGoogle(true)
+    setGoogleError(null)
+    try {
+      setGoogleCandidates(await api.books.findCoverCandidates(book.title, book.author, 'googlebooks'))
+    } catch (lookupError: unknown) {
+      setGoogleError(lookupError instanceof Error ? lookupError.message : 'Failed to find Google Books covers.')
+    } finally {
+      setLookingUpGoogle(false)
+    }
+  }
 
   async function handleSave() {
     if (!selectedCover) return
@@ -222,7 +237,7 @@ function ExistingBookCoverPicker({
 
       {candidates && candidates.length > 0 ? (
         <div className="cover-candidate-grid">
-          {candidates.map((candidate) => {
+          {[...candidates, ...(googleCandidates ?? [])].map((candidate) => {
             const selected =
               selectedCover?.source === candidate.source &&
               selectedCover.sourceId === candidate.sourceId
@@ -238,6 +253,7 @@ function ExistingBookCoverPicker({
                 <span className="cover-candidate-copy">
                   <strong>{candidate.title}</strong>
                   <span>{candidate.author}</span>
+                  <span>{candidate.source === 'openlibrary' ? 'Open Library' : 'Google Books'}</span>
                   {candidate.publicationYear ? <span>{candidate.publicationYear}</span> : null}
                 </span>
               </button>
@@ -246,11 +262,19 @@ function ExistingBookCoverPicker({
         </div>
       ) : null}
 
-      {candidates?.[0]?.source === 'googlebooks' ? (
+      {candidates?.[0]?.source === 'openlibrary' && googleCandidates === null ? (
+        <button type="button" className="btn" style={{ justifySelf: 'start' }} onClick={() => void findGoogleCovers()} disabled={lookingUpGoogle || saving}>
+          {lookingUpGoogle ? 'Searching Google Books...' : 'Search Google Books for more covers'}
+        </button>
+      ) : null}
+      {googleError ? <p className="text-danger mb-0">{googleError}</p> : null}
+      {googleCandidates?.length === 0 ? <p className="text-muted mb-0">No additional covers found on Google Books.</p> : null}
+
+      {(googleCandidates?.length || candidates?.[0]?.source === 'googlebooks') ? (
         <p className="cover-attribution mb-0">
-          Cover results provided by Google Books.{' '}
+          Google Books covers link to their source.{' '}
           <a
-            href={selectedCover?.sourceUrl ?? candidates[0].sourceUrl}
+            href={(selectedCover?.source === 'googlebooks' ? selectedCover.sourceUrl : null) ?? googleCandidates?.[0]?.sourceUrl ?? candidates?.[0]?.sourceUrl}
             target="_blank"
             rel="noreferrer"
           >

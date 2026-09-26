@@ -1,6 +1,10 @@
-export interface DbInfo {
-  path: string
-  exists: boolean
+export type ResultView = 'list' | 'grid'
+
+export interface AppSettings {
+  dataDirectory: string
+  defaultView: ResultView
+  directoryLocked: boolean
+  googleBooksApiKeySource: 'settings' | 'environment' | null
 }
 
 export type BookCoverSource = 'openlibrary' | 'googlebooks'
@@ -179,10 +183,13 @@ export interface AddNewBookToListResult {
 
 export interface LibroApi {
   app: {
-    getDbInfo: () => Promise<DbInfo>
+    getSettings: () => Promise<AppSettings>
+    setDefaultView: (view: ResultView) => Promise<AppSettings>
+    setGoogleBooksApiKey: (key: string) => Promise<AppSettings>
+    chooseDataDirectory: () => Promise<string | null>
   }
   books: {
-    findCoverCandidates: (title: string, author: string) => Promise<BookCoverCandidate[]>
+    findCoverCandidates: (title: string, author: string, source?: 'googlebooks') => Promise<BookCoverCandidate[]>
     addBookReview: (input: AddBookReviewInput) => Promise<AddBookReviewResult>
     addBookCover: (input: AddBookCoverInput) => Promise<AddBookCoverResult>
     updateReview: (input: UpdateReviewInput) => Promise<void>

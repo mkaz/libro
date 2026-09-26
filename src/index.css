@@ -118,17 +118,60 @@ code {
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.16);
 }
 
-.app-status {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  min-width: 0;
+.settings-menu {
+  position: relative;
 }
 
-.db-path {
-  max-width: 26rem;
+.settings-menu > summary {
+  display: block;
+  cursor: pointer;
+  list-style: none;
+}
+
+.settings-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings-menu[open] > summary {
+  border-color: var(--libro-accent);
+  background: var(--libro-accent-soft);
+}
+
+.settings-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.75rem);
+  width: min(24rem, calc(100vw - 2rem));
+  padding: 1rem;
+  background: var(--libro-panel);
+  border: 1px solid var(--libro-border);
+  border-radius: 0.45rem;
+  box-shadow: 0 12px 32px rgba(45, 42, 38, 0.16);
+}
+
+.settings-title {
+  font-size: 1.1rem;
+  margin: 0 0 1rem;
+}
+
+.settings-field + .settings-field {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--libro-border);
+}
+
+.settings-path {
   overflow-wrap: anywhere;
+  margin: 0.35rem 0;
+  font-size: 0.875rem;
+}
+
+.settings-field .section-copy {
+  margin: 0.4rem 0 0.75rem;
+}
+
+.settings-field .form-select {
+  width: 100%;
 }
 
 .app-main {
@@ -1100,13 +1143,6 @@ code {
     height: 180px;
   }
 
-  .app-status {
-    width: 100%;
-  }
-
-  .db-path {
-    max-width: 100%;
-  }
 }
 
 @media (max-width: 560px) {

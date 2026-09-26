@@ -4,11 +4,14 @@ import type { LibroApi } from '../shared/types'
 
 const api: LibroApi = {
   app: {
-    getDbInfo: () => ipcRenderer.invoke('app:get-db-info'),
+    getSettings: () => ipcRenderer.invoke('app:get-settings'),
+    setDefaultView: (view) => ipcRenderer.invoke('app:set-default-view', view),
+    setGoogleBooksApiKey: (key) => ipcRenderer.invoke('app:set-google-books-api-key', key),
+    chooseDataDirectory: () => ipcRenderer.invoke('app:choose-data-directory'),
   },
   books: {
-    findCoverCandidates: (title, author) =>
-      ipcRenderer.invoke('books:find-cover-candidates', title, author),
+    findCoverCandidates: (title, author, source) =>
+      ipcRenderer.invoke('books:find-cover-candidates', title, author, source),
     addBookReview: (input) => ipcRenderer.invoke('books:add-book-review', input),
     addBookCover: (input) => ipcRenderer.invoke('books:add-cover', input),
     updateReview: (input) => ipcRenderer.invoke('books:update-review', input),

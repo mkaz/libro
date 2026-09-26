@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import type { ReviewRow, YearCount } from '../../../shared/types'
+import type { ResultView, ReviewRow, YearCount } from '../../../shared/types'
 import { api } from '../../lib/api'
 import { ReviewTable } from '../../lib/ReviewTable'
 
@@ -17,7 +17,7 @@ function buildYearOptions(yearCounts: YearCount[]): number[] {
   return [...new Set(years)].sort((left, right) => right - left)
 }
 
-export function BooksByYearView() {
+export function BooksByYearView({ defaultView }: { defaultView: ResultView }) {
   const [yearCounts, setYearCounts] = useState<YearCount[]>([])
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [reviews, setReviews] = useState<ReviewRow[]>([])
@@ -82,7 +82,9 @@ export function BooksByYearView() {
       <article className="card section-card">
         <div className="card-body">
           <ReviewTable
+            key={defaultView}
             reviews={reviews}
+            defaultView={defaultView}
             emptyMessage={`No books read in ${selectedYear}.`}
           />
         </div>

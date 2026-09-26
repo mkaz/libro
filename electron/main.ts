@@ -9,6 +9,8 @@ import {
   getCoversDirectory,
   getDatabase,
   getDataDirectory,
+  getDbPath,
+  isDirectorySelectionLocked,
   writeConfigDbPath,
 } from './db/client'
 import { registerIpcHandlers } from './ipc'
@@ -71,49 +73,38 @@ function registerCoverProtocol(): void {
   })
 }
 
-async function chooseDatabase(): Promise<string | null> {
-  const { response } = await dialog.showMessageBox({
-    type: 'question',
-    title: 'Select Database',
-    message: 'Choose a Libro database',
-    detail: 'Open an existing database file or create a new one.',
-    buttons: ['Open Existing', 'Create New', 'Cancel'],
-    defaultId: 0,
-    cancelId: 2,
-  })
-
-  if (response === 2) return null
-
-  if (response === 0) {
-    const result = await dialog.showOpenDialog({
-      title: 'Open Libro Database',
-      filters: [{ name: 'SQLite Database', extensions: ['db', 'sqlite', 'sqlite3'] }],
-      properties: ['openFile'],
-    })
-    return result.canceled || result.filePaths.length === 0 ? null : result.filePaths[0]
+async function chooseDataDirectory(mainWindow: BrowserWindow): Promise<string | null> {
+  if (isDirectorySelectionLocked()) {
+    throw new Error('The data directory is set by an environment variable or a libro.db in the current directory.')
   }
 
-  // Create new — pick a directory, libro.db will be created inside it
-  const result = await dialog.showOpenDialog({
-    title: 'Choose Location for New Database',
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Choose Libro Data Directory',
+    defaultPath: getDataDirectory(),
     properties: ['openDirectory', 'createDirectory'],
   })
-  return result.canceled || result.filePaths.length === 0
-    ? null
-    : path.join(result.filePaths[0], 'libro.db')
-}
+  if (result.canceled || !result.filePaths[0]) return null
 
-async function switchDatabase(mainWindow: BrowserWindow): Promise<void> {
-  const dbPath = await chooseDatabase()
-  if (!dbPath) return
+  const directory = path.resolve(result.filePaths[0])
+  if (directory === getDataDirectory()) return directory
 
-  writeConfigDbPath(dbPath)
+  // A selected directory is used as-is; existing data is never moved or overwritten.
+  const previousDbPath = getDbPath()
   closeDatabase()
-  getDatabase()
+  try {
+    writeConfigDbPath(path.join(directory, 'libro.db'))
+    getDatabase()
+  } catch (error) {
+    closeDatabase()
+    writeConfigDbPath(previousDbPath)
+    getDatabase()
+    throw error
+  }
   mainWindow.reload()
+  return directory
 }
 
-function buildMenu(mainWindow: BrowserWindow): void {
+function buildMenu(): void {
   const template: MenuItemConstructorOptions[] = [
     {
       label: app.name,
@@ -127,16 +118,6 @@ function buildMenu(mainWindow: BrowserWindow): void {
         { role: 'unhide' },
         { type: 'separator' },
         { role: 'quit' },
-      ],
-    },
-    {
-      label: 'File',
-      submenu: [
-        {
-          label: 'Open Database...',
-          accelerator: 'CmdOrCtrl+O',
-          click: () => switchDatabase(mainWindow),
-        },
       ],
     },
     { role: 'editMenu' },
@@ -189,9 +170,13 @@ function createWindow(): BrowserWindow {
 app.whenReady().then(() => {
   getDatabase()
   registerCoverProtocol()
-  registerIpcHandlers()
-  const mainWindow = createWindow()
-  buildMenu(mainWindow)
+  registerIpcHandlers(async (sender) => {
+    const window = BrowserWindow.fromWebContents(sender)
+    if (!window) throw new Error('The application window is no longer available.')
+    return chooseDataDirectory(window)
+  })
+  createWindow()
+  buildMenu()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

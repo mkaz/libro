@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import type {
   AddBookReviewInput,
@@ -33,12 +33,20 @@ export function AddBookReviewForm() {
   const [result, setResult] = useState<AddBookReviewResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [coverCandidates, setCoverCandidates] = useState<BookCoverCandidate[] | null>(null)
+  const [googleCandidates, setGoogleCandidates] = useState<BookCoverCandidate[] | null>(null)
+  const [googleError, setGoogleError] = useState<string | null>(null)
   const [selectedCover, setSelectedCover] = useState<BookCoverCandidate | null>(null)
   const [lookingUpCovers, setLookingUpCovers] = useState(false)
+  const [lookingUpGoogle, setLookingUpGoogle] = useState(false)
+  const googleRequest = useRef(0)
   const [submitting, setSubmitting] = useState(false)
 
   function resetCoverSelection() {
+    googleRequest.current += 1
+    setLookingUpGoogle(false)
     setCoverCandidates(null)
+    setGoogleCandidates(null)
+    setGoogleError(null)
     setSelectedCover(null)
   }
 
@@ -55,6 +63,22 @@ export function AddBookReviewForm() {
       setError(lookupError instanceof Error ? lookupError.message : 'Failed to find covers.')
     } finally {
       setLookingUpCovers(false)
+    }
+  }
+
+  async function findGoogleCovers() {
+    const request = ++googleRequest.current
+    setLookingUpGoogle(true)
+    setGoogleError(null)
+    try {
+      const results = await api.books.findCoverCandidates(form.title, form.author, 'googlebooks')
+      if (request === googleRequest.current) setGoogleCandidates(results)
+    } catch (lookupError: unknown) {
+      if (request === googleRequest.current) {
+        setGoogleError(lookupError instanceof Error ? lookupError.message : 'Failed to find Google Books covers.')
+      }
+    } finally {
+      if (request === googleRequest.current) setLookingUpGoogle(false)
     }
   }
 
@@ -234,14 +258,14 @@ export function AddBookReviewForm() {
                   <h3 className="cover-confirmation-title">Choose a cover</h3>
                   <p className="section-copy mb-0">
                     {coverCandidates.length > 0
-                      ? `Select one of the ${coverCandidates[0].source === 'openlibrary' ? 'Open Library' : 'Google Books'} covers below.`
+                      ? 'Select a cover below.'
                       : 'No covers were found. You can still save the book without one.'}
                   </p>
                 </div>
 
                 {coverCandidates.length > 0 ? (
                   <div className="cover-candidate-grid">
-                    {coverCandidates.map((candidate) => {
+                    {[...coverCandidates, ...(googleCandidates ?? [])].map((candidate) => {
                       const selected =
                         selectedCover?.source === candidate.source &&
                         selectedCover.sourceId === candidate.sourceId
@@ -257,6 +281,7 @@ export function AddBookReviewForm() {
                           <span className="cover-candidate-copy">
                             <strong>{candidate.title}</strong>
                             <span>{candidate.author}</span>
+                            <span>{candidate.source === 'openlibrary' ? 'Open Library' : 'Google Books'}</span>
                             {candidate.publicationYear ? <span>{candidate.publicationYear}</span> : null}
                           </span>
                         </button>
@@ -265,11 +290,19 @@ export function AddBookReviewForm() {
                   </div>
                 ) : null}
 
-                {coverCandidates[0]?.source === 'googlebooks' ? (
+                {coverCandidates[0]?.source === 'openlibrary' && googleCandidates === null ? (
+                  <button type="button" className="btn" style={{ justifySelf: 'start' }} onClick={() => void findGoogleCovers()} disabled={lookingUpGoogle || submitting}>
+                    {lookingUpGoogle ? 'Searching Google Books...' : 'Search Google Books for more covers'}
+                  </button>
+                ) : null}
+                {googleError ? <p className="text-danger mb-0">{googleError}</p> : null}
+                {googleCandidates?.length === 0 ? <p className="text-muted mb-0">No additional covers found on Google Books.</p> : null}
+
+                {(googleCandidates?.length || coverCandidates[0]?.source === 'googlebooks') ? (
                   <p className="cover-attribution mb-0">
-                    Cover results provided by Google Books. Each selected result links to its source.
+                    Google Books covers link to their source.
                     {' '}
-                    <a href={selectedCover?.sourceUrl ?? coverCandidates[0].sourceUrl} target="_blank" rel="noreferrer">
+                    <a href={(selectedCover?.source === 'googlebooks' ? selectedCover.sourceUrl : null) ?? googleCandidates?.[0]?.sourceUrl ?? coverCandidates[0].sourceUrl} target="_blank" rel="noreferrer">
                       View on Google Books
                     </a>
                   </p>

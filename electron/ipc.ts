@@ -1,8 +1,9 @@
 import { ipcMain } from 'electron'
+import type { WebContents } from 'electron'
 
-import type { AddBookCoverInput, AddBookReviewInput } from '../shared/types'
+import type { AddBookCoverInput, AddBookReviewInput, ResultView } from '../shared/types'
 import { deleteSavedCover, findCoverCandidates, saveCoverLocally } from './covers'
-import { getDatabase, getDbInfo } from './db/client'
+import { getDatabase, getSettings, setDefaultView, setGoogleBooksApiKey } from './db/client'
 import { addBookCover, addBookReview, getBookDetail, searchBooks, updateReview } from './db/books'
 import { getAuthorCounts, getReviews, getYearCounts } from './db/reports'
 import { addBooksToList, addNewBookToList, createList, getAllLists, getListById } from './db/lists'
@@ -49,11 +50,14 @@ async function addCoverToBook(input: AddBookCoverInput) {
   }
 }
 
-export function registerIpcHandlers(): void {
-  ipcMain.handle('app:get-db-info', () => getDbInfo())
+export function registerIpcHandlers(chooseDataDirectory: (sender: WebContents) => Promise<string | null>): void {
+  ipcMain.handle('app:get-settings', () => getSettings())
+  ipcMain.handle('app:set-default-view', (_, view: ResultView) => setDefaultView(view))
+  ipcMain.handle('app:set-google-books-api-key', (_, key: string) => setGoogleBooksApiKey(key))
+  ipcMain.handle('app:choose-data-directory', (event) => chooseDataDirectory(event.sender))
 
-  ipcMain.handle('books:find-cover-candidates', (_, title: string, author: string) =>
-    findCoverCandidates(title, author),
+  ipcMain.handle('books:find-cover-candidates', (_, title: string, author: string, source?: 'googlebooks') =>
+    findCoverCandidates(title, author, source),
   )
   ipcMain.handle('books:add-book-review', (_, input: AddBookReviewInput) =>
     addBookReviewWithCover(input),

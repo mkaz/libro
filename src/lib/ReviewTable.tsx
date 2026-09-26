@@ -1,21 +1,22 @@
 import { useState } from 'react'
 
-import type { ReviewRow } from '../../shared/types'
+import type { ResultView, ReviewRow } from '../../shared/types'
 import { BookCover } from './BookCover'
 import { BookDetailModal } from './BookDetailModal'
 import { starsFor } from './ratings'
-import type { ResultView } from './ViewToggle'
 import { ViewToggle } from './ViewToggle'
 
 export function ReviewTable({
   reviews,
   emptyMessage = 'No reviews found.',
+  defaultView = 'list',
 }: {
   reviews: ReviewRow[]
   emptyMessage?: string
+  defaultView?: ResultView
 }) {
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null)
-  const [resultView, setResultView] = useState<ResultView>('list')
+  const [resultView, setResultView] = useState<ResultView>(defaultView)
   const [booksWithNewCovers, setBooksWithNewCovers] = useState<Set<number>>(() => new Set())
 
   if (reviews.length === 0) {

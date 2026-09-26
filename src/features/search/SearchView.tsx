@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import type { ReviewRow } from '../../../shared/types'
+import type { ResultView, ReviewRow } from '../../../shared/types'
 import { api } from '../../lib/api'
 import { ReviewTable } from '../../lib/ReviewTable'
 
-export function SearchView() {
+export function SearchView({ defaultView }: { defaultView: ResultView }) {
   const [reviews, setReviews] = useState<ReviewRow[]>([])
   const [authorFilter, setAuthorFilter] = useState('')
   const [selectedRating, setSelectedRating] = useState<number | ''>('')
@@ -70,7 +70,7 @@ export function SearchView() {
               </div>
             </div>
           </div>
-          <ReviewTable reviews={reviews} />
+          <ReviewTable key={defaultView} reviews={reviews} defaultView={defaultView} />
         </div>
       </article>
     </section>

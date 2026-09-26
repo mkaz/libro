@@ -1,4 +1,4 @@
-export type ResultView = 'list' | 'grid'
+import type { ResultView } from '../../shared/types'
 
 export function ViewToggle({
   value,

@@ -7,7 +7,7 @@ import type {
   BookCoverSelection,
   BookCoverSource,
 } from '../shared/types'
-import { getCoversDirectory, getDataDirectory } from './db/client'
+import { getCoversDirectory, getDataDirectory, getGoogleBooksApiKey } from './db/client'
 import type { SavedBookCover } from './db/books'
 
 const OPEN_LIBRARY_BASE_URL = 'https://openlibrary.org'
@@ -43,6 +43,12 @@ interface GoogleVolume {
   }
 }
 
+class CoverServiceError extends Error {
+  constructor(readonly status: number) {
+    super(`Cover service returned ${status}.`)
+  }
+}
+
 function requestHeaders(): HeadersInit {
   return {
     Accept: 'application/json',
@@ -57,7 +63,7 @@ async function fetchJson<T>(url: URL): Promise<T> {
   })
 
   if (!response.ok) {
-    throw new Error(`Cover service returned ${response.status}.`)
+    throw new CoverServiceError(response.status)
   }
 
   return response.json() as Promise<T>
@@ -153,7 +159,7 @@ async function findGoogleBooksCovers(
   url.searchParams.set('q', `intitle:"${title}" inauthor:"${author}"`)
   url.searchParams.set('printType', 'books')
   url.searchParams.set('maxResults', String(MAX_CANDIDATES))
-  const apiKey = process.env.GOOGLE_BOOKS_API_KEY?.trim()
+  const apiKey = getGoogleBooksApiKey()
   if (apiKey) url.searchParams.set('key', apiKey)
 
   const result = await fetchJson<{ items?: GoogleVolume[] }>(url)
@@ -181,15 +187,35 @@ async function findGoogleBooksCovers(
   return candidates
 }
 
+async function googleCoversOrError(title: string, author: string): Promise<BookCoverCandidate[]> {
+  try {
+    return await findGoogleBooksCovers(title, author)
+  } catch (error) {
+    console.warn('Google Books cover lookup failed.', error instanceof CoverServiceError ? error.status : error instanceof Error ? error.name : 'Unknown error')
+    if (error instanceof CoverServiceError && error.status === 429) {
+      throw new Error(getGoogleBooksApiKey()
+        ? 'Google Books quota exceeded (HTTP 429). Check your API key quota and try again later.'
+        : 'Google Books rejected the request (HTTP 429: no anonymous API quota). Add a Books API key in Settings.')
+    }
+    if (error instanceof CoverServiceError) {
+      throw new Error(`Google Books cover lookup failed (HTTP ${error.status}). Check your API key and try again.`)
+    }
+    throw new Error('Google Books cover lookup failed. Check your connection and try again.')
+  }
+}
+
 export async function findCoverCandidates(
   titleValue: string,
   authorValue: string,
+  source?: 'googlebooks',
 ): Promise<BookCoverCandidate[]> {
   const title = titleValue.trim()
   const author = authorValue.trim()
   if (!title || !author) {
     throw new Error('Enter a title and author before looking for covers.')
   }
+
+  if (source === 'googlebooks') return googleCoversOrError(title, author)
 
   try {
     const openLibraryCandidates = await findOpenLibraryCovers(title, author)
@@ -198,12 +224,7 @@ export async function findCoverCandidates(
     console.warn('Open Library cover lookup failed; trying Google Books.', error)
   }
 
-  try {
-    return await findGoogleBooksCovers(title, author)
-  } catch (error) {
-    console.warn('Google Books cover lookup failed.', error)
-    throw new Error('Cover lookup failed. Check your connection and try again.')
-  }
+  return googleCoversOrError(title, author)
 }
 
 function isAllowedImageUrl(url: URL, source: BookCoverSource): boolean {

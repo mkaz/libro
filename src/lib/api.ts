@@ -6,6 +6,7 @@ import type {
   CreateListInput,
   LibroApi,
   ReviewFilters,
+  ResultView,
   UpdateReviewInput,
 } from '../../shared/types'
 
@@ -19,11 +20,14 @@ function getApi(): LibroApi {
 
 export const api = {
   app: {
-    getDbInfo: () => getApi().app.getDbInfo(),
+    getSettings: () => getApi().app.getSettings(),
+    setDefaultView: (view: ResultView) => getApi().app.setDefaultView(view),
+    setGoogleBooksApiKey: (key: string) => getApi().app.setGoogleBooksApiKey(key),
+    chooseDataDirectory: () => getApi().app.chooseDataDirectory(),
   },
   books: {
-    findCoverCandidates: (title: string, author: string) =>
-      getApi().books.findCoverCandidates(title, author),
+    findCoverCandidates: (title: string, author: string, source?: 'googlebooks') =>
+      getApi().books.findCoverCandidates(title, author, source),
     addBookReview: (input: AddBookReviewInput) => getApi().books.addBookReview(input),
     addBookCover: (input: AddBookCoverInput) => getApi().books.addBookCover(input),
     updateReview: (input: UpdateReviewInput) => getApi().books.updateReview(input),
