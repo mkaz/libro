@@ -1,4 +1,22 @@
-# React + TypeScript + Vite
+# Libro Desktop
+
+## Development
+
+Start Libro with the configured database:
+
+```bash
+npm run dev
+```
+
+To use an isolated database for testing, pass its path with `--db`:
+
+```bash
+npm run dev -- --db ./data/cover-test/libro.db
+```
+
+Libro creates the database if it does not exist. Covers are saved in a `covers` directory beside that database, so this command keeps both the test records and test covers separate from your configured library.
+
+## Vite template notes
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

@@ -3,6 +3,22 @@ export interface DbInfo {
   exists: boolean
 }
 
+export type BookCoverSource = 'openlibrary' | 'googlebooks'
+
+export interface BookCoverSelection {
+  source: BookCoverSource
+  sourceId: string
+  imageUrl: string
+}
+
+export interface BookCoverCandidate extends BookCoverSelection {
+  thumbnailUrl: string
+  title: string
+  author: string
+  publicationYear: string | null
+  sourceUrl: string
+}
+
 export interface AddBookReviewInput {
   title: string
   author: string
@@ -12,12 +28,14 @@ export interface AddBookReviewInput {
   dateRead: string | null
   rating: number | null
   review: string | null
+  cover: BookCoverSelection | null
 }
 
 export interface AddBookReviewResult {
   bookId: number
   reviewId: number
   usedExistingBook: boolean
+  coverSaved: boolean
 }
 
 export interface UpdateReviewInput {
@@ -153,6 +171,7 @@ export interface LibroApi {
     getDbInfo: () => Promise<DbInfo>
   }
   books: {
+    findCoverCandidates: (title: string, author: string) => Promise<BookCoverCandidate[]>
     addBookReview: (input: AddBookReviewInput) => Promise<AddBookReviewResult>
     updateReview: (input: UpdateReviewInput) => Promise<void>
     searchBooks: (term: string, listId?: number) => Promise<SearchBookResult[]>

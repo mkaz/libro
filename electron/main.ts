@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, Menu } from 'electron'
+import { app, BrowserWindow, dialog, Menu, shell } from 'electron'
 import type { MenuItemConstructorOptions } from 'electron'
 import path from 'node:path'
 
@@ -96,6 +96,11 @@ function createWindow(): BrowserWindow {
       contextIsolation: true,
       nodeIntegration: false,
     },
+  })
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https://')) void shell.openExternal(url)
+    return { action: 'deny' }
   })
 
   if (app.isPackaged) {

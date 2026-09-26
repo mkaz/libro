@@ -3,6 +3,7 @@ import type Database from 'better-sqlite3'
 import type {
   AddBookReviewInput,
   AddBookReviewResult,
+  BookCoverSource,
   BookDetail,
   BookReviewDetail,
   SearchBookResult,
@@ -18,9 +19,16 @@ function normalizeOptionalText(value: string | null): string | null {
   return normalized.length > 0 ? normalized : null
 }
 
+export interface SavedBookCover {
+  source: BookCoverSource
+  sourceId: string
+  path: string
+}
+
 export function addBookReview(
   db: Database.Database,
   input: AddBookReviewInput,
+  cover: SavedBookCover | null = null,
 ): AddBookReviewResult {
   const title = input.title.trim()
   const author = input.author.trim()
@@ -40,8 +48,11 @@ export function addBookReview(
     .get(title, author) as { id: number } | undefined
 
   const insertBook = db.prepare(
-    `INSERT INTO books (title, author, pub_year, pages, genre)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO books (
+       title, author, pub_year, pages, genre,
+       cover_source, cover_source_id, cover_path
+     )
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
   )
   const insertReview = db.prepare(
     `INSERT INTO reviews (book_id, date_read, rating, review)
@@ -58,6 +69,9 @@ export function addBookReview(
         input.pubYear,
         input.pages,
         genre,
+        cover?.source ?? null,
+        cover?.sourceId ?? null,
+        cover?.path ?? null,
       )
       bookId = Number(bookResult.lastInsertRowid)
     }
@@ -73,6 +87,7 @@ export function addBookReview(
       bookId,
       reviewId: Number(reviewResult.lastInsertRowid),
       usedExistingBook: existingBook !== undefined,
+      coverSaved: existingBook === undefined && cover !== null,
     }
   })
 

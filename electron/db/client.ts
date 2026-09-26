@@ -28,6 +28,11 @@ export function writeConfigDbPath(dbPath: string): void {
 }
 
 function resolveDbPath(): string | null {
+  const overrideDb = process.env.LIBRO_DB_OVERRIDE
+  if (overrideDb) {
+    return path.resolve(overrideDb)
+  }
+
   const currentDirDb = path.resolve(process.cwd(), 'libro.db')
   if (existsSync(currentDirDb)) {
     return currentDirDb

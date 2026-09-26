@@ -1,15 +1,43 @@
 import { ipcMain } from 'electron'
 
+import type { AddBookReviewInput } from '../shared/types'
+import { deleteSavedCover, findCoverCandidates, saveCoverLocally } from './covers'
 import { getDatabase, getDbInfo } from './db/client'
 import { addBookReview, getBookDetail, searchBooks, updateReview } from './db/books'
 import { getAuthorCounts, getReviews, getYearCounts } from './db/reports'
 import { addBooksToList, addNewBookToList, createList, getAllLists, getListById } from './db/lists'
 
+async function addBookReviewWithCover(input: AddBookReviewInput) {
+  const savedCover = input.cover ? await saveCoverLocally(input.cover) : null
+  let result
+
+  try {
+    result = addBookReview(getDatabase(), input, savedCover)
+  } catch (error) {
+    if (savedCover) {
+      await deleteSavedCover(savedCover).catch((cleanupError: unknown) => {
+        console.warn('Could not remove unused cover after save failure.', cleanupError)
+      })
+    }
+    throw error
+  }
+
+  if (result.usedExistingBook && savedCover) {
+    await deleteSavedCover(savedCover).catch((cleanupError: unknown) => {
+      console.warn('Could not remove cover downloaded for an existing book.', cleanupError)
+    })
+  }
+  return result
+}
+
 export function registerIpcHandlers(): void {
   ipcMain.handle('app:get-db-info', () => getDbInfo())
 
-  ipcMain.handle('books:add-book-review', (_, input) =>
-    addBookReview(getDatabase(), input),
+  ipcMain.handle('books:find-cover-candidates', (_, title: string, author: string) =>
+    findCoverCandidates(title, author),
+  )
+  ipcMain.handle('books:add-book-review', (_, input: AddBookReviewInput) =>
+    addBookReviewWithCover(input),
   )
   ipcMain.handle('books:search', (_, term: string, listId?: number) =>
     searchBooks(getDatabase(), term, listId),

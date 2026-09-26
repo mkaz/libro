@@ -21,6 +21,8 @@ export const api = {
     getDbInfo: () => getApi().app.getDbInfo(),
   },
   books: {
+    findCoverCandidates: (title: string, author: string) =>
+      getApi().books.findCoverCandidates(title, author),
     addBookReview: (input: AddBookReviewInput) => getApi().books.addBookReview(input),
     updateReview: (input: UpdateReviewInput) => getApi().books.updateReview(input),
     searchBooks: (term: string, listId?: number) => getApi().books.searchBooks(term, listId),

@@ -7,6 +7,8 @@ const api: LibroApi = {
     getDbInfo: () => ipcRenderer.invoke('app:get-db-info'),
   },
   books: {
+    findCoverCandidates: (title, author) =>
+      ipcRenderer.invoke('books:find-cover-candidates', title, author),
     addBookReview: (input) => ipcRenderer.invoke('books:add-book-review', input),
     updateReview: (input) => ipcRenderer.invoke('books:update-review', input),
     searchBooks: (term, listId) => ipcRenderer.invoke('books:search', term, listId),

@@ -8,7 +8,10 @@ export function migrateDatabase(db: Database.Database): void {
       author TEXT NOT NULL,
       pub_year INTEGER,
       pages INTEGER,
-      genre TEXT
+      genre TEXT,
+      cover_source TEXT,
+      cover_source_id TEXT,
+      cover_path TEXT
     );
 
     CREATE TABLE IF NOT EXISTS reviews (
@@ -38,4 +41,20 @@ export function migrateDatabase(db: Database.Database): void {
       UNIQUE(list_id, book_id)
     );
   `)
+
+  const bookColumns = new Set(
+    (db.prepare('PRAGMA table_info(books)').all() as Array<{ name: string }>).map(
+      (column) => column.name,
+    ),
+  )
+
+  if (!bookColumns.has('cover_source')) {
+    db.exec('ALTER TABLE books ADD COLUMN cover_source TEXT')
+  }
+  if (!bookColumns.has('cover_source_id')) {
+    db.exec('ALTER TABLE books ADD COLUMN cover_source_id TEXT')
+  }
+  if (!bookColumns.has('cover_path')) {
+    db.exec('ALTER TABLE books ADD COLUMN cover_path TEXT')
+  }
 }
