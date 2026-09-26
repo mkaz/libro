@@ -5,7 +5,7 @@ export default defineConfig({
   outDir: 'dist-electron',
   platform: 'node',
   format: ['cjs'],
-  target: 'node20',
+  target: 'node24',
   bundle: true,
   splitting: false,
   sourcemap: true,

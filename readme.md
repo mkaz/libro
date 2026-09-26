@@ -4,14 +4,14 @@ Libro is an Electron reading tracker with a local SQLite database. Books, review
 
 ## Development
 
-Install Node.js and npm, then install dependencies and start the app:
+Install Node.js 22.12 or newer and npm, then install dependencies and start the app:
 
 ```bash
 npm ci
 npm run dev
 ```
 
-`npm ci` removes the existing `node_modules` directory and installs the versions in `package-lock.json`. It does not update the lockfile. This project also runs `electron-builder install-app-deps` after installation to rebuild `better-sqlite3` for Electron; loading it directly with Node.js may then fail with a `NODE_MODULE_VERSION` mismatch. Some deprecation warnings come from transitive dependencies and do not mean the install failed; check the command's exit status and any `npm error` lines.
+`npm ci` removes the existing `node_modules` directory and installs the versions in `package-lock.json`. It does not update the lockfile. This project also runs `electron-builder install-app-deps` after installation to rebuild `better-sqlite3` for Electron; loading it directly with Node.js may then fail with a `NODE_MODULE_VERSION` mismatch. The remaining deprecation warnings come from `electron-builder` dependencies and do not mean the install failed; check the command's exit status and any `npm error` lines. The `esbuild` override in `package.json` pins a patched version while `tsup` still requests an older range.
 
 Check changes with `npm run lint` and `npm run build`.
 
